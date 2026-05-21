@@ -403,16 +403,28 @@ const Game = (function() {
   function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');if(name==='main')updateUI();}
 
   function initStart(){
-    if(load()&&state.dynasty){processBannedDecay();save();showPage('main');updateUI();return;}
     showPage('start');
     document.getElementById('start-btn').onclick=function(){
       const v=document.getElementById('dynasty-input').value.trim();if(!v){alert('&#35831;&#36755;&#20837;&#22269;&#21495;&#65281;');return;}
+      // Clear old save data for fresh start
+      try{localStorage.removeItem('emperor_game');}catch(e){}
       state.dynasty=v;state.treasury=rand(3000,8000);
       document.getElementById('treasury-amount').textContent=state.treasury+' &#20004;';
       document.getElementById('modal-treasury').classList.add('show');
     };
   }
-  function confirmTreasury(){document.getElementById('modal-treasury').classList.remove('show');state.year=1;state.month=1;state.actionsLeft=5;state.concubines=[];state.coldPalaceList=[];state.banned={};state.eventLog=[];state.pendingEvent=null;state.eventTriggerRate=60;state.nextDraftIn=3;save();showPage('main');updateUI();setTimeout(()=>triggerDraft(),500);}
+  function confirmTreasury(){
+    // Reset all game state
+    state.year=1;state.month=1;state.actionsLeft=5;
+    state.concubines=[];state.coldPalaceList=[];state.banned={};
+    state.eventLog=[];state.pendingEvent=null;
+    state.eventTriggerRate=60;state.nextDraftIn=3;
+    state._draftPool=[];state._draftSelectedIds=[];
+    state._banquetSelected=null;
+    document.getElementById('modal-treasury').classList.remove('show');
+    save();showPage('main');updateUI();
+    setTimeout(()=>triggerDraft(),800);
+  }
   function processBannedDecay(){for(const id in state.banned){state.banned[id]--;if(state.banned[id]<=0)delete state.banned[id];}}
   function processColdDecay(){state.coldPalaceList=state.coldPalaceList.filter(c=>{c.health=clamp(c.health-10,0,100);if(c.health<=0){logEvent('&#30149;&#36893;&#33268;&#27515;',c.rank+c.name+'&#22312;&#20919;&#23467;&#20013;&#30149;&#36893;');showFeedback('<span class="neg">'+c.name+'</span> &#22312;&#20919;&#23467;&#20013;&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');return false;}return true;});}
 
