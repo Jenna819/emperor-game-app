@@ -395,7 +395,7 @@ const Game = (function() {
       const isBanned=state.banned[c.id];
       const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
       const displayName = c.title ? c.title + c.rank : c.name;
-      html+=`<div class="concubine-card" onclick="Game.showDetail('${c.id}')">${portraitSVG(c.portraitSeed,80,100)}<div class="concubine-info"><div class="concubine-name">${displayName}<span class="concubine-rank ${rc}">${c.title?'':c.rank}</span>${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}</div><div class="concubine-stats"><span>&#23456;&#29233; <b>${c.favor}</b></span><span>&#32654;&#35980; <b>${c.beauty}</b></span><span>&#20581;&#24247; <b style="color:${hp}">${c.health}</b></span>${c.pregnant?'<span class="badge badge-pregnant">&#129324; &#26377;&#23389;<span class="badge-pregnant-month">'+c.pregMonth+'&#26376;</span></span>':''}</div></div></div>`;
+      html+=`<div class="concubine-card" onclick="Game.showDetail('${c.id}')">${portraitSVG(c.portraitSeed,80,100)}<div class="concubine-info"><div class="concubine-name">${displayName}<span class="concubine-rank ${rc}">${c.title?'':c.rank}</span>${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}</div><div class="concubine-stats"><span>&#23456;&#29233; <b>${c.favor}</b></span><span>&#32654;&#35980; <b>${c.beauty}</b></span><span>&#20581;&#24247; <b style="color:${hp}">${c.health}</b></span>${c.pregnant?'<span class="badge badge-pregnant">&#129324; &#26377;&#21916;<span class="badge-pregnant-month">'+c.pregMonth+'&#26376;</span></span>':''}</div></div></div>`;
     });
     el.innerHTML=html;
   }
@@ -436,7 +436,7 @@ const Game = (function() {
       c.health=clamp(c.health-2,0,100);
       if(c.pregMonth>=10){
         const isBoy=Math.random()<0.5;
-        births.push({concubine:c,childType:isBoy?'&#30347;&#23376;':'&#20844;&#20027;'});
+        births.push({concubine:c,childType:isBoy?'&#30343;&#23376;':'&#20844;&#20027;'});
         c.pregnant=false;c.pregMonth=0;
       }
     });
@@ -447,11 +447,11 @@ const Game = (function() {
     const el=document.getElementById('birth-content');
     let html='<div class="birth-result">';
     births.forEach(({concubine:c,childType})=>{
-      const promoteCount=childType==='&#30347;&#23376;'?2:1;
+      const promoteCount=childType==='&#30343;&#23376;'?2:1;
       const oldRank=c.rank;
-      if(c.rank!=='&#30347;&#21518;'){for(let i=0;i<promoteCount;i++){const newR=ru(c.rank);if(newR!==c.rank)c.rank=newR;}}
+      if(c.rank!=='&#30343;&#21518;'){for(let i=0;i<promoteCount;i++){const newR=ru(c.rank);if(newR!==c.rank)c.rank=newR;}}
       c.favor=clamp(c.favor+20,0,100);c.health=clamp(c.health+10,0,100);
-      const icon=childType==='&#30347;&#23376;'?'&#128118;':'&#128117;';
+      const icon=childType==='&#30343;&#23376;'?'&#128118;':'&#128117;';
       html+=`<div class="birth-icon">${icon}</div><div class="baby-type">${c.name} &#35806;&#19979;${childType}&#65281;</div><div class="baby-info">${oldRank} ${c.name}&#65292;&#21313;&#26376;&#24576;&#32974;&#65292;&#19968;&#26397;&#20998;&#23081;<br>&#27597;&#23376;&#24179;&#23433;</div><div class="baby-promote">&#22240;&#35806;&#19979;${childType}&#65292;${c.name} &#26187;&#21319; ${promoteCount} &#32423;<br>${oldRank} &#8594; ${c.rank}</div>`;
     });
     html+='<button class="btn-primary" onclick="Game.closeBirth()">&#22823;&#21916;&#65292;&#21516;&#24198;&#65281;</button></div>';
@@ -495,7 +495,7 @@ const Game = (function() {
   }
 
   function findC(id){return state.concubines.find(x=>x.id===id);}
-  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='&#30347;&#21518;')return;state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
+  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='&#30343;&#21518;')return;state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
   function canAct(){if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#27425;&#25968;&#24050;&#29992;&#23436;&#65281;<br>&#35831;&#28857;&#20987;&#12300;&#36827;&#20837;&#19979;&#26376;&#12301;&#21047;&#26032;&#12290;');return false;}return true;}
 
   function actionFavor(id){
@@ -503,7 +503,7 @@ const Game = (function() {
     if(state.treasury<200){showFeedback('&#22269;&#24211;&#38134;&#20004;&#19981;&#36275;&#65281;');return;}
     state.treasury-=200;c.favor=clamp(c.favor+15,0,100);c.health=clamp(c.health+5,0,100);
     let pregMsg='';
-    if(!c.pregnant&&c.rank!=='&#30347;&#21518;'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;pregMsg='<br><span class="pos">&#129324; '+c.name+' &#26377;&#21916;&#20102;&#65281;</span>';}
+    if(!c.pregnant&&c.rank!=='&#30343;&#21518;'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;pregMsg='<br><span class="pos">&#129324; '+c.name+' &#26377;&#21916;&#20102;&#65281;</span>';}
     consumeAction();save();updateUI();
     showFeedback('&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>'+pregMsg);
     showDetail(id);
@@ -561,14 +561,14 @@ const Game = (function() {
 
   // ===== 翻牌侍寝 =====
   const BED_DIALOGUES = [
-    {emp:'皇上：今夜月色真美，你也一样。', con:'皇上夸如妾，如妾心里甜蜜呢。'},
-    {emp:'皇上：这段日子辛苦了，今夜好好休息。', con:'如妾能侍奉皇上，是如妾的福气。'},
-    {emp:'皇上：你今日的扮相格外动人。', con:'如妾特意为皇上打扮的，皇上喜欢便好。'},
-    {emp:'皇上：朕最喜欢的便是你这般温柔。', con:'如妾愿一生世世伴皇上左右。'},
-    {emp:'皇上：外面再好，也不及你这里温馨。', con:'皇上有这份心，如妾便知足了。'},
-    {emp:'皇上：朕多日未来，可是想你了？', con:'如妾夜夜盼皇上来，今夜终于盼来了。'},
-    {emp:'皇上：你这手如何这般柔软？', con:'如妾给皇上捏捏肩，解解乏。'},
-    {emp:'皇上：听说你新学了一首曲子？', con:'如妾弹给皇上听，只愿皇上欢喜。'},
+    {emp:'皇上：今夜月色真美，你也一样。', con:'皇上夸臣妾，臣妾心里甜蜜呢。'},
+    {emp:'皇上：这段日子辛苦了，今夜好好休息。', con:'臣妾能侍奉皇上，是臣妾的福气。'},
+    {emp:'皇上：你今日的扮相格外动人。', con:'臣妾特意为皇上打扮的，皇上喜欢便好。'},
+    {emp:'皇上：朕最喜欢的便是你这般温柔。', con:'臣妾愿一生世世伴皇上左右。'},
+    {emp:'皇上：外面再好，也不及你这里温馨。', con:'皇上有这份心，臣妾便知足了。'},
+    {emp:'皇上：朕多日未来，可是想你了？', con:'臣妾夜夜盼皇上来，今夜终于盼来了。'},
+    {emp:'皇上：你这手如何这般柔软？', con:'臣妾给皇上捏捏肩，解解乏。'},
+    {emp:'皇上：听说你新学了一首曲子？', con:'臣妾弹给皇上听，只愿皇上欢喜。'},
   ];
 
   function openBed(){
@@ -614,7 +614,7 @@ const Game = (function() {
     html+=`<div class="bed-dialogue-line bed-dialogue-con">${dlg.con}</div>`;
     const extra=[
       '<div class="bed-dialogue-line bed-dialogue-emp">皇上：时间不早了，歇息吧。</div>',
-      '<div class="bed-dialogue-line bed-dialogue-con">如妾喜欢跟着皇上。</div>',
+      '<div class="bed-dialogue-line bed-dialogue-con">臣妾喜欢跟着皇上。</div>',
     ];
     extra.forEach(e=>html+=e);
     html+='</div>';
