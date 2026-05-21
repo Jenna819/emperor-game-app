@@ -203,7 +203,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="start-form">
       <p style="color:#6b5a3a;font-size:13px;margin-bottom:6px;">&#20026;&#24744;&#30340;&#29579;&#26397;&#23450;&#19979;&#22269;&#21495;</p>
       <input type="text" id="dynasty-input" class="input-field" placeholder="&#22914;&#65306;&#22823;&#21608;" maxlength="6">
-      <button class="btn-primary" id="start-btn" onclick="Game.startNewGame()">&#24320;&#22269;&#30331;&#22522;</button>
+      <button class="btn-primary" id="start-btn" onclick="doStartGame()">&#24320;&#22269;&#30331;&#22522;</button>
       <div id="debug-status" style="color:red;font-size:12px;margin-top:10px;"></div>
     </div>
   </div>
@@ -263,6 +263,14 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 <div id="modal-feedback" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#28040;&#24687;</div><div class="modal-body"><div id="feedback-content" class="feedback-text"></div><button class="btn-primary" onclick="Game.closeFeedback()">&#30693;&#36947;&#20102;</button></div></div></div>
 </div>
 <script>
+// Global wrapper for start button (called before Game IIFE)
+function doStartGame(){
+  if(typeof Game !== 'undefined' && Game.startNewGame){
+    Game.startNewGame();
+  } else {
+    alert('JS加载失败，请刷新页面');
+  }
+}
 // ========== 古装美女立绘生成 ==========
 const Portrait = (function() {
   const SKIN = ['#faf0e6','#f5e1d0','#fce8d5','#f8e0cc','#fde6d4','#f0d8c8','#fce0d0','#f7dcc8'];
@@ -1175,6 +1183,8 @@ const Game = (function() {
   }
 
   // ===== 导出 =====
+  function closeBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;}
+  function confirmBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;save();updateUI();}
   return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeEvent,closeFeedback,triggerPalaceEvent,openBanquet,confirmBanquet,closeBanquet};
 })();
 
