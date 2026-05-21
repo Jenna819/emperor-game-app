@@ -722,16 +722,16 @@ const Game = (function() {
 
   // ===== 宴会系统 =====
   const BANQUET_PROGRAMS = {
-    '舞蹈': {base:70,bonus:'talent',desc:'翩翩起舞，姿态优美'},
-    '歌唱': {base:65,bonus:'talent',desc:'歌声婉转，余音绕梁'},
-    '诗词': {base:60,bonus:'wisdom',desc:'吟诗作对，才情出众'},
-    '琴艺': {base:68,bonus:'talent',desc:'琴声悠扬，引人入胜'},
-    '棋艺': {base:55,bonus:'wisdom',desc:'以棋会友，布局精妙'},
-    '书画': {base:62,bonus:'talent',desc:'挥毫泼墨，笔走龙蛇'},
-    '茶艺': {base:72,bonus:'wisdom',desc:'烹茶品茗，雅致从容'},
-    '女红': {base:60,bonus:'talent',desc:'针线功夫，匠心独运'},
-    '花艺': {base:70,bonus:'talent',desc:'插花弄草，赏心悦目'},
-    '香道': {base:65,bonus:'wisdom',desc:'焚香品韵，宁静致远'},
+    '舞蹈': {base:60,bonus:'talent',bonusWeight:0.4,traits:['舞蹈'],desc:'翩翩起舞，姿态优美'},
+    '歌唱': {base:55,bonus:'talent',bonusWeight:0.35,traits:['音律','古筝','琵琶','笛箫','古琴'],desc:'歌声婉转，余音绕梁'},
+    '诗词': {base:50,bonus:'wisdom',bonusWeight:0.4,traits:['诗词歌赋'],desc:'吟诗作对，才情出众'},
+    '琴艺': {base:58,bonus:'talent',bonusWeight:0.35,traits:['音律','古琴','古筝'],desc:'琴声悠扬，引人入胜'},
+    '棋艺': {base:45,bonus:'wisdom',bonusWeight:0.45,traits:['围棋','棋艺'],desc:'以棋会友，布局精妙'},
+    '书画': {base:52,bonus:'talent',bonusWeight:0.35,traits:['书法','绘画','琴棋书画'],desc:'挥毫泼墨，笔走龙蛇'},
+    '茶艺': {base:60,bonus:'wisdom',bonusWeight:0.3,traits:['茶道'],desc:'烹茶品茗，雅致从容'},
+    '女红': {base:55,bonus:'talent',bonusWeight:0.35,traits:['女红','刺绣'],desc:'针线功夫，匠心独运'},
+    '花艺': {base:60,bonus:'talent',bonusWeight:0.3,traits:['插花','琴棋书画'],desc:'插花弄草，赏心悦目'},
+    '香道': {base:55,bonus:'wisdom',bonusWeight:0.35,traits:['香道'],desc:'焚香品韵，宁静致远'},
   };
 
   function openBanquet(){
@@ -739,8 +739,7 @@ const Game = (function() {
     if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
     if(state.treasury<800){showFeedback('国库不足800两，无法举办宴会！');return;}
     if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
-    state._banquetTarget=null;
-    let html='<div style="text-align:center;">';
+    let html='<div style="text-align:center;padding:4px 0;">';
     html+='<p style="color:#a08060;font-size:13px;margin-bottom:12px;">选择宴会表演内容</p>';
     html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;">';
     Object.keys(BANQUET_PROGRAMS).forEach(prog=>{
@@ -753,25 +752,37 @@ const Game = (function() {
     document.getElementById('modal-banquet').classList.add('show');
   }
 
+  function calcBanquetScore(c, prog){
+    const p=BANQUET_PROGRAMS[prog];
+    let score=p.base;
+    // Bonus from talent or wisdom
+    const bonusVal=p.bonus==='talent'?c.talent:c.wisdom;
+    score+=bonusVal*p.bonusWeight;
+    // Trait match bonus
+    let traitMatch=false;
+    p.traits.forEach(t=>{
+      if(c.trait&&c.trait.indexOf(t)>=0)traitMatch=true;
+    });
+    if(traitMatch)score+=15;
+    // Small random factor
+    score+=rand(-5,5);
+    return Math.round(Math.max(20,score));
+  }
+
   function showBanquetModal(prog){
     if(state.treasury<800){showFeedback('国库不足800两！');return;}
     state.treasury-=800;
     state.actionsLeft--;
-    setTimeout(()=>triggerPalaceEvent(),500);
     // Each concubine performs
     const results=state.concubines.map(c=>{
+      const score=calcBanquetScore(c,prog);
       const p=BANQUET_PROGRAMS[prog];
-      let score=p.base;
-      if(p.bonus==='talent') score+=c.talent*0.3;
-      else score+=c.wisdom*0.3;
-      score+=rand(-10,10);
-      score=Math.round(score);
-      return {concubine:c,score,prog};
+      let traitMatch=false;
+      p.traits.forEach(t=>{if(c.trait&&c.trait.indexOf(t)>=0)traitMatch=true;});
+      return {concubine:c,score,prog,traitMatch};
     });
-    // Find champion
     results.sort((a,b)=>b.score-a.score);
     const champion=results[0];
-    // Champion promotes
     const oldRank=champion.concubine.rank;
     if(champion.concubine.rank!=='皇后'){
       const newR=ru(champion.concubine.rank);
@@ -782,7 +793,7 @@ const Game = (function() {
     save();updateUI();
     // Show results
     let html='<div style="text-align:center;padding:8px;">';
-    html+=`<div style="font-size:18px;color:#c49030;margin-bottom:6px;">&#127881; 宴会结束</div>`;
+    html+=`<div style="font-size:18px;color:#c49030;margin-bottom:4px;">&#127881; 宴会结束</div>`;
     html+=`<div style="font-size:12px;color:#8a7060;margin-bottom:12px;">表演内容：${prog} | 国库 -800两</div>`;
     html+='<div style="max-height:55vh;overflow-y:auto;margin-bottom:12px;">';
     results.forEach((r,i)=>{
@@ -792,11 +803,13 @@ const Game = (function() {
       const borderColor=isChampion?'rgba(200,160,80,0.4)':'rgba(200,160,80,0.1)';
       const promoteNote=isChampion&&r.concubine.rank!==oldRank?`<span style="color:#4a9a5a;font-size:11px;"> ${oldRank}→${r.concubine.rank}</span>`:'';
       const favorNote=isChampion?`<span style="color:#c49030;font-size:11px;"> +15宠爱</span>`:'';
+      const traitNote=r.traitMatch?'<span style="color:#e89060;font-size:10px;"> 擅长</span>':'';
+      const scoreColor=isChampion?'#c49030':r.score>=80?'#4a9a5a':r.score>=60?'#8a7060':'#b0a090';
       html+=`<div style="display:flex;align-items:center;padding:10px 12px;margin:4px 0;border-radius:10px;background:${bg};border:1px solid ${borderColor};">
         <div style="font-size:18px;min-width:36px;text-align:center;">${medal}</div>
         <div style="flex:1;text-align:left;padding:0 8px;">
-          <div style="font-size:14px;font-weight:bold;color:${isChampion?'#c49030':'#5a3e28'};">${r.concubine.name}</div>
-          <div style="font-size:11px;color:#8a7060;">${r.prog} | 得分 <b>${r.score}</b>${favorNote}${promoteNote}</div>
+          <div style="font-size:14px;font-weight:bold;color:${isChampion?'#c49030':'#5a3e28'};">${r.concubine.name}${traitNote}</div>
+          <div style="font-size:11px;color:#8a7060;">${r.prog} | 得分 <b style="color:${scoreColor}">${r.score}</b>${favorNote}${promoteNote}</div>
         </div>
         <div style="font-size:20px;">${Portrait.generate(r.concubine.portraitSeed,30,38)}</div>
       </div>`;
@@ -804,6 +817,8 @@ const Game = (function() {
     html+='</div></div>';
     html+='<button class="btn-primary" onclick="Game.confirmBanquet()">宴散回宫</button>';
     document.getElementById('banquet-content').innerHTML=html;
+    // Trigger palace event for remaining actions
+    setTimeout(()=>triggerPalaceEvent(),500);
   }
 
   function confirmBanquet(){
