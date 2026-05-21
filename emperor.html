@@ -154,26 +154,18 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .banquet-score-small { font-weight:bold; color:#d49030; font-size:15px; }
 .banquet-promote { margin-top:14px; padding:10px 16px; background:rgba(80,180,100,0.15); border:1px solid rgba(80,180,100,0.3); border-radius:10px; color:#4a9a5a; font-size:13px; text-align:center; }
 .banquet-desc { font-size:12px; color:#8a7060; line-height:1.6; padding:8px 0; }
-.morning-greeting-item { display:flex; align-items:flex-start; padding:10px; margin:4px 0; background:rgba(255,245,230,0.6); border:1px solid rgba(200,160,80,0.12); border-radius:10px; }
-.morning-greeting-item > div:first-child { flex-shrink:0; }
+.morning-row { display:flex; align-items:center; padding:8px 10px; margin:4px 0; background:rgba(255,245,230,0.5); border-radius:10px; border:1px solid rgba(200,160,80,0.1); }
+.morning-row > div:first-child { flex-shrink:0; }
 .morning-info { flex:1; padding-left:10px; min-width:0; }
-.morning-name { font-size:13px; color:#c49030; font-weight:bold; }
+.morning-name-row { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:bold; color:#c49030; margin-bottom:2px; }
+.morning-rank { font-size:11px; color:#a08060; font-weight:normal; }
+.morning-favor { font-size:11px; color:#c49030; margin-left:auto; }
 .morning-greeting { font-size:12px; color:#6b5a3a; line-height:1.4; margin:3px 0; }
-.btn-favor-adjust { padding:3px 10px; border-radius:6px; border:1px solid rgba(200,160,80,0.3); background:rgba(255,245,230,0.8); color:#c49030; font-size:12px; cursor:pointer; font-family:inherit; font-weight:bold; }
-.btn-favor-adjust:active { transform:scale(0.95); }
-.morning-portrait { width:50px; height:63px; flex-shrink:0; border-radius:8px; overflow:hidden; border:1px solid rgba(200,160,80,0.3); background:linear-gradient(180deg,#fce0d0,#f5d0b8); }
-.morning-portrait svg { width:100%; height:100%; }
-.morning-info { flex:1; margin-left:10px; min-width:0; }
-.morning-name { font-size:14px; font-weight:bold; color:#c49030; margin-bottom:2px; }
-.morning-personality { font-size:10px; color:#9060c0; margin-bottom:4px; }
-.morning-greeting { font-size:12px; color:#5a3e28; line-height:1.5; margin-bottom:6px; font-style:italic; }
-.morning-favor { font-size:11px; color:#2a8a4a; margin-bottom:4px; }
-.morning-favor-btns { display:flex; gap:6px; align-items:center; }
-.morning-favor-btn { width:26px; height:26px; border-radius:50%; border:1px solid rgba(200,160,80,0.3); background:rgba(255,245,230,0.9); color:#5a3e28; font-size:16px; font-weight:bold; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:inherit; transition:all 0.15s; }
-.morning-favor-btn:active { transform:scale(0.9); }
-.morning-favor-btn.plus { border-color:rgba(80,180,100,0.4); color:#2a8a4a; }
-.morning-favor-btn.minus { border-color:rgba(200,60,60,0.3); color:#c04040; }
-.morning-favor-current { font-size:12px; color:#c49030; min-width:50px; text-align:center; }
+.morning-stats-row { display:flex; align-items:center; gap:4px; font-size:11px; color:#a08060; }
+.stat-sep { color:#d0c0b0; }
+.favor-btn { width:24px; height:24px; border-radius:6px; border:1px solid rgba(200,160,80,0.3); background:rgba(255,245,230,0.8); color:#4caf50; font-size:14px; cursor:pointer; font-family:inherit; font-weight:bold; display:flex; align-items:center; justify-content:center; padding:0; }
+.favor-btn:active { transform:scale(0.9); }
+.favor-btn.minus { color:#c04040; }
 .bed-card { display:inline-flex; align-items:center; justify-content:center; width:90px; height:120px; margin:8px; border:2px solid rgba(200,160,80,0.4); border-radius:12px; background:linear-gradient(135deg,rgba(200,80,120,0.3),rgba(180,60,100,0.2)); cursor:pointer; transition:all 0.3s; font-size:36px; text-align:center; vertical-align:top; }
 .bed-card:active { transform:scale(0.95); }
 .bed-card.revealed { background:rgba(255,245,230,0.9); border-color:rgba(200,160,80,0.3); font-size:12px; }
@@ -229,7 +221,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="btn-row-4">
       <button class="btn-next" id="next-month-btn" onclick="Game.nextMonth()">&#127769; &#36827;&#20837;&#19979;&#26376;</button>
       <button class="btn-banquet" onclick="Game.openBanquet()">&#20030;&#21150;&#23476;&#20250;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
-      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#26223;&#35831;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#35831;&#23433;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
       <button class="btn-bed" onclick="Game.openBed()">&#32763;&#29260;&#20365;&#23517;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
     </div>
   </div>
@@ -244,7 +236,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="btn-row-4">
       <button class="btn-next" onclick="Game.nextMonth()">&#127769; &#36827;&#20837;&#19979;&#26376;</button>
       <button class="btn-banquet" onclick="Game.openBanquet()">&#20030;&#21150;&#23476;&#20250;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
-      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#26223;&#35831;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#35831;&#23433;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
       <button class="btn-bed" onclick="Game.openBed()">&#32763;&#29260;&#20365;&#23517;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
     </div>
   </div>
@@ -252,7 +244,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 <div id="modal-treasury" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#24320;&#22269;&#22823;&#20856;</div><div class="modal-body" style="text-align:center;"><p style="color:#6b5a3a;margin-bottom:10px;">&#24320;&#22269;&#20043;&#21021;&#65292;&#22269;&#24211;&#36164;&#37329;&#30001;&#22825;&#24847;&#32780;&#23450;&#8230;&#8230;</p><div style="font-size:38px;color:#ffd700;margin:18px 0;text-shadow:0 0 12px rgba(255,215,0,0.25);" id="treasury-amount"></div><button class="btn-primary" onclick="Game.confirmTreasury()">&#27491;&#24335;&#30331;&#22522;</button></div></div></div>
 <div id="modal-draft" class="modal-overlay"><div class="modal" style="max-height:90vh;"><div class="modal-header">&#31168;&#22899;&#20837;&#36873;</div><div class="modal-body" style="max-height:75vh;overflow-y:auto;"><p style="color:#6b5a3a;text-align:center;margin-bottom:12px;font-size:13px;">&#31168;&#22899;&#20837;&#36873;&#65292;&#35831;&#38491;&#19979;&#28857;&#20987;&#36873;&#20004;&#65292;&#21487;&#22810;&#36873;&#25110;&#20063;&#21487;&#20840;&#37096;&#33829;&#36873;</p><div id="draft-content"></div></div><div style="display:flex;gap:10px;padding:0 0 16px;"><button class="btn-primary" style="flex:1;margin:0;" id="draft-confirm-btn" onclick="Game.confirmDraft()">&#30830;&#35748;&#20837;&#23475;</button><button class="btn-primary" style="flex:1;margin:0;border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.confirmDraftNone()">&#20840;&#37096;&#33829;&#36873;</button></div></div></div>
 <div id="modal-event" class="modal-overlay modal-center"><div class="modal" style="max-height:85vh;display:flex;flex-direction:column;"><div class="modal-header">&#21518;&#23467;&#39118;&#20113;</div><div id="event-content" style="flex:1;overflow-y:auto;padding:16px 18px 8px;"></div><div style="padding:8px 18px 16px;"><button class="btn-primary" id="event-confirm-btn" onclick="Game.confirmEventOption()" disabled>&#30830;&#35748;</button></div></div></div>
-<div id="modal-morning" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#27599;&#26085;&#26223;&#35831;</div><div class="modal-body" id="morning-content" style="max-height:70vh;overflow-y:auto;padding:0;"></div></div></div>
+<div id="modal-morning" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#27599;&#26085;&#35831;&#23433;</div><div class="modal-body" id="morning-content" style="max-height:75vh;overflow-y:auto;padding:0;"></div></div></div>
 <div id="modal-title" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#36176;&#23553;&#21495;</div><div class="modal-body" id="title-content"><p style="color:#a08060;text-align:center;font-size:13px;margin-bottom:12px;" id="title-hint"></p><div style="text-align:center;margin-bottom:16px;"><input type="text" id="title-input" class="input-field" placeholder="&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;&#65306;&#23425;" maxlength="2" style="max-width:200px;margin:0 auto;"></div><p style="color:#a08060;text-align:center;font-size:11px;margin-bottom:16px;" id="title-preview"></p><button class="btn-primary" onclick="Game.confirmTitle()">&#30830;&#35748;&#36176;&#23553;</button><button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeTitleModal()">&#21462;&#28040;</button></div></div></div>
 <div id="modal-rank-picker" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#35843;&#25972;&#20301;&#20221;</div><div class="modal-body" id="rank-picker-content"></div></div></div>
 <div id="modal-bed-select" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#32763;&#29260;&#20365;&#23517;</div><div class="modal-body" id="bed-select-content"></div></div></div>
@@ -700,38 +692,37 @@ const Game = (function() {
     if(state.concubines.length===0){showFeedback('后宫空无一人！');return;}
     if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
     if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
-    document.querySelector('#modal-morning .modal-header').textContent='每 日 晨 请';
+    document.querySelector('#modal-morning .modal-header').textContent='每 日 请 安';
+    consumeAction();
     renderMorningList();
     document.getElementById('modal-morning').classList.add('show');
-    consumeAction();
   }
 
   function renderMorningList(){
     const sorted=[...state.concubines].sort((a,b)=>b.favor-a.favor);
-    let html='<div style="padding:4px 8px;">';
+    let html='<div style="padding:8px;">';
     sorted.forEach(c=>{
       const greeting=getMorningGreeting(c);
       const hpColor=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
-      html+=`<div class="morning-greeting-item">
-        ${Portrait.generate(c.portraitSeed,36,45)}
+      const dispName=c.title?c.title+c.rank:c.name;
+      html+=`<div class="morning-row">
+        ${portraitSVG(c.portraitSeed,38,48)}
         <div class="morning-info">
-          <div class="morning-name">${c.title?c.title+c.rank:c.name} <span style="font-size:10px;color:#a08060;">${c.rank}</span>
-            <span style="float:right;font-size:11px;color:#c49030;">&#9829; ${c.favor}</span>
-          </div>
-          <div class="morning-greeting" style="font-size:12px;color:#6b5a3a;line-height:1.4;margin:3px 0;">${greeting.text}</div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#a08060;">
-            <span>健康 <b style="color:${hpColor}">${c.health}</b></span>
-            <span style="color:#d0c0b0;">|</span>
+          <div class="morning-name-row">${dispName}<span class="morning-rank">${c.rank}</span><span class="morning-favor">&#9829; ${c.favor}</span></div>
+          <div class="morning-greeting">"${greeting.text}"</div>
+          <div class="morning-stats-row">
+            <span style="color:${hpColor};">健康 ${c.health}</span>
+            <span class="stat-sep">·</span>
             <span style="color:${c.personality.color||'#9060c0'};">${c.personality.name}</span>
             <span style="flex:1;"></span>
-            <button class="btn-favor-adjust" onclick="Game.adjustFavorMorning('${c.id}',1)">+1</button>
-            <button class="btn-favor-adjust" onclick="Game.adjustFavorMorning('${c.id}',-1)">-1</button>
+            <button class="favor-btn" onclick="Game.adjustFavorMorning('${c.id}',1)">+</button>
+            <button class="favor-btn minus" onclick="Game.adjustFavorMorning('${c.id}',-1)">−</button>
           </div>
         </div>
       </div>`;
     });
     html+='</div>';
-    html+='<div style="text-align:center;padding:8px 0;"><button class="btn-primary" style="max-width:200px;margin:0 auto;font-size:13px;padding:10px 24px;" onclick="Game.closeMorning()">结束晨请</button></div>';
+    html+='<div style="text-align:center;padding:8px 0 12px;"><button class="btn-primary" style="max-width:180px;margin:0 auto;font-size:13px;padding:10px 24px;" onclick="Game.closeMorning()">结 束</button></div>';
     document.getElementById('morning-content').innerHTML=html;
   }
 
