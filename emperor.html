@@ -204,6 +204,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
       <p style="color:#6b5a3a;font-size:13px;margin-bottom:6px;">&#20026;&#24744;&#30340;&#29579;&#26397;&#23450;&#19979;&#22269;&#21495;</p>
       <input type="text" id="dynasty-input" class="input-field" placeholder="&#22914;&#65306;&#22823;&#21608;" maxlength="6">
       <button class="btn-primary" id="start-btn" onclick="Game.startNewGame()">&#24320;&#22269;&#30331;&#22522;</button>
+      <div id="debug-status" style="color:red;font-size:12px;margin-top:10px;"></div>
     </div>
   </div>
 </div>
@@ -1178,9 +1179,22 @@ const Game = (function() {
 })();
 
 // ===== 启动 =====
-window.addEventListener('load', function(){
-  Game.init();
-});
+(function(){
+  // Debug: verify Game is defined
+  var dbg = document.getElementById('debug-status');
+  if(dbg) dbg.innerHTML = 'Game type: ' + typeof Game;
+  if(typeof Game === 'undefined'){
+    if(dbg) dbg.innerHTML += ' | ERROR: Game not defined!';
+    return;
+  }
+  try{
+    Game.init();
+    if(dbg) dbg.innerHTML += ' | Init OK';
+  }catch(e){
+    if(dbg) dbg.innerHTML += ' | Init Error: ' + e.message;
+    alert('Game init error: ' + e.message);
+  }
+})();
 window.onerror = function(msg, url, line, col, err){
   alert('JS Error: '+msg+'\nLine: '+line);
   return false;
