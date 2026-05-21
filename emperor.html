@@ -1176,6 +1176,10 @@ const Game = (function() {
 window.addEventListener('load', function(){
   Game.init();
 });
+window.onerror = function(msg, url, line, col, err){
+  alert('JS Error: '+msg+'\nLine: '+line);
+  return false;
+};
 </script>
 </body>
 </html>
