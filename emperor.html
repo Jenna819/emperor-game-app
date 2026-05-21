@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>皇帝后宫养成</title>
 <style>
@@ -407,12 +410,14 @@ const Game = (function() {
   }
   function startNewGame(){
     const v=document.getElementById('dynasty-input').value.trim();
-    if(!v){alert('&#35831;&#36755;&#20837;&#22269;&#21495;&#65281;');return;}
+    if(!v){alert('请输入国号！');return;}
     // Clear old save data for fresh start
     try{localStorage.removeItem('emperor_game');}catch(e){}
     state.dynasty=v;state.treasury=rand(3000,8000);
-    document.getElementById('treasury-amount').textContent=state.treasury+' &#20004;';
-    document.getElementById('modal-treasury').classList.add('show');
+    document.getElementById('treasury-amount').textContent=state.treasury+' 两';
+    var modal=document.getElementById('modal-treasury');
+    if(!modal){alert('错误: 找不到modal元素');return;}
+    modal.classList.add('show');
   }
   function confirmTreasury(){
     // Reset all game state
