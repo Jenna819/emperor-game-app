@@ -470,6 +470,11 @@ const Game = (function() {
     if(births.length>0){setTimeout(()=>showBirthResult(births),300);}
   }
 
+  function showPregnancyAlert(name){
+    const el=document.getElementById('birth-content');
+    el.innerHTML=`<div class="birth-result"><div class="birth-icon">&#129324;</div><div style="font-size:18px;color:#d07090;margin:12px 0;">&#129324; ${name} 有喜了！</div><div style="font-size:13px;color:#8a7060;margin-bottom:16px;">太医确诊，妃嫔已有身孕，请皇上多加照拂。</div><button class="btn-primary" onclick="Game.closeBirth()">&#30830;&#35748;</button></div>`;
+    document.getElementById('modal-birth').classList.add('show');
+  }
   function showBirthResult(births){
     const el=document.getElementById('birth-content');
     let html='<div class="birth-result">';
@@ -529,10 +534,9 @@ const Game = (function() {
     if(!canAct())return;const c=findC(id);if(!c)return;
     if(state.treasury<200){showFeedback('&#22269;&#24211;&#38134;&#20004;&#19981;&#36275;&#65281;');return;}
     state.treasury-=200;c.favor=clamp(c.favor+15,0,100);c.health=clamp(c.health+5,0,100);
-    let pregMsg='';
-    if(!c.pregnant&&c.rank!=='&#30343;&#21518;'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;pregMsg='<br><span class="pos">&#129324; '+c.name+' &#26377;&#21916;&#20102;&#65281;</span>';}
+    if(!c.pregnant&&c.rank!=='&#30343;&#21518;'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;setTimeout(()=>showPregnancyAlert(c.name),500);}
     consumeAction();save();updateUI();
-    showFeedback('&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>'+pregMsg);
+    showFeedback('&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>');
     showDetail(id);
   }
 
@@ -1179,7 +1183,7 @@ const Game = (function() {
   // ===== 导出 =====
   function closeBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;}
   function confirmBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;save();updateUI();}
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,showPregnancyAlert,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet};
 })();
 
 // ===== 启动 =====
