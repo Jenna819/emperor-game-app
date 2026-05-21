@@ -1125,16 +1125,22 @@ const Game = (function() {
   function showPregnantList(){
     const preg=state.concubines.filter(c=>c.pregnant);
     if(preg.length===0){showFeedback('目前没有妃嫔怀孕！');return;}
-    let html='<div style="padding:8px 0;">';
-    html+='<div style="text-align:center;font-size:14px;color:#d07090;margin-bottom:16px;">&#129324; 有喜妃嫔</div>';
+    let html='<div style="padding:8px;">';
+    html+='<div style="text-align:center;font-size:14px;color:#d07090;margin-bottom:12px;">&#129324; 有喜妃嫔</div>';
     preg.forEach(c=>{
-      html+=`<div class="morning-greeting-item">
-        ${Portrait.generate(c.portraitSeed,50,63)}
+      const hpColor=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      html+=`<div class="morning-row">
+        ${portraitSVG(c.portraitSeed,38,48)}
         <div class="morning-info">
-          <div class="morning-name">${c.title?c.title+c.rank:c.name} <span style="font-size:11px;color:#a08060;">${c.rank}</span></div>
-          <div class="morning-favor" style="color:#e06080;font-size:13px;">&#129324; 怀孕 ${c.pregMonth}个月</div>
-          <div style="font-size:11px;color:#a08060;">健康 ${c.health} | 宠爱 ${c.favor}</div>
-          <div style="font-size:11px;color:#a08060;">预产：${c.pregMonth>=10?'随时可能分娩':'还剩 '+(10-c.pregMonth)+' 个月'}</div>
+          <div class="morning-name-row">${c.title?c.title+c.rank:c.name}<span class="morning-rank">${c.rank}</span></div>
+          <div class="morning-greeting" style="color:#e06080;">&#129324; 怀孕 ${c.pregMonth}个月</div>
+          <div class="morning-stats-row">
+            <span style="color:${hpColor};">健康 ${c.health}</span>
+            <span class="stat-sep">·</span>
+            <span>宠爱 ${c.favor}</span>
+            <span class="stat-sep">·</span>
+            <span>预产：还剩 ${Math.max(0,10-c.pregMonth)}个月</span>
+          </div>
         </div>
       </div>`;
     });
