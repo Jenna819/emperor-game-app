@@ -415,13 +415,18 @@ const Game = (function() {
   function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');if(name==='main')updateUI();}
 
   function initStart(){
+    if(load()&&state.dynasty&&state.concubines){
+      processBannedDecay();
+      save();
+      showPage('main');
+      updateUI();
+      return;
+    }
     showPage('start');
   }
   function startNewGame(){
     const v=document.getElementById('dynasty-input').value.trim();
     if(!v){alert('请输入国号！');return;}
-    // Clear old save data for fresh start
-    try{localStorage.removeItem('emperor_game');}catch(e){}
     state.dynasty=v;state.treasury=rand(3000,8000);
     document.getElementById('treasury-amount').textContent=state.treasury+' 两';
     var modal=document.getElementById('modal-treasury');
