@@ -1146,7 +1146,7 @@ const Game = (function() {
 
   // ===== 反馈弹窗 =====
   function showFeedback(html){
-    document.getElementById('feedback-text').innerHTML=html;
+    document.getElementById('feedback-content').innerHTML=html;
     document.getElementById('modal-feedback').classList.add('show');
     setTimeout(()=>{document.getElementById('modal-feedback').classList.remove('show');},2500);
   }
