@@ -739,37 +739,43 @@ const Game = (function() {
     if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
     if(state.treasury<800){showFeedback('国库不足800两，无法举办宴会！');return;}
     if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
+    state._banquetSelected=null;
     let html='<div style="text-align:center;padding:4px 0;">';
     html+='<p style="color:#a08060;font-size:13px;margin-bottom:12px;">选择宴会表演内容</p>';
-    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;">';
-    Object.keys(BANQUET_PROGRAMS).forEach(prog=>{
+    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;" id="banquet-prog-list">';
+    Object.keys(BANQUET_PROGRAMS).forEach((prog,idx)=>{
       const p=BANQUET_PROGRAMS[prog];
-      html+=`<button class="btn-banquet" onclick="Game.showBanquetModal('${prog}')">${prog}<br><span style="font-size:11px;opacity:0.7;">${p.desc}</span></button>`;
+      html+=`<button class="btn-banquet" id="banquet-prog-${idx}" onclick="Game.selectBanquetProg('${prog}',${idx})" style="opacity:0.6;border-color:rgba(200,120,60,0.2);">${prog}<br><span style="font-size:11px;opacity:0.7;">${p.desc}</span></button>`;
     });
     html+='</div></div>';
-    html+='<button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeBanquet()">取 消</button>';
+    html+='<button class="btn-primary" style="margin:0;opacity:0.5;" id="banquet-submit-btn" onclick="Game.submitBanquet()" disabled>提 交</button>';
     document.getElementById('banquet-content').innerHTML=html;
     document.getElementById('modal-banquet').classList.add('show');
   }
 
-  function calcBanquetScore(c, prog){
-    const p=BANQUET_PROGRAMS[prog];
-    let score=p.base;
-    // Bonus from talent or wisdom
-    const bonusVal=p.bonus==='talent'?c.talent:c.wisdom;
-    score+=bonusVal*p.bonusWeight;
-    // Trait match bonus
-    let traitMatch=false;
-    p.traits.forEach(t=>{
-      if(c.trait&&c.trait.indexOf(t)>=0)traitMatch=true;
+  function selectBanquetProg(prog,idx){
+    state._banquetSelected=prog;
+    // Highlight selected
+    Object.keys(BANQUET_PROGRAMS).forEach((p,i)=>{
+      const el=document.getElementById('banquet-prog-'+i);
+      if(!el)return;
+      if(i===idx){
+        el.style.opacity='1';
+        el.style.borderColor='rgba(200,120,60,0.6)';
+        el.style.background='linear-gradient(180deg,rgba(200,120,60,0.35),rgba(180,100,40,0.35))';
+      } else {
+        el.style.opacity='0.6';
+        el.style.borderColor='rgba(200,120,60,0.2)';
+        el.style.background='linear-gradient(180deg,rgba(200,120,60,0.25),rgba(180,100,40,0.25))';
+      }
     });
-    if(traitMatch)score+=15;
-    // Small random factor
-    score+=rand(-5,5);
-    return Math.round(Math.max(20,score));
+    const btn=document.getElementById('banquet-submit-btn');
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
   }
 
-  function showBanquetModal(prog){
+  function submitBanquet(){
+    const prog=state._banquetSelected;
+    if(!prog)return;
     if(state.treasury<800){showFeedback('国库不足800两！');return;}
     state.treasury-=800;
     state.actionsLeft--;
@@ -784,9 +790,10 @@ const Game = (function() {
     results.sort((a,b)=>b.score-a.score);
     const champion=results[0];
     const oldRank=champion.concubine.rank;
+    let promoted=false;
     if(champion.concubine.rank!=='皇后'){
       const newR=ru(champion.concubine.rank);
-      if(newR!==champion.concubine.rank) champion.concubine.rank=newR;
+      if(newR!==champion.concubine.rank){champion.concubine.rank=newR;promoted=true;}
     }
     champion.concubine.favor=clamp(champion.concubine.favor+15,0,100);
     logEvent('宴会',`${champion.concubine.name}表演${champion.prog}，得分${champion.score}，获魁`);
@@ -801,7 +808,7 @@ const Game = (function() {
       const medal=i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':`<span style="color:#b0a090;font-size:13px;">#${i+1}</span>`;
       const bg=isChampion?'rgba(200,160,80,0.15)':'rgba(255,245,230,0.4)';
       const borderColor=isChampion?'rgba(200,160,80,0.4)':'rgba(200,160,80,0.1)';
-      const promoteNote=isChampion&&r.concubine.rank!==oldRank?`<span style="color:#4a9a5a;font-size:11px;"> ${oldRank}→${r.concubine.rank}</span>`:'';
+      const promoteNote=isChampion&&promoted?`<span style="color:#4a9a5a;font-size:11px;"> ${oldRank}→${r.concubine.rank}</span>`:'';
       const favorNote=isChampion?`<span style="color:#c49030;font-size:11px;"> +15宠爱</span>`:'';
       const traitNote=r.traitMatch?'<span style="color:#e89060;font-size:10px;"> 擅长</span>':'';
       const scoreColor=isChampion?'#c49030':r.score>=80?'#4a9a5a':r.score>=60?'#8a7060':'#b0a090';
@@ -815,17 +822,27 @@ const Game = (function() {
       </div>`;
     });
     html+='</div></div>';
-    html+='<button class="btn-primary" onclick="Game.confirmBanquet()">宴散回宫</button>';
+    html+='<button class="btn-primary" style="margin:0;" onclick="Game.confirmBanquet()">确 认</button>';
     document.getElementById('banquet-content').innerHTML=html;
     // Trigger palace event for remaining actions
     setTimeout(()=>triggerPalaceEvent(),500);
   }
 
-  function confirmBanquet(){
-    document.getElementById('modal-banquet').classList.remove('show');
+  function calcBanquetScore(c, prog){
+    const p=BANQUET_PROGRAMS[prog];
+    let score=p.base;
+    const bonusVal=p.bonus==='talent'?c.talent:c.wisdom;
+    score+=bonusVal*p.bonusWeight;
+    let traitMatch=false;
+    p.traits.forEach(t=>{
+      if(c.trait&&c.trait.indexOf(t)>=0)traitMatch=true;
+    });
+    if(traitMatch)score+=15;
+    score+=rand(-5,5);
+    return Math.round(Math.max(20,score));
   }
 
-  function closeBanquet(){
+  function confirmBanquet(){
     document.getElementById('modal-banquet').classList.remove('show');
   }
 
