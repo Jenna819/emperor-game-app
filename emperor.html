@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>皇帝后宫养成</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { font-family: "STKaiti","KaiTi","楷体","SimSun","宋体",serif; background:#f5ebe0; color:#5a3e28; font-size:14px; line-height:1.5; }
+body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; background:radial-gradient(ellipse at 25% 15%,rgba(255,200,50,0.12) 0%,transparent 55%),radial-gradient(ellipse at 75% 85%,rgba(255,120,80,0.08) 0%,transparent 55%),linear-gradient(180deg,#fff8f0 0%,#f5ebe0 40%,#fce8d5 100%); z-index:-1; }
+.scroll-container { overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; height:100vh; padding-bottom:80px; }
+.scroll-container::-webkit-scrollbar { width:2px; }
+.scroll-container::-webkit-scrollbar-thumb { background:rgba(200,160,80,0.4); border-radius:2px; }
+.page { display:none; min-height:100vh; } .page.active { display:block; }
+.status-bar { position:sticky; top:0; z-index:100; background:linear-gradient(180deg,#fff5e6 0%,rgba(255,245,230,0.98) 95%); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:0; border-bottom:1px solid rgba(200,160,80,0.25); }
+.dynasty-row { text-align:center; padding:14px 16px 8px; }
+.dynasty-name { font-size:22px; font-weight:bold; color:#c49030; text-shadow:0 0 20px rgba(200,160,80,0.3),0 2px 6px rgba(0,0,0,0.08); letter-spacing:6px; }
+.info-row { display:flex; justify-content:space-around; padding:0 16px 6px; }
+.info-item { text-align:center; flex:1; }
+.info-label { font-size:10px; color:#8a7060; letter-spacing:1px; }
+.info-value { font-size:15px; color:#c49030; font-weight:bold; }
+.info-value.gold { color:#d48030; }
+.action-row { display:flex; align-items:center; justify-content:center; padding:6px 16px 10px; gap:5px; border-top:1px solid rgba(200,160,80,0.2); }
+.action-label { font-size:10px; color:#8a7060; margin-right:6px; }
+.action-pips { display:flex; gap:4px; }
+.action-pip { width:20px; height:5px; border-radius:3px; background:#ffd700; box-shadow:0 0 4px rgba(255,215,0,0.2); transition:all 0.3s; }
+.action-pip.used { background:#d4b896; box-shadow:none; }
+.palace-alert { margin:10px 14px; background:linear-gradient(135deg,rgba(255,80,60,0.15),rgba(255,120,80,0.15)); border:1px solid rgba(200,160,80,0.4); border-radius:10px; padding:12px; text-align:center; cursor:pointer; animation:alertPulse 2s ease-in-out infinite; }
+@keyframes alertPulse { 0%,100%{border-color:rgba(200,160,80,0.25);box-shadow:0 0 8px rgba(255,180,80,0.1);} 50%{border-color:rgba(255,150,60,0.5);box-shadow:0 0 15px rgba(255,150,60,0.15);} }
+.alert-icon { font-size:18px; margin-bottom:2px; }
+.alert-text { color:#c49030; font-size:14px; font-weight:bold; }
+.alert-sub { color:#8a7060; font-size:11px; }
+.pregnancy-alert { margin:10px 14px; background:linear-gradient(135deg,rgba(255,120,150,0.15),rgba(255,150,180,0.15)); border:1px solid rgba(255,120,150,0.4); border-radius:10px; padding:12px; text-align:center; cursor:pointer; animation:pregPulse 2s ease-in-out infinite; }
+@keyframes pregPulse { 0%,100%{border-color:rgba(255,120,150,0.3);box-shadow:0 0 8px rgba(255,120,150,0.1);} 50%{border-color:rgba(255,120,150,0.6);box-shadow:0 0 15px rgba(255,120,150,0.2);} }
+.concubine-list { padding:6px 14px; }
+.concubine-card { display:flex; align-items:center; background:linear-gradient(135deg,rgba(255,250,240,0.95),rgba(255,240,225,0.95)); border:1px solid rgba(200,160,80,0.3); border-radius:14px; margin-bottom:10px; cursor:pointer; overflow:hidden; transition:all 0.2s; }
+.concubine-card:active { transform:scale(0.985); border-color:rgba(200,160,80,0.5); }
+.portrait-frame { width:80px; height:100px; flex-shrink:0; position:relative; overflow:hidden; background:linear-gradient(180deg,#fce0d0,#f5d0b8); }
+.concubine-info { flex:1; padding:12px 14px 12px 12px; min-width:0; }
+.concubine-name { font-size:16px; color:#c49030; font-weight:bold; margin-bottom:3px; display:flex; align-items:center; gap:6px; }
+.concubine-rank { font-size:11px; font-weight:normal; }
+.concubine-stats { display:flex; gap:10px; flex-wrap:wrap; }
+.concubine-stats span { font-size:11px; color:#8a7060; white-space:nowrap; }
+.concubine-stats b { color:#c49030; font-weight:normal; }
+.rank-queen { color:#c49030; } .rank-imperial { color:#d48030; } .rank-noble { color:#c49030; } .rank-low { color:#9a8a7a; }
+.badge { display:inline-block; padding:1px 5px; border-radius:3px; font-size:9px; }
+.badge-banned { background:rgba(200,140,80,0.25); color:#a07040; }
+.badge-cold { background:rgba(150,150,160,0.2); color:#7a7a8a; }
+.badge-pregnant { background:rgba(255,150,180,0.25); color:#e06080; }
+.badge-pregnant-month { font-size:9px; color:#d07090; margin-left:2px; }
+.empty-state { text-align:center; padding:50px 20px; color:#b0a090; }
+.empty-icon { font-size:48px; margin-bottom:10px; opacity:0.4; }
+.empty-text { font-size:14px; color:#8a7060; }
+.empty-hint { font-size:11px; color:#c0b0a0; margin-top:4px; }
+.bottom-bar { position:fixed; bottom:0; left:0; right:0; z-index:100; background:linear-gradient(0deg,#fff5e6 0%,rgba(255,245,230,0.98) 100%); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-top:1px solid rgba(200,160,80,0.25); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
+.btn-next { display:block; width:100%; padding:14px; border:1px solid rgba(80,180,100,0.4); border-radius:12px; background:linear-gradient(180deg,rgba(80,180,100,0.3),rgba(60,160,80,0.3)); color:#4a9a5a; font-size:17px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; letter-spacing:3px; transition:all 0.2s; }
+.btn-next:active { transform:scale(0.97); }
+.btn-next.urgent { border-color:rgba(255,150,60,0.6); color:#d49020; animation:glow 2s ease-in-out infinite; }
+@keyframes glow { 0%,100%{box-shadow:0 0 8px rgba(255,180,80,0.12);} 50%{box-shadow:0 0 18px rgba(255,150,60,0.2);} }
+.btn-row-4 { display:flex; gap:5px; } .btn-row-4 button { flex:1; }
+.btn-banquet { display:block; width:100%; padding:13px; border:1px solid rgba(200,120,60,0.4); border-radius:12px; background:linear-gradient(180deg,rgba(200,120,60,0.25),rgba(180,100,40,0.25)); color:#b87030; font-size:15px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; letter-spacing:2px; transition:all 0.2s; }
+.btn-banquet:active { transform:scale(0.97); }
+.btn-morning { display:block; width:100%; padding:13px; border:1px solid rgba(160,100,200,0.4); border-radius:12px; background:linear-gradient(180deg,rgba(160,100,200,0.25),rgba(140,80,180,0.25)); color:#9060c0; font-size:15px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; letter-spacing:2px; transition:all 0.2s; }
+.btn-morning:active { transform:scale(0.97); }
+.btn-bed { display:block; width:100%; padding:13px; border:1px solid rgba(200,80,120,0.4); border-radius:12px; background:linear-gradient(180deg,rgba(200,80,120,0.25),rgba(180,60,100,0.25)); color:#c04070; font-size:14px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; letter-spacing:2px; transition:all 0.2s; }
+.btn-bed:active { transform:scale(0.97); }
+.cold-palace-btn { position:fixed; bottom:80px; right:14px; z-index:101; display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:all 0.2s; }
+.cold-palace-btn:active { transform:scale(0.9); }
+.cold-house { width:44px; height:44px; border-radius:8px; border:1px solid rgba(200,160,80,0.35); background:linear-gradient(135deg,#fff8f0,#fce0d0); color:#8a7060; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,0,0,0.1); font-size:22px; position:relative; }
+.cold-house .fab-badge { position:absolute; top:-6px; right:-6px; min-width:16px; height:16px; border-radius:8px; background:#e55555; color:#fff; font-size:10px; font-weight:bold; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+.cold-label { font-size:11px; color:#8a7060; margin-top:3px; letter-spacing:1px; }
+.fab-badge { position:absolute; top:-3px; right:-3px; min-width:16px; height:16px; border-radius:8px; background:#d44040; color:#c49030; font-size:10px; display:flex; align-items:center; justify-content:center; padding:0 3px; font-weight:bold; }
+.back-btn { display:inline-flex; align-items:center; padding:8px 14px; margin:10px 14px; border:1px solid rgba(200,160,80,0.3); border-radius:8px; background:rgba(255,240,220,0.9); color:#9a8070; font-size:13px; font-family:inherit; cursor:pointer; }
+.back-btn:active { background:rgba(240,220,200,0.9); }
+.detail-header { text-align:center; padding:24px 20px 16px; background:linear-gradient(180deg,rgba(255,245,230,0.98),rgba(255,240,220,0.95)); border-bottom:1px solid rgba(200,160,80,0.25); }
+.detail-portrait-wrap { width:140px; height:175px; margin:0 auto 14px; border-radius:14px; overflow:hidden; border:2px solid rgba(200,160,80,0.35); box-shadow:0 0 25px rgba(200,160,80,0.15); background:linear-gradient(180deg,#fce0d0,#f5d0b8); }
+.detail-portrait-wrap svg { width:100%; height:100%; }
+.detail-name { font-size:22px; color:#c49030; margin-bottom:4px; letter-spacing:3px; }
+.detail-rank { font-size:14px; }
+.stats-card { margin:12px 14px; background:linear-gradient(135deg,rgba(255,250,240,0.95),rgba(255,240,225,0.95)); border:1px solid rgba(200,160,80,0.25); border-radius:12px; padding:14px; }
+.stats-title { text-align:center; font-size:12px; color:#8a7060; margin-bottom:10px; letter-spacing:4px; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid rgba(200,160,80,0.15); }
+.stat-row:last-child { border-bottom:none; }
+.stat-label { color:#8a7060; font-size:13px; }
+.stat-value { color:#c49030; font-size:13px; }
+.action-card { margin:12px 14px; padding:12px 0; }
+.btn-action { display:block; width:calc(100% - 28px); margin:6px 14px; padding:13px 16px; border:1px solid rgba(200,160,80,0.3); border-radius:10px; background:linear-gradient(135deg,rgba(255,250,240,0.8),rgba(255,240,225,0.8)); color:#5a3e28; font-size:13px; font-family:inherit; text-align:center; cursor:pointer; transition:all 0.2s; line-height:1.5; }
+.btn-action:active { transform:scale(0.98); background:rgba(240,220,200,0.9); }
+.btn-action:disabled { opacity:0.3; pointer-events:none; }
+.btn-action.primary { border-color:rgba(80,180,100,0.4); }
+.btn-action.danger { border-color:rgba(200,60,60,0.4); color:#c04040; }
+.btn-cost { color:#8a7060; font-size:11px; }
+.modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal-overlay.modal-center { align-items:center; padding:20px; }
+.modal { background:linear-gradient(180deg,#fff8f0,#fce0d0); border-top:1px solid rgba(200,160,80,0.4); border-radius:18px 18px 0 0; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; }
+.modal-center .modal { border-radius:14px; border:1px solid rgba(200,160,80,0.35); }
+.modal-header { text-align:center; padding:16px 20px 12px; border-bottom:1px solid rgba(200,160,80,0.25); font-size:17px; color:#c49030; font-weight:bold; letter-spacing:3px; }
+.modal-body { padding:16px 18px 28px; }
+.btn-primary { display:block; width:100%; padding:14px; border:1px solid rgba(200,160,80,0.4); border-radius:10px; background:linear-gradient(180deg,rgba(200,160,80,0.3),rgba(180,140,60,0.3)); color:#c49030; font-size:16px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; margin-top:12px; letter-spacing:3px; transition:all 0.2s; }
+.btn-primary:active { transform:scale(0.97); }
+.btn-primary:disabled { opacity:0.3; pointer-events:none; }
+.start-page { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:30px; }
+.start-logo { font-size:56px; margin-bottom:14px; filter:drop-shadow(0 0 15px rgba(200,160,80,0.4)); }
+.start-title { font-size:30px; color:#c49030; margin-bottom:6px; text-shadow:0 0 20px rgba(200,160,80,0.3),0 2px 6px rgba(0,0,0,0.08); letter-spacing:8px; }
+.start-sub { color:#8a7060; font-size:13px; margin-bottom:36px; letter-spacing:3px; }
+.start-form { width:100%; max-width:300px; }
+.input-field { width:100%; padding:14px; border:1px solid rgba(200,160,80,0.35); border-radius:10px; background:rgba(255,240,220,0.9); color:#c49030; font-size:18px; font-family:inherit; text-align:center; margin:10px 0; letter-spacing:4px; }
+.input-field:focus { outline:none; border-color:#c49030; box-shadow:0 0 10px rgba(255,215,0,0.1); }
+.input-field::placeholder { color:#c0b0a0; letter-spacing:2px; }
+#title-input { width:200px !important; padding:14px !important; border:1px solid rgba(200,160,80,0.4) !important; border-radius:10px !important; background:rgba(255,240,220,0.9) !important; color:#c49030 !important; font-size:24px !important; font-family:inherit !important; text-align:center !important; letter-spacing:8px !important; }
+#title-input:focus { outline:none; border-color:#c49030 !important; box-shadow:0 0 10px rgba(200,160,80,0.2) !important; }
+#title-input::placeholder { color:#c0b0a0 !important; letter-spacing:2px !important; font-size:14px !important; }
+.draft-candidates { display:flex; flex-direction:column; gap:12px; }
+.draft-card { display:flex; align-items:center; padding:12px; background:rgba(255,245,230,0.8); border:1px solid rgba(200,160,80,0.25); border-radius:12px; cursor:pointer; transition:all 0.2s; }
+.draft-card:active { border-color:rgba(200,160,80,0.5); }
+.draft-card.selected { border-color:#c49030; background:rgba(240,220,200,0.9); box-shadow:0 0 12px rgba(200,160,80,0.2); }
+.draft-portrait { width:70px; height:88px; flex-shrink:0; border-radius:10px; overflow:hidden; border:1px solid rgba(200,160,80,0.35); background:linear-gradient(180deg,#fce0d0,#f5d0b8); }
+.draft-portrait svg { width:100%; height:100%; }
+.draft-info { flex:1; padding-left:12px; min-width:0; }
+.draft-name { font-size:15px; color:#c49030; font-weight:bold; margin-bottom:3px; }
+.draft-traits { font-size:11px; color:#9a8070; line-height:1.5; }
+.draft-countdown { font-size:11px; color:#a08060; text-align:right; margin-top:2px; }
+.draft-countdown b { color:#c49030; }
+.event-card { background:repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(200,160,80,0.06) 20px,rgba(200,160,80,0.06) 21px),linear-gradient(135deg,rgba(255,245,230,0.8),rgba(255,240,220,0.8)); border:1px solid rgba(200,160,80,0.3); border-radius:12px; padding:14px; margin-bottom:14px; }
+.event-title { font-size:17px; color:#d48030; text-align:center; margin-bottom:10px; }
+.event-desc { font-size:13px; color:#8a7060; line-height:1.7; margin-bottom:16px; text-align:justify; }
+.event-option { display:block; width:100%; padding:12px 14px; margin:8px 0; border:1px solid rgba(200,160,80,0.25); border-radius:10px; background:rgba(255,245,230,0.7); color:#5a3e28; font-size:13px; font-family:inherit; text-align:left; cursor:pointer; min-height:44px; line-height:1.5; }
+.event-option:active { background:rgba(240,220,200,0.8); border-color:rgba(200,160,80,0.4); }
+.feedback-text { font-size:13px; color:#8a7060; line-height:1.7; padding:12px; background:rgba(0,0,0,0.05); border-radius:8px; margin-bottom:14px; }
+.feedback-text .pos { color:#2a8a4a; } .feedback-text .neg { color:#c04040; } .feedback-text .neu { color:#c49030; }
+.cold-card { display:flex; align-items:center; padding:12px; background:rgba(230,230,235,0.4); border:1px solid rgba(180,180,190,0.2); border-radius:12px; margin-bottom:10px; opacity:0.75; }
+.event-log-item { padding:10px 12px; margin-bottom:6px; background:rgba(255,245,230,0.6); border-left:2px solid rgba(200,160,80,0.3); border-radius:0 8px 8px 0; font-size:12px; }
+.event-log-item .log-time { color:#b0a090; font-size:10px; }
+.event-log-item .log-title { color:#d48030; font-weight:bold; margin:2px 0; }
+.event-log-item .log-result { color:#a09080; line-height:1.5; }
+.banquet-stage { text-align:center; padding:8px 0; }
+.banquet-stage-title { font-size:14px; color:#a08060; margin-bottom:10px; letter-spacing:3px; }
+.banquet-performer { display:flex; align-items:center; justify-content:center; gap:14px; padding:14px; background:rgba(255,240,220,0.6); border:1px solid rgba(200,160,80,0.2); border-radius:12px; margin-bottom:12px; }
+.banquet-score { font-size:36px; font-weight:bold; color:#d49030; text-shadow:0 0 15px rgba(200,160,80,0.3); margin:16px 0 6px; }
+.banquet-score-label { font-size:11px; color:#a08060; letter-spacing:2px; }
+.banquet-rank-item { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin:6px 0; border-radius:10px; font-size:13px; }
+.banquet-rank-item.first { background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,200,80,0.15)); border:1px solid rgba(255,215,0,0.3); }
+.banquet-rank-item.other { background:rgba(255,245,230,0.6); border:1px solid rgba(200,160,80,0.15); }
+.banquet-rank-pos { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; margin-right:10px; }
+.banquet-rank-pos.gold { background:#ffd700; color:#fff; } .banquet-rank-pos.silver { background:#c0c0c0; color:#fff; } .banquet-rank-pos.bronze { background:#cd7f32; color:#fff; } .banquet-rank-pos.normal { background:#d4b896; color:#5a3e28; }
+.banquet-info { flex:1; text-align:left; }
+.banquet-name { font-weight:bold; color:#5a3e28; }
+.banquet-trait { font-size:11px; color:#a08060; }
+.banquet-score-small { font-weight:bold; color:#d49030; font-size:15px; }
+.banquet-promote { margin-top:14px; padding:10px 16px; background:rgba(80,180,100,0.15); border:1px solid rgba(80,180,100,0.3); border-radius:10px; color:#4a9a5a; font-size:13px; text-align:center; }
+.banquet-desc { font-size:12px; color:#8a7060; line-height:1.6; padding:8px 0; }
+.morning-greeting-item { display:flex; align-items:flex-start; padding:10px; margin:4px 0; background:rgba(255,245,230,0.6); border:1px solid rgba(200,160,80,0.12); border-radius:10px; }
+.morning-greeting-item > div:first-child { flex-shrink:0; }
+.morning-info { flex:1; padding-left:10px; min-width:0; }
+.morning-name { font-size:13px; color:#c49030; font-weight:bold; }
+.morning-greeting { font-size:12px; color:#6b5a3a; line-height:1.4; margin:3px 0; }
+.btn-favor-adjust { padding:3px 10px; border-radius:6px; border:1px solid rgba(200,160,80,0.3); background:rgba(255,245,230,0.8); color:#c49030; font-size:12px; cursor:pointer; font-family:inherit; font-weight:bold; }
+.btn-favor-adjust:active { transform:scale(0.95); }
+.morning-portrait { width:50px; height:63px; flex-shrink:0; border-radius:8px; overflow:hidden; border:1px solid rgba(200,160,80,0.3); background:linear-gradient(180deg,#fce0d0,#f5d0b8); }
+.morning-portrait svg { width:100%; height:100%; }
+.morning-info { flex:1; margin-left:10px; min-width:0; }
+.morning-name { font-size:14px; font-weight:bold; color:#c49030; margin-bottom:2px; }
+.morning-personality { font-size:10px; color:#9060c0; margin-bottom:4px; }
+.morning-greeting { font-size:12px; color:#5a3e28; line-height:1.5; margin-bottom:6px; font-style:italic; }
+.morning-favor { font-size:11px; color:#2a8a4a; margin-bottom:4px; }
+.morning-favor-btns { display:flex; gap:6px; align-items:center; }
+.morning-favor-btn { width:26px; height:26px; border-radius:50%; border:1px solid rgba(200,160,80,0.3); background:rgba(255,245,230,0.9); color:#5a3e28; font-size:16px; font-weight:bold; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:inherit; transition:all 0.15s; }
+.morning-favor-btn:active { transform:scale(0.9); }
+.morning-favor-btn.plus { border-color:rgba(80,180,100,0.4); color:#2a8a4a; }
+.morning-favor-btn.minus { border-color:rgba(200,60,60,0.3); color:#c04040; }
+.morning-favor-current { font-size:12px; color:#c49030; min-width:50px; text-align:center; }
+.bed-card { display:inline-flex; align-items:center; justify-content:center; width:90px; height:120px; margin:8px; border:2px solid rgba(200,160,80,0.4); border-radius:12px; background:linear-gradient(135deg,rgba(200,80,120,0.3),rgba(180,60,100,0.2)); cursor:pointer; transition:all 0.3s; font-size:36px; text-align:center; vertical-align:top; }
+.bed-card:active { transform:scale(0.95); }
+.bed-card.revealed { background:rgba(255,245,230,0.9); border-color:rgba(200,160,80,0.3); font-size:12px; }
+.bed-dialogue { padding:16px; background:rgba(255,245,230,0.6); border-radius:12px; margin:12px 0; border:1px solid rgba(200,160,80,0.2); }
+.bed-dialogue-line { margin:10px 0; line-height:1.6; }
+.bed-dialogue-emp { color:#c49030; font-weight:bold; }
+.bed-dialogue-con { color:#c04070; font-style:italic; }
+.bed-satisfy-btns { display:flex; gap:12px; justify-content:center; margin-top:16px; }
+.bed-satisfy-btn { padding:14px 28px; border-radius:12px; font-size:16px; font-family:inherit; font-weight:bold; cursor:pointer; transition:all 0.2s; }
+.bed-satisfy-btn:active { transform:scale(0.95); }
+.bed-satisfy-btn.yes { border:1px solid rgba(80,180,100,0.4); background:linear-gradient(180deg,rgba(80,180,100,0.3),rgba(60,160,80,0.3)); color:#4a9a5a; }
+.bed-satisfy-btn.no { border:1px solid rgba(200,60,60,0.4); background:linear-gradient(180deg,rgba(200,60,60,0.2),rgba(180,40,40,0.2)); color:#c04040; }
+.birth-result { text-align:center; padding:20px; }
+.birth-icon { font-size:48px; margin-bottom:10px; }
+.baby-type { font-size:24px; font-weight:bold; color:#c49030; margin:10px 0; }
+.baby-info { font-size:14px; color:#8a7060; line-height:1.8; }
+.baby-promote { margin-top:14px; padding:10px 16px; background:rgba(80,180,100,0.15); border:1px solid rgba(80,180,100,0.3); border-radius:10px; color:#4a9a5a; font-size:13px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="scroll-container">
+<div id="page-start" class="page active">
+  <div class="start-page">
+    <div class="start-logo">&#127963;</div>
+    <div class="start-title">&#30343;&#24093;&#21518;&#23467;</div>
+    <div class="start-sub">&#20859;&#25104;&#25991;&#23383;&#28216;&#25103;</div>
+    <div class="start-form">
+      <p style="color:#6b5a3a;font-size:13px;margin-bottom:6px;">&#20026;&#24744;&#30340;&#29579;&#26397;&#23450;&#19979;&#22269;&#21495;</p>
+      <input type="text" id="dynasty-input" class="input-field" placeholder="&#22914;&#65306;&#22823;&#21608;" maxlength="6">
+      <button class="btn-primary" id="start-btn">&#24320;&#22269;&#30331;&#22522;</button>
+    </div>
+  </div>
+</div>
+<div id="page-main" class="page">
+  <div class="status-bar">
+    <div class="dynasty-row"><div class="dynasty-name" id="main-dynasty"></div></div>
+    <div class="info-row">
+      <div class="info-item"><div class="info-label">&#24180;&#21495;</div><div class="info-value" id="main-year"></div></div>
+      <div class="info-item"><div class="info-label">&#26376;&#20221;</div><div class="info-value" id="main-month"></div></div>
+      <div class="info-item"><div class="info-label">&#22269;&#24211;&#38134;&#20004;</div><div class="info-value gold" id="main-treasury"></div></div>
+    </div>
+    <div class="action-row"><span class="action-label">&#34892;&#21160;</span><div class="action-pips" id="main-actions"></div><div id="draft-countdown" class="draft-countdown"></div></div>
+  </div>
+  <div id="pregnancy-alert" class="pregnancy-alert" style="display:none;" onclick="Game.showPregnantList()">
+    <div class="alert-icon">&#129324;</div><div class="alert-text">&#21518;&#23467;&#26377;&#21916;</div><div class="alert-sub">&#28857;&#20987;&#26597;&#30475;</div>
+  </div>
+  <div id="palace-alert" class="palace-alert" style="display:none;" onclick="Game.openPendingEvent()">
+    <div class="alert-icon">&#9876;</div><div class="alert-text">&#21518;&#23467;&#26377;&#24322;&#21160;</div><div class="alert-sub">&#28857;&#20987;&#36895;&#21435;&#22788;&#29702;</div>
+  </div>
+  <div id="main-concubine-list" class="concubine-list"></div>
+  <div class="bottom-bar">
+    <div class="btn-row-4">
+      <button class="btn-next" id="next-month-btn" onclick="Game.nextMonth()">&#127769; &#36827;&#20837;&#19979;&#26376;</button>
+      <button class="btn-banquet" onclick="Game.openBanquet()">&#20030;&#21150;&#23476;&#20250;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#26223;&#35831;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-bed" onclick="Game.openBed()">&#32763;&#29260;&#20365;&#23517;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+    </div>
+  </div>
+  <div class="cold-palace-btn" id="fab-cold" onclick="Game.showColdPalace()"><div class="cold-house">&#127968;<div class="fab-badge" id="fab-cold-badge" style="display:none;">0</div></div><div class="cold-label">冷宫</div></div>
+</div>
+<div id="page-detail" class="page"><div id="detail-content"></div></div>
+<div id="page-cold" class="page">
+  <div class="status-bar"><div class="dynasty-row"><div class="dynasty-name">&#20919; &#23467;</div></div><div class="info-row"><div class="info-item"><div class="info-label">&#20154;&#25968;</div><div class="info-value" id="cold-count">0</div></div></div></div>
+  <button class="back-btn" onclick="Game.showPage('main')">&#8592; &#36820;&#22238;</button>
+  <div id="cold-palace-list" class="concubine-list"></div>
+  <div class="bottom-bar">
+    <div class="btn-row-4">
+      <button class="btn-next" onclick="Game.nextMonth()">&#127769; &#36827;&#20837;&#19979;&#26376;</button>
+      <button class="btn-banquet" onclick="Game.openBanquet()">&#20030;&#21150;&#23476;&#20250;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-morning" onclick="Game.openMorning()">&#27599;&#26085;&#26223;&#35831;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+      <button class="btn-bed" onclick="Game.openBed()">&#32763;&#29260;&#20365;&#23517;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>
+    </div>
+  </div>
+</div>
+<div id="modal-treasury" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#24320;&#22269;&#22823;&#20856;</div><div class="modal-body" style="text-align:center;"><p style="color:#6b5a3a;margin-bottom:10px;">&#24320;&#22269;&#20043;&#21021;&#65292;&#22269;&#24211;&#36164;&#37329;&#30001;&#22825;&#24847;&#32780;&#23450;&#8230;&#8230;</p><div style="font-size:38px;color:#ffd700;margin:18px 0;text-shadow:0 0 12px rgba(255,215,0,0.25);" id="treasury-amount"></div><button class="btn-primary" onclick="Game.confirmTreasury()">&#27491;&#24335;&#30331;&#22522;</button></div></div></div>
+<div id="modal-draft" class="modal-overlay"><div class="modal" style="max-height:90vh;"><div class="modal-header">&#31168;&#22899;&#20837;&#36873;</div><div class="modal-body" style="max-height:75vh;overflow-y:auto;"><p style="color:#6b5a3a;text-align:center;margin-bottom:12px;font-size:13px;">&#31168;&#22899;&#20837;&#36873;&#65292;&#35831;&#38491;&#19979;&#28857;&#20987;&#36873;&#20004;&#65292;&#21487;&#22810;&#36873;&#25110;&#20063;&#21487;&#20840;&#37096;&#33829;&#36873;</p><div id="draft-content"></div></div><div style="display:flex;gap:10px;padding:0 0 16px;"><button class="btn-primary" style="flex:1;margin:0;" id="draft-confirm-btn" onclick="Game.confirmDraft()">&#30830;&#35748;&#20837;&#23475;</button><button class="btn-primary" style="flex:1;margin:0;border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.confirmDraftNone()">&#20840;&#37096;&#33829;&#36873;</button></div></div></div>
+<div id="modal-event" class="modal-overlay modal-center"><div class="modal" style="max-height:85vh;display:flex;flex-direction:column;"><div class="modal-header">&#21518;&#23467;&#39118;&#20113;</div><div id="event-content" style="flex:1;overflow-y:auto;padding:16px 18px 8px;"></div><div style="padding:8px 18px 16px;"><button class="btn-primary" style="margin:0;" onclick="Game.closeEvent()">&#21462;&#28040;</button></div></div></div>
+<div id="modal-morning" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#27599;&#26085;&#26223;&#35831;</div><div class="modal-body" id="morning-content" style="max-height:70vh;overflow-y:auto;padding:0;"></div></div></div>
+<div id="modal-title" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#36176;&#23553;&#21495;</div><div class="modal-body" id="title-content"><p style="color:#a08060;text-align:center;font-size:13px;margin-bottom:12px;" id="title-hint"></p><div style="text-align:center;margin-bottom:16px;"><input type="text" id="title-input" class="input-field" placeholder="&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;&#65306;&#23425;" maxlength="2" style="max-width:200px;margin:0 auto;"></div><p style="color:#a08060;text-align:center;font-size:11px;margin-bottom:16px;" id="title-preview"></p><button class="btn-primary" onclick="Game.confirmTitle()">&#30830;&#35748;&#36176;&#23553;</button><button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeTitleModal()">&#21462;&#28040;</button></div></div></div>
+<div id="modal-rank-picker" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#35843;&#25972;&#20301;&#20221;</div><div class="modal-body" id="rank-picker-content"></div></div></div>
+<div id="modal-bed-select" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#32763;&#29260;&#20365;&#23517;</div><div class="modal-body" id="bed-select-content"></div></div></div>
+<div id="modal-bed-dialogue" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#22857;&#23517;&#23545;&#35805;</div><div class="modal-body" id="bed-dialogue-content"></div></div></div>
+<div id="modal-bed-rate" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#20365;&#23517;&#32467;&#26463;</div><div class="modal-body" id="bed-rate-content"></div></div></div>
+<div id="modal-banquet" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#23476;&#20250;&#30427;&#20856;</div><div class="modal-body" id="banquet-content"></div></div></div>
+<div id="modal-birth" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#21916;&#38477;&#40607;&#20799;</div><div class="modal-body" id="birth-content"></div></div></div>
+<div id="modal-feedback" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#28040;&#24687;</div><div class="modal-body"><div id="feedback-content" class="feedback-text"></div><button class="btn-primary" onclick="Game.closeFeedback()">&#30693;&#36947;&#20102;</button></div></div></div>
+</div>
+<script>
+// ========== 古装美女立绘生成 ==========
+const Portrait = (function() {
+  const SKIN = ['#faf0e6','#f5e1d0','#fce8d5','#f8e0cc','#fde6d4','#f0d8c8','#fce0d0','#f7dcc8'];
+  const HAIR = ['#1e1210','#2a1a14','#1a0e08','#24140e','#1c100a','#20120c'];
+  const DRESS = [{m:'#c41e3a',d:'#8b0000',a:'#da5050',e:'#ffd700',n:'红梅'},{m:'#7b2d8e',d:'#4a1858',a:'#a050c0',e:'#e8c0ff',n:'紫霞'},{m:'#1a5276',d:'#0e2f44',a:'#3498db',e:'#a0d4ff',n:'碧海'},{m:'#1a7a5a',d:'#0e4a34',a:'#27ae60',e:'#a0ffc0',n:'翠柳'},{m:'#b8860b',d:'#8b6508',a:'#daa520',e:'#fff4b0',n:'金缕'},{m:'#8b4585',d:'#5a2d5e',a:'#b060a0',e:'#ffc0ff',n:'暮紫'},{m:'#c46030',d:'#8b4020',a:'#e88050',e:'#ffe0c0',n:'霞光'},{m:'#2a6a8a',d:'#1a4060',a:'#40a0c0',e:'#c0f0ff',n:'晴空'},{m:'#a03060',d:'#6a1840',a:'#d05080',e:'#ffc0e0',n:'桃花'},{m:'#6a8040',d:'#4a5a28',a:'#8aa060',e:'#e0f0c0',n:'春草'}];
+  const HAIR_STYLES = ['elegant','bun','halfUp','sideBraid'];
+  const FLOWER = ['#ffb0c0','#ff90b0','#ffc0d0','#e080a0','#ffa0b8','#f090b0','#ffd0d8','#e87090'];
+  const CHAIN = ['#ffd700','#f0c040','#e8b030','#ffc040'];
+  const LIPS = ['#c41e3a','#b03060','#d45060','#a02040','#cc4050','#c03050','#d04060','#b03048'];
+  const EYE_COLORS = ['#2a1a0a','#1e1210','#3a2010','#1a1008'];
+  function h(s){let v=0;for(let i=0;i<s.length;i++)v=((v<<5)-v)+s.charCodeAt(i)|0;return Math.abs(v);}
+  function hr(s,a){return a[h(s)%a.length];}
+  function hs(s,m){return h(s)%m;}
+  function generate(seed){
+    const hs2=typeof seed==='string'?seed:''+(Math.random()*1e6|0);
+    const sk=hr(hs2,SKIN),hc=hr(hs2,HAIR),dc=DRESS[hs(hs2+'d',DRESS.length)];
+    const hs_style=hr(hs2,HAIR_STYLES),fc=hr(hs2,FLOWER),cc=hr(hs2,CHAIN);
+    const lc=hr(hs2,LIPS),ec=hr(hs2,EYE_COLORS);
+    const hasFlower=hs(hs2+'f',3)>0,hasChain=hs(hs2+'c',4)>0,hasEarring=hs(hs2+'e',2)>0;
+    let body=`<rect x="5" y="78" width="90" height="42" rx="3" fill="${dc.d}"/><path d="M8 78 Q50 92 92 78 L92 120 L8 120Z" fill="${dc.m}"/><path d="M38 78 L50 96 L62 78" fill="none" stroke="${dc.a}" stroke-width="1.2" opacity="0.5"/><path d="M20 78 Q50 88 80 78" fill="none" stroke="${dc.a}" stroke-width="0.8" opacity="0.35"/><circle cx="38" cy="88" r="1.2" fill="${dc.e}" opacity="0.5"/><circle cx="50" cy="85" r="1.2" fill="${dc.e}" opacity="0.5"/><circle cx="62" cy="88" r="1.2" fill="${dc.e}" opacity="0.5"/>`;
+    let hair='';
+    if(hs_style==='elegant'){hair=`<ellipse cx="50" cy="26" rx="30" ry="30" fill="${hc}"/><rect x="22" y="26" width="56" height="52" rx="2" fill="${hc}"/><rect x="25" y="24" width="50" height="3" rx="1.5" fill="${hc}"/><path d="M22 40 Q18 60 24 90" fill="${hc}" opacity="0.7"/><path d="M78 40 Q82 60 76 90" fill="${hc}" opacity="0.7"/>`;}
+    else if(hs_style==='bun'){hair=`<ellipse cx="50" cy="24" rx="28" ry="28" fill="${hc}"/><circle cx="50" cy="6" r="14" fill="${hc}"/><rect x="24" y="26" width="52" height="52" rx="2" fill="${hc}"/><path d="M24 40 Q20 60 26 88" fill="${hc}" opacity="0.7"/><path d="M76 40 Q80 60 74 88" fill="${hc}" opacity="0.7"/>`;}
+    else if(hs_style==='halfUp'){hair=`<ellipse cx="50" cy="28" rx="30" ry="30" fill="${hc}"/><ellipse cx="50" cy="10" rx="18" ry="10" fill="${hc}"/><rect x="22" y="28" width="56" height="50" rx="2" fill="${hc}"/><path d="M22 42 Q18 65 24 95" fill="${hc}" opacity="0.7"/><path d="M78 42 Q82 65 76 95" fill="${hc}" opacity="0.7"/>`;}
+    else{hair=`<ellipse cx="50" cy="28" rx="30" ry="30" fill="${hc}"/><rect x="22" y="28" width="56" height="50" rx="2" fill="${hc}"/><path d="M22 38 Q16 65 22 100" fill="${hc}" opacity="0.7"/><path d="M78 38 Q84 65 78 100" fill="${hc}" opacity="0.7"/><path d="M70 38 Q80 60 76 85" fill="${hc}" opacity="0.5"/>`;}
+    let acc='';
+    if(hasFlower){const fx=hs(hs2+'fx',2)===0?26:68;acc+=`<ellipse cx="${fx}" cy="14" rx="10" ry="8" fill="${fc}" opacity="0.85"/><ellipse cx="${fx-4}" cy="12" rx="4" ry="3.5" fill="${fc}" opacity="0.7"/><ellipse cx="${fx+4}" cy="12" rx="4" ry="3.5" fill="${fc}" opacity="0.7"/><ellipse cx="${fx}" cy="10" rx="4" ry="3.5" fill="${fc}" opacity="0.7"/><ellipse cx="${fx}" cy="18" rx="4" ry="3.5" fill="${fc}" opacity="0.7"/><circle cx="${fx}" cy="14" r="2" fill="${dc.e}" opacity="0.6"/>`;}
+    if(hasChain){acc+=`<path d="M42 4 Q46 8 50 6 Q54 8 58 4" fill="none" stroke="${cc}" stroke-width="0.6" opacity="0.6"/><circle cx="50" cy="12" r="1.5" fill="${fc}" opacity="0.7"/>`;}
+    if(hasEarring){acc+=`<circle cx="34" cy="52" r="1.5" fill="${cc}" opacity="0.6"/><line x1="34" y1="53" x2="33" y2="58" stroke="${cc}" stroke-width="0.4" opacity="0.4"/><circle cx="33" cy="59" r="1" fill="${fc}" opacity="0.5"/>`;}
+    const brows=`<path d="M36 39 Q42 36 48 38" fill="none" stroke="${hc}" stroke-width="1.3" opacity="0.6"/><path d="M52 38 Q58 36 64 39" fill="none" stroke="${hc}" stroke-width="1.3" opacity="0.6"/>`;
+    const eyes=`<ellipse cx="42" cy="46" rx="6" ry="4" fill="white" opacity="0.95"/><ellipse cx="42" cy="46" rx="5.5" ry="3.8" fill="white"/><ellipse cx="42" cy="46.5" rx="3" ry="3" fill="${ec}"/><circle cx="42" cy="46.5" r="1.8" fill="#0a0604"/><circle cx="40.5" cy="45" r="0.9" fill="white" opacity="0.9"/><circle cx="43" cy="47" r="0.4" fill="white" opacity="0.5"/><path d="M36 44 Q42 41 48 44" fill="none" stroke="${hc}" stroke-width="1" opacity="0.6"/><ellipse cx="42" cy="43" rx="5" ry="1.5" fill="${dc.a}" opacity="0.1"/><ellipse cx="58" cy="46" rx="6" ry="4" fill="white" opacity="0.95"/><ellipse cx="58" cy="46" rx="5.5" ry="3.8" fill="white"/><ellipse cx="58" cy="46.5" rx="3" ry="3" fill="${ec}"/><circle cx="58" cy="46.5" r="1.8" fill="#0a0604"/><circle cx="56.5" cy="45" r="0.9" fill="white" opacity="0.9"/><circle cx="59" cy="47" r="0.4" fill="white" opacity="0.5"/><path d="M52 44 Q58 41 64 44" fill="none" stroke="${hc}" stroke-width="1" opacity="0.6"/><ellipse cx="58" cy="43" rx="5" ry="1.5" fill="${dc.a}" opacity="0.1"/>`;
+    const nose=`<path d="M49 50 Q50 52 51 50" fill="none" stroke="${sk}" stroke-width="0.6" opacity="0.4"/>`;
+    const mouth=`<ellipse cx="50" cy="57" rx="5.5" ry="2.8" fill="${lc}" opacity="0.85"/><ellipse cx="50" cy="56.5" rx="4" ry="1.5" fill="${lc}" opacity="0.3"/><path d="M45 57 Q50 60 55 57" fill="none" stroke="${lc}" stroke-width="0.5" opacity="0.4"/>`;
+    const blush=`<ellipse cx="35" cy="53" rx="5" ry="2.5" fill="#ff9999" opacity="0.12"/><ellipse cx="65" cy="53" rx="5" ry="2.5" fill="#ff9999" opacity="0.12"/>`;
+    const neck=`<path d="M42 58 Q50 70 58 58" fill="none" stroke="${cc}" stroke-width="0.7" opacity="0.5"/><circle cx="50" cy="70" r="1.5" fill="${dc.e}" opacity="0.5"/>`;
+    return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g_${hs2.slice(0,6)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fce0d0"/><stop offset="100%" stop-color="#f5d0b8"/></linearGradient></defs><rect width="100" height="120" fill="url(#g_${hs2.slice(0,6)})"/>${body}<path d="M42 58 L42 72 Q50 76 58 72 L58 58" fill="${sk}"/><path d="M38 58 Q30 54 26 60 L38 66Z" fill="${sk}" opacity="0.5"/><path d="M62 58 Q70 54 74 60 L62 66Z" fill="${sk}" opacity="0.5"/>${hair}${acc}${brows}${eyes}${nose}${blush}${mouth}${neck}</svg>`;
+  }
+  return { generate };
+})();
+// ========== 游戏核心 ==========
+const Game = (function() {
+  const RANKS = ['皇后','皇贵妃','贵妃','妃','嫔','贵人','常在','答应','官女子'];
+  const RC = {'皇后':'rank-queen','皇贵妃':'rank-imperial','贵妃':'rank-imperial','妃':'rank-noble','嫔':'rank-noble','贵人':'rank-low','常在':'rank-low','答应':'rank-low','官女子':'rank-low'};
+  const SURS = ['苏','柳','杨','沈','林','陈','王','李','赵','张','萧','慕容','上官','纳兰','夏侯','温','安','秦','楚','云','花','月','白','江','叶','顾','独孤','东方','南宫','司徒'];
+  const NAMES = ['婉儿','灵儿','月儿','雪儿','梦儿','霜儿','莲儿','荷儿','梅儿','兰儿','竹儿','菊儿','琴儿','棋儿','画儿','诗儿','莺儿','燕儿','蝶儿','凤儿','瑶儿','珠儿','玉儿','翠儿','碧儿','紫儿','红儿','素儿','锦儿','柔儿','静儿','娴儿','慧儿','巧儿','嫣儿','婷儿','若曦','如懿','甄嬛','眉庄','晴儿','令妃','珍妃','璎珞','紫菱','念慈','玉漱','香妃','语嫣','可儿'];
+  const TRAITS = ['琴棋书画','诗词歌赋','舞蹈','刺绣','厨艺','医术','香道','茶道','书法','绘画','音律','女红','插花','围棋','古筝','琵琶','笛箫','古琴'];
+  const PERSONALITIES = [
+    {name:'温婉',greetings:['臣妾给皇上请安，愿皇上龙体安康，万事顺遂。','皇上日理万机，臣妾心中牵挂，特来请安。','臣妾恭请皇上圣安，愿皇上笑口常开。','清晨微凉，臣妾愿为皇上添一件衣裳。','臣妾给皇上请安，皇上辛苦了。'],favInc:2,color:'#e8a0b0'},
+    {name:'活泼',greetings:['皇上~臣妾来啦！今天想不想臣妾呀？','早安皇上！臣妾今天给您带了好吃的！','皇上皇上~臣妾可想您啦！','臣妾请安！今天天气真好呀皇上！','皇上~臣妾给您请安啦！嘻嘻！'],favInc:3,color:'#e89060'},
+    {name:'娇媚',greetings:['皇上~臣妾昨夜梦到您了，您猜梦见什么？','臣妾给皇上请安~皇上今日格外英俊呢。','皇上~您来了，臣妾等您好久了呢。','臣妾请安~今日臣妾特意打扮了一番呢。','皇上~您看臣妾新学的曲子可好听？'],favInc:3,color:'#d06090'},
+    {name:'端庄',greetings:['臣妾恭请皇上圣安，愿皇上圣躬万福。','臣妾给皇上请安，皇上勤政爱民，实乃社稷之福。','臣妾恭请皇上万安，愿皇上龙体康健。','皇上日理万机，臣妾不敢打扰，只来请安。','臣妾恭请皇上圣安，愿大清江山永固。'],favInc:1,color:'#c49030'},
+    {name:'清冷',greetings:['臣妾请安。','皇上安好。','臣妾来请安，无事便退下了。','请安。','臣妾见过皇上。'],favInc:1,color:'#7090b0'},
+    {name:'心机',greetings:['臣妾给皇上请安，听说昨儿妹妹又得宠了？','皇上~臣妾有些话不知当讲不当讲……','臣妾请安，只是近日宫中风言风语，臣妾实在担忧。','皇上日理万机，可也要小心身边小人啊。','臣妾请安，只是……臣妾有话想单独跟皇上说。'],favInc:1,color:'#a060c0'},
+    {name:'傲娇',greetings:['哼，臣妾才不是特意来请安的呢……','臣妾请安！别误会，只是按规矩罢了！','……皇上好。臣妾只是路过顺便请安而已。','请安就请安，皇上别多想！','臣妾……臣妾给皇上请安啦！才不是想见您呢！'],favInc:2,color:'#e07070'},
+    {name:'贤淑',greetings:['臣妾给皇上请安，臣妾今日熬了参汤，皇上可要尝尝？','皇上请安，臣妾已命人将御花园打理妥当。','臣妾请安，皇上昨日批奏折到深夜，可要注意身体。','臣妾恭请皇上圣安，后宫诸事臣妾已安排妥当。','皇上请安，臣妾给您缝了一件新衣裳。'],favInc:2,color:'#80b080'},
+  ];
+  const FAMILY_TIERS = [
+    {name:'一品文臣',desc:'朝廷重臣，位高权重',weight:3,initRank:'贵人',color:'#c49030'},
+    {name:'一品武将',desc:'镇国大将军，战功赫赫',weight:3,initRank:'贵人',color:'#c49030'},
+    {name:'二品文臣',desc:'尚书大人，深受器重',weight:5,initRank:'常在',color:'#d48030'},
+    {name:'二品武将',desc:'威武将军，勇猛善战',weight:5,initRank:'常在',color:'#d48030'},
+    {name:'三品文臣',desc:'侍郎之家，书香门第',weight:8,initRank:'答应',color:'#a08060'},
+    {name:'三品武将',desc:'参将之家，武将世家',weight:8,initRank:'答应',color:'#a08060'},
+    {name:'四品知府',desc:'地方要员，家境殷实',weight:10,initRank:'答应',color:'#8a7060'},
+    {name:'五品同知',desc:'中层官员，小康之家',weight:12,initRank:'答应',color:'#8a7060'},
+    {name:'六品主事',desc:'小官小吏，清贫之家',weight:15,initRank:'官女子',color:'#7a6a5a'},
+    {name:'七品县令',desc:'芝麻小官，民间百姓',weight:15,initRank:'官女子',color:'#7a6a5a'},
+    {name:'八品典吏',desc:'微末小吏，家道一般',weight:10,initRank:'官女子',color:'#6a5a4a'},
+    {name:'平民秀女',desc:'民间女子，家世普通',weight:12,initRank:'官女子',color:'#6a5a4a'},
+  ];
+  const TALENT_D = {90:'才高八斗',80:'才华横溢',70:'颇有才学',60:'略通文墨',50:'才学一般',0:'才疏学浅'};
+  const WISDOM_D = {90:'冰雪聪明',80:'聪慧过人',70:'机智灵敏',60:'有些头脑',50:'智力平常',0:'愚笨迟钝'};
+  function desc(v,m){for(const k of Object.keys(m).map(Number).sort((a,b)=>b-a))if(v>=k)return m[k];return m[0];}
+  function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+  function ri(r){return RANKS.indexOf(r);}
+  function ru(r){const i=ri(r);return i>0?RANKS[i-1]:r;}
+  function rd(r){const i=ri(r);return i<RANKS.length-1?RANKS[i+1]:r;}
+  function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+  function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
+
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3};
+
+  function genConcubine(draft) {
+    const s=pick(SURS); let n=pick(NAMES);
+    while(state.concubines.some(c=>c.name===s+n))n=pick(NAMES);
+    const fam=pickFamily();
+    return {id:genId(),name:s+n,beauty:rand(40,95),favor:draft?rand(20,50):rand(30,60),talent:rand(20,85),wisdom:rand(20,80),trait:pick(TRAITS),personality:pick(PERSONALITIES),family:fam,rank:draft?fam.initRank:'官女子',health:draft?rand(70,100):rand(60,90),pregnant:false,pregMonth:0,portraitSeed:Math.random().toString(36).slice(2)};
+  }
+
+  function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
+  function load(){
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}});return true;}}catch(e){}return false;
+  }
+
+  function portraitSVG(seed, w, h) {
+    return `<div style="width:${w}px;height:${h}px;overflow:hidden;border-radius:${w<100?8:12}px;border:1px solid rgba(139,105,20,0.25);background:linear-gradient(180deg,#fce0d0,#f5d0b8);flex-shrink:0;">${Portrait.generate(seed)}</div>`;
+  }
+
+  function updateUI() {
+    document.getElementById('main-dynasty').textContent = state.dynasty;
+    document.getElementById('main-year').textContent = state.dynasty+state.year+'年';
+    document.getElementById('main-month').textContent = '第'+state.month+'月';
+    document.getElementById('main-treasury').textContent = state.treasury;
+    const pips = document.getElementById('main-actions'); pips.innerHTML='';
+    for(let i=0;i<5;i++){const p=document.createElement('div');p.className='action-pip'+(i>=state.actionsLeft?' used':'');pips.appendChild(p);}
+    const badge = document.getElementById('fab-cold-badge');
+    if(state.coldPalaceList.length>0){badge.style.display='flex';badge.textContent=state.coldPalaceList.length;}else{badge.style.display='none';}
+    const pregCount=state.concubines.filter(c=>c.pregnant).length;
+    document.getElementById('pregnancy-alert').style.display=pregCount>0?'block':'none';
+    document.getElementById('palace-alert').style.display=state.pendingEvent?'block':'none';
+    const btn=document.getElementById('next-month-btn'); if(btn)btn.classList.toggle('urgent',state.actionsLeft<=0);
+    // Draft countdown
+    const draftLabel=document.getElementById('draft-countdown');
+    if(draftLabel){
+      if(state.nextDraftIn>0){
+        draftLabel.innerHTML=`&#31168;&#36873;&#20498;&#35745;&#26376;: <b>${state.nextDraftIn}</b>`;
+        draftLabel.style.display='block';
+      } else {
+        draftLabel.style.display='none';
+      }
+    }
+    renderMainList();
+  }
+
+  function renderMainList() {
+    const el = document.getElementById('main-concubine-list');
+    if(state.concubines.length===0){el.innerHTML='<div class="empty-state"><div class="empty-icon">&#127963;</div><div class="empty-text">&#21518;&#23467;&#31354;&#26080;&#19968;&#20154;</div><div class="empty-hint">&#31561;&#24453;&#36873;&#31168;&#25110;&#26032;&#20154;&#20837;&#23467;&#8230;&#8230;</div></div>';return;}
+    const sorted=[...state.concubines].sort((a,b)=>ri(a.rank)-ri(b.rank));
+    let html='';
+    sorted.forEach(c=>{
+      const rc=RC[c.rank]||'rank-low';
+      const isBanned=state.banned[c.id];
+      const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      const displayName = c.title ? c.title + c.rank : c.name;
+      html+=`<div class="concubine-card" onclick="Game.showDetail('${c.id}')">${portraitSVG(c.portraitSeed,80,100)}<div class="concubine-info"><div class="concubine-name">${displayName}<span class="concubine-rank ${rc}">${c.title?'':c.rank}</span>${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}</div><div class="concubine-stats"><span>&#23456;&#29233; <b>${c.favor}</b></span><span>&#32654;&#35980; <b>${c.beauty}</b></span><span>&#20581;&#24247; <b style="color:${hp}">${c.health}</b></span>${c.pregnant?'<span class="badge badge-pregnant">&#129324; &#26377;&#23389;<span class="badge-pregnant-month">'+c.pregMonth+'&#26376;</span></span>':''}</div></div></div>`;
+    });
+    el.innerHTML=html;
+  }
+
+  function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');if(name==='main')updateUI();}
+
+  function initStart(){
+    if(load()&&state.dynasty){processBannedDecay();save();showPage('main');updateUI();return;}
+    showPage('start');
+    document.getElementById('start-btn').onclick=function(){
+      const v=document.getElementById('dynasty-input').value.trim();if(!v){alert('&#35831;&#36755;&#20837;&#22269;&#21495;&#65281;');return;}
+      state.dynasty=v;state.treasury=rand(3000,8000);
+      document.getElementById('treasury-amount').textContent=state.treasury+' &#20004;';
+      document.getElementById('modal-treasury').classList.add('show');
+    };
+  }
+  function confirmTreasury(){document.getElementById('modal-treasury').classList.remove('show');state.year=1;state.month=1;state.actionsLeft=5;state.concubines=[];state.coldPalaceList=[];state.banned={};state.eventLog=[];state.pendingEvent=null;state.eventTriggerRate=60;state.nextDraftIn=3;save();showPage('main');updateUI();setTimeout(()=>triggerDraft(),500);}
+  function processBannedDecay(){for(const id in state.banned){state.banned[id]--;if(state.banned[id]<=0)delete state.banned[id];}}
+  function processColdDecay(){state.coldPalaceList=state.coldPalaceList.filter(c=>{c.health=clamp(c.health-10,0,100);if(c.health<=0){logEvent('&#30149;&#36893;&#33268;&#27515;',c.rank+c.name+'&#22312;&#20919;&#23467;&#20013;&#30149;&#36893;');showFeedback('<span class="neg">'+c.name+'</span> &#22312;&#20919;&#23467;&#20013;&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');return false;}return true;});}
+
+  function consumeAction(){state.actionsLeft--;if(state.actionsLeft<=0){setTimeout(()=>{if(!state.pendingEvent){showFeedback('&#26412;&#26376;&#34892;&#21160;&#24050;&#29992;&#23436;&#65292;&#33258;&#21160;&#36827;&#20837;&#19979;&#26376;&#65281;');setTimeout(()=>nextMonth(),1500);}},500);}else{setTimeout(()=>{if(state.concubines.length>=2&&!state.pendingEvent){triggerPalaceEvent();}},500);}}
+
+  function nextMonth(){
+    if(state.pendingEvent){showFeedback('&#35831;&#20808;&#22788;&#29702;&#21518;&#23467;&#24322;&#21160;&#20107;&#20214;&#65281;');return;}
+    state.month++;if(state.month>12){state.month=1;state.year++;}
+    state.treasury+=10000;state.actionsLeft=5;
+    processBannedDecay();processColdDecay();processPregnancy();save();updateUI();
+    triggerPalaceEvent();
+    state.nextDraftIn--;
+    if(state.nextDraftIn<=0){state.nextDraftIn=3;setTimeout(()=>triggerDraft(),300);}
+  }
+
+  function processPregnancy(){
+    const births=[];
+    state.concubines.forEach(c=>{
+      if(!c.pregnant)return;
+      c.pregMonth++;
+      c.health=clamp(c.health-2,0,100);
+      if(c.pregMonth>=10){
+        const isBoy=Math.random()<0.5;
+        births.push({concubine:c,childType:isBoy?'&#30347;&#23376;':'&#20844;&#20027;'});
+        c.pregnant=false;c.pregMonth=0;
+      }
+    });
+    if(births.length>0){setTimeout(()=>showBirthResult(births),300);}
+  }
+
+  function showBirthResult(births){
+    const el=document.getElementById('birth-content');
+    let html='<div class="birth-result">';
+    births.forEach(({concubine:c,childType})=>{
+      const promoteCount=childType==='&#30347;&#23376;'?2:1;
+      const oldRank=c.rank;
+      if(c.rank!=='&#30347;&#21518;'){for(let i=0;i<promoteCount;i++){const newR=ru(c.rank);if(newR!==c.rank)c.rank=newR;}}
+      c.favor=clamp(c.favor+20,0,100);c.health=clamp(c.health+10,0,100);
+      const icon=childType==='&#30347;&#23376;'?'&#128118;':'&#128117;';
+      html+=`<div class="birth-icon">${icon}</div><div class="baby-type">${c.name} &#35806;&#19979;${childType}&#65281;</div><div class="baby-info">${oldRank} ${c.name}&#65292;&#21313;&#26376;&#24576;&#32974;&#65292;&#19968;&#26397;&#20998;&#23081;<br>&#27597;&#23376;&#24179;&#23433;</div><div class="baby-promote">&#22240;&#35806;&#19979;${childType}&#65292;${c.name} &#26187;&#21319; ${promoteCount} &#32423;<br>${oldRank} &#8594; ${c.rank}</div>`;
+    });
+    html+='<button class="btn-primary" onclick="Game.closeBirth()">&#22823;&#21916;&#65292;&#21516;&#24198;&#65281;</button></div>';
+    el.innerHTML=html;
+    document.getElementById('modal-birth').classList.add('show');
+    logEvent('&#20998;&#23064;',births.map(({concubine:c,childType:t})=>c.name+'&#35806;&#19979;'+t).join('&#12289;'));
+    save();updateUI();
+  }
+  function closeBirth(){document.getElementById('modal-birth').classList.remove('show');}
+
+  function showDetail(id){
+    const c=state.concubines.find(x=>x.id===id);if(!c)return;
+    const rc=RC[c.rank]||'rank-low';const isBanned=state.banned[c.id];
+    const dis=(state.actionsLeft<=0||isBanned)?'disabled':'';
+    document.getElementById('detail-content').innerHTML=`
+      <div class="detail-header"><div class="detail-portrait-wrap">${portraitSVG(c.portraitSeed,140,175)}</div><div class="detail-name">${c.title?c.title+c.rank:c.name}</div><div class="detail-rank ${rc}">${c.rank}${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}${c.title?'<span class="badge" style="background:rgba(200,160,80,0.2);color:#c49030;margin-left:6px;">'+c.title+'</span>':''}</div></div>
+      <button class="back-btn" onclick="Game.showPage('main')">&#8592; &#36820;&#22238;</button>
+      <div class="stats-card"><div class="stats-title">&#23646; &#24615;</div>
+
+        <div class="stat-row"><span class="stat-label">美貌</span><span class="stat-value">${c.beauty}</span></div>
+        <div class="stat-row"><span class="stat-label">&#23456;&#29233;&#24230;</span><span class="stat-value" style="color:#ff8c42;">${c.favor}</span></div>
+        <div class="stat-row"><span class="stat-label">&#25165;&#21326;&#24230;</span><span class="stat-value">${c.talent} &#183; ${desc(c.talent,TALENT_D)}</span></div>
+        <div class="stat-row"><span class="stat-label">&#26234;&#24935;&#24230;</span><span class="stat-value">${c.wisdom} &#183; ${desc(c.wisdom,WISDOM_D)}</span></div>
+        <div class="stat-row"><span class="stat-label">&#20581;&#24247;&#20540;</span><span class="stat-value" style="color:${c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555'};">${c.health}</span></div>
+        <div class="stat-row"><span class="stat-label">&#36523;&#23384;</span><span class="stat-value">${c.pregnant?'<span class="badge badge-pregnant" style="font-size:12px;padding:3px 8px;">&#129324; &#24576;&#23384; '+c.pregMonth+'&#20010;&#26376;</span>':'&#26080;'}</span></div>
+        <div class="stat-row"><span class="stat-label">&#29305;&#38271;</span><span class="stat-value">${c.trait}</span></div>
+        <div class="stat-row"><span class="stat-label">&#24615;&#26684;</span><span class="stat-value" style="color:#9060c0;">${c.personality.name}</span></div>
+        <div class="stat-row"><span class="stat-label">&#23478;&#19990;</span><span class="stat-value" style="color:${c.family.color}">${c.family.name}</span></div>
+        <div class="stat-row"><span class="stat-label">&#20301;&#20221;</span><span class="stat-value ${rc}">${c.rank}</span></div>
+      </div>
+      <div class="action-card"><div class="stats-title">&#25805; &#20316;</div>
+        <button class="btn-action primary" onclick="Game.actionFavor('${c.id}')" ${dis}>&#128149; &#23456;&#24184;&#20540;<br><span class="btn-cost">-200&#38134; +15&#23456;&#29233; +5&#20581;&#24247; -1&#34892;&#21160;</span></button>
+        <button class="btn-action primary" onclick="Game.openRankPicker('${c.id}','promote')" ${dis}>&#10498; &#26187;&#21319;&#20301;&#20221;<br><span class="btn-cost">-500&#38134; +10&#23456;&#29233; -1&#34892;&#21160;</span></button>
+        <button class="btn-action" onclick="Game.openRankPicker('${c.id}','demote')" ${dis}> &#38477;&#20302;&#20301;&#20221;<br><span class="btn-cost">-10&#23456;&#29233; -5&#20581;&#24247; -1&#34892;&#21160;</span></button>
+        <button class="btn-action primary" onclick="Game.actionGift('${c.id}')" ${dis}>&#127873; &#36192;&#36865;&#31036;&#29289;<br><span class="btn-cost">-1000&#38134; +30&#23456;&#29233; +5&#32654;&#35980; +3&#20581;&#24247; -1&#34892;&#21160;</span></button>
+        <button class="btn-action danger" onclick="Game.actionCold('${c.id}')" ${isBanned?'disabled':''}>&#129522; &#25171;&#20837;&#20919;&#23467;<br><span class="btn-cost">&#20581;&#24247;-30 -1&#34892;&#21160;</span></button>
+        <button class="btn-action danger" onclick="Game.actionKill('${c.id}')" ${dis}>&#9760; &#36176;&#27515;<br><span class="btn-cost">&#31435;&#21363;&#22788;&#27515; -1&#34892;&#21160;</span></button>
+        <button class="btn-action" onclick="Game.showTitleModal('${c.id}')"> &#36176;&#23553;&#21495;<br><span class="btn-cost">&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;"&#23425;"&#8594;&#23425;&#31572;&#24212;</span></button>
+      </div>`;
+    showPage('detail');
+  }
+
+  function findC(id){return state.concubines.find(x=>x.id===id);}
+  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='&#30347;&#21518;')return;state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
+  function canAct(){if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#27425;&#25968;&#24050;&#29992;&#23436;&#65281;<br>&#35831;&#28857;&#20987;&#12300;&#36827;&#20837;&#19979;&#26376;&#12301;&#21047;&#26032;&#12290;');return false;}return true;}
+
+  function actionFavor(id){
+    if(!canAct())return;const c=findC(id);if(!c)return;
+    if(state.treasury<200){showFeedback('&#22269;&#24211;&#38134;&#20004;&#19981;&#36275;&#65281;');return;}
+    state.treasury-=200;c.favor=clamp(c.favor+15,0,100);c.health=clamp(c.health+5,0,100);
+    let pregMsg='';
+    if(!c.pregnant&&c.rank!=='&#30347;&#21518;'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;pregMsg='<br><span class="pos">&#129324; '+c.name+' &#26377;&#21916;&#20102;&#65281;</span>';}
+    consumeAction();save();updateUI();
+    showFeedback('&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>'+pregMsg);
+    showDetail(id);
+  }
+
+  function actionGift(id){if(!canAct())return;const c=findC(id);if(!c)return;if(state.treasury<1000){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}state.treasury-=1000;c.favor=clamp(c.favor+30,0,100);c.beauty=clamp(c.beauty+5,0,100);c.health=clamp(c.health+3,0,100);consumeAction();save();updateUI();showFeedback('&#36192;&#36865;&#31036;&#29289;&#32473; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+30</span>&#65292;&#32654;&#35980; <span class="pos">+5</span>&#65292;&#20581;&#24247; <span class="pos">+3</span><br>&#22269;&#24211; <span class="neg">-1000</span>&#20004;');showDetail(id);}
+
+  function actionCold(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#23558; '+c.name+' &#25171;&#20837;&#20919;&#23467;&#65281;'))return;c.health=clamp(c.health-30,0,100);state.concubines=state.concubines.filter(x=>x.id!==id);state.coldPalaceList.push(c);consumeAction();delete state.banned[id];save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#25171;&#20837;&#20919;&#23467;<br>&#20581;&#24247; <span class="neg">-30</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
+
+  function actionKill(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#36176;&#27515; '+c.name+'&#65281;'))return;state.concubines=state.concubines.filter(x=>x.id!==id);consumeAction();delete state.banned[id];logEvent('&#36176;&#27515;',c.rank+c.name+'&#34987;&#36176;&#27515;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#24050;&#34987;&#36176;&#27515;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
+
+  function actionColdKill(id){const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;if(!confirm('&#30830;&#23450;&#36176;&#27515;&#20919;&#23467;&#20013;&#30340; '+c.name+'&#65281;'))return;state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);logEvent('&#36176;&#27515;','&#20919;&#23467;&#20013;&#30340;'+c.rank+c.name+'&#34987;&#36176;&#27515;');save();showColdPalace();showFeedback('<span class="neg">'+c.name+'</span> &#24050;&#34987;&#36176;&#27515;');}
+
+  function actionColdTorture(id){const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;const dmg=rand(15,25);c.health=clamp(c.health-dmg,0,100);if(c.health<=0){state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);logEvent('&#25240;&#30952;&#33268;&#27515;',c.rank+c.name+'&#34987;&#25240;&#30952;&#33268;&#27515;');save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65288;&#24402;&#38646;&#65289;<br><span class="neg">'+c.name+' &#25240;&#30952;&#33268;&#27515;</span>');return;}logEvent('&#25240;&#30952;','&#23351;&#23351;&#25240;&#30952;'+c.name+'&#65292;&#20581;&#24247;-'+dmg);save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;');}
+
+  function actionColdRelease(id){if(!canAct())return;const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);c.health=clamp(c.health+20,0,100);state.concubines.push(c);consumeAction();logEvent('&#37322;&#25918;',c.rank+c.name+'&#34987;&#37322;&#25918;&#22238;&#23467;');save();updateUI();showColdPalace();showFeedback('<span class="pos">'+c.name+'</span> &#24050;&#37322;&#25918;&#22238;&#23467;<br>&#20581;&#24247; <span class="pos">+20</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');}
+
+  function showTitleModal(id){const c=state.concubines.find(x=>x.id===id);if(!c)return;state._titleTarget=id;document.getElementById('title-hint').textContent='&#20026; '+c.name+'&#65288;'+c.rank+'&#65289;&#36176;&#23553;&#21495;';document.getElementById('title-input').value=c.title||'';updateTitlePreview(c);document.getElementById('modal-title').classList.add('show');setTimeout(()=>document.getElementById('title-input').focus(),300);}
+  function updateTitlePreview(c){const v=document.getElementById('title-input').value.trim();const preview=v?(v+c.rank):c.name;document.getElementById('title-preview').textContent='&#39044;&#35272;&#65306;'+preview;}
+  function confirmTitle(){const c=state.concubines.find(x=>x.id===state._titleTarget);if(!c)return;const v=document.getElementById('title-input').value.trim();if(!v){showFeedback('&#35831;&#36755;&#20837;&#23553;&#21495;&#65281;');return;}c.title=v;logEvent('&#36176;&#23553;&#21495;',c.name+'&#36176;&#23553;&#21495;&#20026;"'+v+'"');document.getElementById('modal-title').classList.remove('show');delete state._titleTarget;save();updateUI();showFeedback('&#36176;&#23553; <span class="pos">'+c.name+'</span> &#20026; <span class="neu">'+v+c.rank+'</span>');}
+  function closeTitleModal(){document.getElementById('modal-title').classList.remove('show');delete state._titleTarget;}
+
+  function openRankPicker(id,mode){
+    const c=state.concubines.find(x=>x.id===id);if(!c)return;
+    state._rankPickerTarget=id;state._rankPickerMode=mode;
+    let html='<p style="color:#a08060;text-align:center;font-size:13px;margin-bottom:16px;">&#20026; '+c.name+'&#65288;'+c.rank+'&#65289;'+(mode==='promote'?'&#36873;&#25321;&#26187;&#21319;&#21518;&#30340;&#20301;&#20221;':'&#36873;&#25321;&#38477;&#20302;&#21518;&#30340;&#20301;&#20221;')+'</p>';
+    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">';
+    RANKS.forEach((r,i)=>{
+      const isCurrent=r===c.rank;const isHigher=ri(r)<ri(c.rank);const isValid=mode==='promote'?isHigher:!isHigher&&!isCurrent;
+      const bg=isCurrent?'rgba(200,160,80,0.3)':isValid?'rgba(255,245,230,0.9)':'rgba(200,180,160,0.15)';
+      const border=isCurrent?'#c49030':isValid?'rgba(200,160,80,0.3)':'rgba(200,160,80,0.08)';
+      const color=isCurrent?'#c49030':isValid?'#5a3e28':'#b0a090';
+      const op=isCurrent||isValid?'':'opacity:0.4;';
+      html+='<div style="text-align:center;padding:12px 8px;border-radius:10px;background:'+bg+';border:1px solid '+border+';color:'+color+';'+op+(isCurrent||isValid?'cursor:pointer;':'')+'font-size:14px;'+(isCurrent?'font-weight:bold;':'')+'" onclick="'+(isValid?"Game.confirmRankPicker('"+r+"')":"")+'">'+r+(isCurrent?'<br><span style="font-size:10px;">&#24403;&#21069;</span>':'')+'</div>';
+    });
+    html+='</div>';
+    html+='<button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeRankPicker()">&#21462;&#28040;</button>';
+    document.getElementById('rank-picker-content').innerHTML=html;
+    document.getElementById('modal-rank-picker').classList.add('show');
+  }
+
+  function confirmRankPicker(newRank){
+    const c=state.concubines.find(x=>x.id===state._rankPickerTarget);if(!c)return;
+    const mode=state._rankPickerMode;const oldRank=c.rank;
+    if(mode==='promote'){if(state.treasury<500){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}state.treasury-=500;c.favor=clamp(c.favor+10,0,100);consumeAction();}
+    else{c.favor=clamp(c.favor-10,0,100);c.health=clamp(c.health-5,0,100);consumeAction();}
+    c.rank=newRank;logEvent(mode==='promote'?'&#26187;&#21319;':'&#38477;&#32423;',c.name+' '+oldRank+'&#8594;'+newRank);
+    document.getElementById('modal-rank-picker').classList.remove('show');delete state._rankPickerTarget;delete state._rankPickerMode;
+    save();updateUI();
+    if(mode==='promote'){showFeedback('&#26187;&#21319; <span class="pos">'+c.name+'</span><br>'+oldRank+' <span class="pos">&#8594; '+newRank+'</span><br>&#23456;&#29233; <span class="pos">+10</span><br>&#22269;&#24211; <span class="neg">-500</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>');}
+    else{showFeedback(c.name+' &#20301;&#20221;&#38477;&#20302;<br>'+oldRank+' <span class="neg">&#8594; '+newRank+'</span><br>&#23456;&#29233; <span class="neg">-10</span>&#65292;&#20581;&#24247; <span class="neg">-5</span><br>&#34892;&#21160; <span class="neg">-1</span>');}
+    showDetail(c.id);
+  }
+  function closeRankPicker(){document.getElementById('modal-rank-picker').classList.remove('show');delete state._rankPickerTarget;delete state._rankPickerMode;}
+
+  // ===== 翻牌侍寝 =====
+  const BED_DIALOGUES = [
+    {emp:'皇上：今夜月色真美，你也一样。', con:'皇上夸如妾，如妾心里甜蜜呢。'},
+    {emp:'皇上：这段日子辛苦了，今夜好好休息。', con:'如妾能侍奉皇上，是如妾的福气。'},
+    {emp:'皇上：你今日的扮相格外动人。', con:'如妾特意为皇上打扮的，皇上喜欢便好。'},
+    {emp:'皇上：朕最喜欢的便是你这般温柔。', con:'如妾愿一生世世伴皇上左右。'},
+    {emp:'皇上：外面再好，也不及你这里温馨。', con:'皇上有这份心，如妾便知足了。'},
+    {emp:'皇上：朕多日未来，可是想你了？', con:'如妾夜夜盼皇上来，今夜终于盼来了。'},
+    {emp:'皇上：你这手如何这般柔软？', con:'如妾给皇上捏捏肩，解解乏。'},
+    {emp:'皇上：听说你新学了一首曲子？', con:'如妾弹给皇上听，只愿皇上欢喜。'},
+  ];
+
+  function openBed(){
+    if(state.concubines.length===0){showFeedback('后宫空无一人，无法翻牌！');return;}
+    if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
+    if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
+    state._bedTarget=null;
+    const pool=[...state.concubines].sort(()=>Math.random()-0.5).slice(0,3);
+    state._bedPool=pool;
+    let html='<div style="text-align:center;">';
+    html+='<p style="color:#a08060;font-size:13px;margin-bottom:16px;">请皇上翻牌，选择今夜侍寝的妃子</p>';
+    html+='<div style="display:flex;justify-content:center;flex-wrap:wrap;">';
+    pool.forEach((c,i)=>{
+      html+=`<div class="bed-card" id="bed-card-${i}" onclick="Game.flipCard(${i})">&#127973;</div>`;
+    });
+    html+='</div></div>';
+    document.getElementById('bed-select-content').innerHTML=html;
+    document.getElementById('modal-bed-select').classList.add('show');
+    consumeAction();
+  }
+
+  function flipCard(idx){
+    const c=state._bedPool[idx];if(!c)return;
+    state._bedTarget=c.id;
+    const el=document.getElementById('bed-card-'+idx);
+    el.classList.add('revealed');
+    el.innerHTML=`${Portrait.generate(c.portraitSeed,70,90)}<div style="margin-top:6px;font-weight:bold;color:#5a3e28;">${c.title?c.title+c.rank:c.name}</div>`;
+    setTimeout(()=>{
+      document.getElementById('modal-bed-select').classList.remove('show');
+      showBedDialogue(c);
+    },1500);
+  }
+
+  function showBedDialogue(c){
+    const dlg=pick(BED_DIALOGUES);
+    const el=document.getElementById('bed-dialogue-content');
+    let html='<div style="text-align:center;margin-bottom:16px;">';
+    html+=Portrait.generate(c.portraitSeed,80,100);
+    html+=`<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:8px;">${c.title?c.title+c.rank:c.name}</div>`;
+    html+='</div>';
+    html+='<div class="bed-dialogue">';
+    html+=`<div class="bed-dialogue-line bed-dialogue-emp">${dlg.emp}</div>`;
+    html+=`<div class="bed-dialogue-line bed-dialogue-con">${dlg.con}</div>`;
+    const extra=[
+      '<div class="bed-dialogue-line bed-dialogue-emp">皇上：时间不早了，歇息吧。</div>',
+      '<div class="bed-dialogue-line bed-dialogue-con">如妾喜欢跟着皇上。</div>',
+    ];
+    extra.forEach(e=>html+=e);
+    html+='</div>';
+    html+='<button class="btn-primary" onclick="Game.endBed()">侍寝结束</button>';
+    el.innerHTML=html;
+    document.getElementById('modal-bed-dialogue').classList.add('show');
+  }
+
+  function endBed(){
+    const c=state.concubines.find(x=>x.id===state._bedTarget);if(!c)return;
+    document.getElementById('modal-bed-dialogue').classList.remove('show');
+    state._bedTarget=c.id;
+    const el=document.getElementById('bed-rate-content');
+    el.innerHTML=`<div style="text-align:center;">
+      <div style="font-size:18px;color:#8a7060;margin-bottom:16px;">今夜侍寝的是 <b style="color:#c49030;">${c.name}</b></div>
+      <p style="color:#8a7060;font-size:13px;margin-bottom:16px;">皇上满意吗？</p>
+      <div class="bed-satisfy-btns">
+        <button class="bed-satisfy-btn yes" onclick="Game.rateBed('satisfied')">&#128077; 满意</button>
+        <button class="bed-satisfy-btn no" onclick="Game.rateBed('unsatisfied')">&#128078; 不满意</button>
+      </div>
+    </div>`;
+    document.getElementById('modal-bed-rate').classList.add('show');
+  }
+
+  function rateBed(rating){
+    const c=state.concubines.find(x=>x.id===state._bedTarget);if(!c)return;
+    if(rating==='satisfied'){
+      c.favor=clamp(c.favor+rand(10,20),0,100);
+      c.health=clamp(c.health+rand(3,8),0,100);
+      logEvent('侍寝','皇上满意'+c.name);
+      document.getElementById('modal-bed-rate').classList.remove('show');
+      save();updateUI();
+      showFeedback('皇上很满意！<br>'+c.name+' 宠爱 <span class="pos">+'+rand(10,20)+'</span><br>健康 <span class="pos">+3~8</span>');
+    } else {
+      c.favor=clamp(c.favor-rand(5,10),0,100);
+      logEvent('侍寝','皇上不满意'+c.name);
+      document.getElementById('modal-bed-rate').classList.remove('show');
+      save();updateUI();
+      showFeedback('皇上不太满意。。。'+c.name+' 宠爱 <span class="neg">-'+rand(5,10)+'</span>');
+    }
+    delete state._bedTarget;
+    delete state._bedPool;
+  }
+
+  // ===== 每日晨请 =====
+  function openMorning(){
+    if(state.concubines.length===0){showFeedback('后宫空无一人！');return;}
+    if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
+    if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
+    document.querySelector('#modal-morning .modal-header').textContent='每 日 晨 请';
+    renderMorningList();
+    document.getElementById('modal-morning').classList.add('show');
+    consumeAction();
+  }
+
+  function renderMorningList(){
+    const sorted=[...state.concubines].sort((a,b)=>b.favor-a.favor);
+    let html='<div style="padding:4px 8px;">';
+    sorted.forEach(c=>{
+      const greeting=getMorningGreeting(c);
+      const hpColor=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      html+=`<div class="morning-greeting-item">
+        ${Portrait.generate(c.portraitSeed,36,45)}
+        <div class="morning-info">
+          <div class="morning-name">${c.title?c.title+c.rank:c.name} <span style="font-size:10px;color:#a08060;">${c.rank}</span>
+            <span style="float:right;font-size:11px;color:#c49030;">&#9829; ${c.favor}</span>
+          </div>
+          <div class="morning-greeting" style="font-size:12px;color:#6b5a3a;line-height:1.4;margin:3px 0;">${greeting.text}</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#a08060;">
+            <span>健康 <b style="color:${hpColor}">${c.health}</b></span>
+            <span style="color:#d0c0b0;">|</span>
+            <span style="color:${c.personality.color||'#9060c0'};">${c.personality.name}</span>
+            <span style="flex:1;"></span>
+            <button class="btn-favor-adjust" onclick="Game.adjustFavorMorning('${c.id}',1)">+1</button>
+            <button class="btn-favor-adjust" onclick="Game.adjustFavorMorning('${c.id}',-1)">-1</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    html+='<div style="text-align:center;padding:8px 0;"><button class="btn-primary" style="max-width:200px;margin:0 auto;font-size:13px;padding:10px 24px;" onclick="Game.closeMorning()">结束晨请</button></div>';
+    document.getElementById('morning-content').innerHTML=html;
+  }
+
+  function getMorningGreeting(c){
+    const p=c.personality;
+    const g=p.greetings||[];
+    const idx=Math.floor(Math.random()*g.length);
+    return {text:g[idx]||'臣妾给皇上请安。'};
+  }
+
+  function adjustFavorMorning(id,adj){
+    const c=state.concubines.find(x=>x.id===id);if(!c)return;
+    const absAdj=Math.abs(adj);
+    c.favor=clamp(c.favor+adj,0,100);
+    logEvent('晨请',`${c.name} ${adj>0?'+':''}${adj}宠爱`);
+    save();updateUI();
+    renderMorningList();
+  }
+
+  function closeMorning(){
+    document.getElementById('modal-morning').classList.remove('show');
+    document.querySelector('#modal-morning .modal-header').textContent='每 日 晨 请';
+  }
+
+  // ===== 宴会系统 =====
+  const BANQUET_PROGRAMS = {
+    '舞蹈': {base:70,bonus:'talent',desc:'翩翩起舞，姿态优美'},
+    '歌唱': {base:65,bonus:'talent',desc:'歌声婉转，余音绕梁'},
+    '诗词': {base:60,bonus:'wisdom',desc:'吟诗作对，才情出众'},
+    '琴艺': {base:68,bonus:'talent',desc:'琴声悠扬，引人入胜'},
+    '棋艺': {base:55,bonus:'wisdom',desc:'以棋会友，布局精妙'},
+    '书画': {base:62,bonus:'talent',desc:'挥毫泼墨，笔走龙蛇'},
+    '茶艺': {base:72,bonus:'wisdom',desc:'烹茶品茗，雅致从容'},
+    '女红': {base:60,bonus:'talent',desc:'针线功夫，匠心独运'},
+    '花艺': {base:70,bonus:'talent',desc:'插花弄草，赏心悦目'},
+    '香道': {base:65,bonus:'wisdom',desc:'焚香品韵，宁静致远'},
+  };
+
+  function openBanquet(){
+    if(state.concubines.length===0){showFeedback('后宫空无一人，无法举办宴会！');return;}
+    if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
+    if(state.treasury<800){showFeedback('国库不足800两，无法举办宴会！');return;}
+    if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
+    state._banquetTarget=null;
+    let html='<div style="text-align:center;">';
+    html+='<p style="color:#a08060;font-size:13px;margin-bottom:12px;">选择宴会表演内容</p>';
+    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;">';
+    Object.keys(BANQUET_PROGRAMS).forEach(prog=>{
+      const p=BANQUET_PROGRAMS[prog];
+      html+=`<button class="btn-banquet" onclick="Game.showBanquetModal('${prog}')">${prog}<br><span style="font-size:11px;opacity:0.7;">${p.desc}</span></button>`;
+    });
+    html+='</div></div>';
+    html+='<button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeBanquet()">取 消</button>';
+    document.getElementById('banquet-content').innerHTML=html;
+    document.getElementById('modal-banquet').classList.add('show');
+  }
+
+  function showBanquetModal(prog){
+    if(state.treasury<800){showFeedback('国库不足800两！');return;}
+    state.treasury-=800;
+    state.actionsLeft--;
+    setTimeout(()=>triggerPalaceEvent(),500);
+    // Each concubine performs
+    const results=state.concubines.map(c=>{
+      const p=BANQUET_PROGRAMS[prog];
+      let score=p.base;
+      if(p.bonus==='talent') score+=c.talent*0.3;
+      else score+=c.wisdom*0.3;
+      score+=rand(-10,10);
+      score=Math.round(score);
+      return {concubine:c,score,prog};
+    });
+    // Find champion
+    results.sort((a,b)=>b.score-a.score);
+    const champion=results[0];
+    // Champion promotes
+    const oldRank=champion.concubine.rank;
+    if(champion.concubine.rank!=='皇后'){
+      const newR=ru(champion.concubine.rank);
+      if(newR!==champion.concubine.rank) champion.concubine.rank=newR;
+    }
+    champion.concubine.favor=clamp(champion.concubine.favor+15,0,100);
+    logEvent('宴会',`${champion.concubine.name}表演${champion.prog}，得分${champion.score}，获魁`);
+    save();updateUI();
+    // Show results
+    let html='<div style="text-align:center;padding:8px;">';
+    html+=`<div style="font-size:18px;color:#c49030;margin-bottom:6px;">&#127881; 宴会结束</div>`;
+    html+=`<div style="font-size:12px;color:#8a7060;margin-bottom:12px;">表演内容：${prog} | 国库 -800两</div>`;
+    html+='<div style="max-height:55vh;overflow-y:auto;margin-bottom:12px;">';
+    results.forEach((r,i)=>{
+      const isChampion=i===0;
+      const medal=i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':`<span style="color:#b0a090;font-size:13px;">#${i+1}</span>`;
+      const bg=isChampion?'rgba(200,160,80,0.15)':'rgba(255,245,230,0.4)';
+      const borderColor=isChampion?'rgba(200,160,80,0.4)':'rgba(200,160,80,0.1)';
+      const promoteNote=isChampion&&r.concubine.rank!==oldRank?`<span style="color:#4a9a5a;font-size:11px;"> ${oldRank}→${r.concubine.rank}</span>`:'';
+      const favorNote=isChampion?`<span style="color:#c49030;font-size:11px;"> +15宠爱</span>`:'';
+      html+=`<div style="display:flex;align-items:center;padding:10px 12px;margin:4px 0;border-radius:10px;background:${bg};border:1px solid ${borderColor};">
+        <div style="font-size:18px;min-width:36px;text-align:center;">${medal}</div>
+        <div style="flex:1;text-align:left;padding:0 8px;">
+          <div style="font-size:14px;font-weight:bold;color:${isChampion?'#c49030':'#5a3e28'};">${r.concubine.name}</div>
+          <div style="font-size:11px;color:#8a7060;">${r.prog} | 得分 <b>${r.score}</b>${favorNote}${promoteNote}</div>
+        </div>
+        <div style="font-size:20px;">${Portrait.generate(r.concubine.portraitSeed,30,38)}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+    html+='<button class="btn-primary" onclick="Game.confirmBanquet()">宴散回宫</button>';
+    document.getElementById('banquet-content').innerHTML=html;
+  }
+
+  function confirmBanquet(){
+    document.getElementById('modal-banquet').classList.remove('show');
+  }
+
+  function closeBanquet(){
+    document.getElementById('modal-banquet').classList.remove('show');
+  }
+
+  // ===== 宫殿事件生成 =====
+  function genSingle(c){
+    return{title:'【'+c.rank+c.name+'】',desc:`${c.rank}${c.name}近日心情不佳，独自一人御花园中赏花落泪。`,options:[
+      {text:'💝 前去安慰（国库-500，宠爱+10）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;c.favor=clamp(c.favor+10,0,100);logEvent('独处','安慰'+c.name);save();updateUI();showFeedback(`安慰 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+10</span><br>国库 <span class="neg">-500</span>`);}},
+      {text:'📝 赐诗一首（宠爱+5）',effect(){c.favor=clamp(c.favor+5,0,100);logEvent('独处','赐诗'+c.name);save();updateUI();showFeedback(`赐诗 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+5</span>`);}},
+      {text:' 不必理会（宠爱-5）',effect(){c.favor=clamp(c.favor-5,0,100);logEvent('独处','冷落'+c.name);save();updateUI();showFeedback(`${c.name} 宠爱 <span class="neg">-5</span>`);}},
+      {text:'🔒 打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==c.id);c.health=clamp(c.health-20,0,100);state.coldPalaceList.push(c);logEvent('独处','打入冷宫'+c.name);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫`);}},
+      {text:'☠ 赐死',effect(){state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('独处','赐死'+c.name);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 已被赐死`);}},
+    ]};
+  }
+
+  function genPregnancyEvent(){
+    const preg=state.concubines.filter(c=>c.pregnant&&c.pregMonth>=2&&c.pregMonth<=9);
+    if(preg.length===0)return null;
+    const c=pick(preg);
+    const others=state.concubines.filter(x=>x.id!==c.id);
+    if(others.length<1)return null;
+    const rival=pick(others);
+    return{title:'【孕期风波】',desc:`${c.rank}${c.name}已有${c.pregMonth}个月身孕，近日${rival.rank}${rival.name}屡屡挑衅，${c.name}受惊后腹痛不安，太医说恐有滑胎之险。`,options:[
+      {text:'🏥 精心照料（国库-1200，'+c.name+'健康+10，安心养胎）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+10,0,100);rival.favor=clamp(rival.favor-10,0,100);logEvent('孕期风波','精心照料');save();updateUI();showFeedback(`精心照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span>，安心养胎<br>${rival.name} 宠爱 <span class="neg">-10</span><br>国库 <span class="neg">-1200</span>`);}},
+      {text:'🔒 禁足'+rival.name+'（'+rival.name+'禁足1月，'+c.name+'安心）',effect(){state.banned[rival.id]=1;c.health=clamp(c.health+5,0,100);logEvent('孕期风波','禁足');save();updateUI();showFeedback(`禁足 <span class="neg">${rival.name}</span> 1月<br>${c.name} 健康 <span class="pos">+5</span>，安心养胎`);}},
+      {text:' 顺其自然（'+c.name+'有'+(Math.random()<0.4?'50%':'30%')+'概率流产）',effect(){if(Math.random()<0.4){c.pregnant=false;c.pregMonth=0;c.health=clamp(c.health-20,0,100);logEvent('孕期风波',`${c.name}流产`);save();updateUI();showFeedback(`<span class="neg">${c.name} 不幸流产</span><br>健康 <span class="neg">-20</span>`);}else{c.health=clamp(c.health-5,0,100);logEvent('孕期风波','母子平安');save();updateUI();showFeedback(`${c.name} 有惊无险<br>健康 <span class="neg">-5</span>，母子平安`);}}},
+      {text:'☠ 赐死'+rival.name,effect(){state.concubines=state.concubines.filter(x=>x.id!==rival.id);c.favor=clamp(c.favor+15,0,100);c.health=clamp(c.health+10,0,100);logEvent('孕期风波',`赐死${rival.name}`);save();updateUI();showFeedback(`<span class="neg">${rival.name}</span> 已被赐死<br>${c.name} 宠爱 <span class="pos">+15</span>，健康 <span class="pos">+10</span>`);}}
+    ]};
+  }
+
+  function genJealousy(con){const a=con[0],b=con[1];
+    return{title:'【争风吃醋】',desc:`${a.rank}${a.name}与${b.rank}${b.name}因皇上近日宠爱一事心生嫌隙，今日在御花园中相遇，言语交锋，闹得不可开交。`,options:[
+      {text:'⚖ 各打五十大板（两人各-5宠爱）',effect(){a.favor=clamp(a.favor-5,0,100);b.favor=clamp(b.favor-5,0,100);logEvent('争宠','各打五十大板');save();updateUI();showFeedback(`两人各 <span class="neg">-5</span> 宠爱`);}},
+      {text:'💝 偏袒'+a.name+'（'+a.name+'宠爱+10，'+b.name+'-10）',effect(){a.favor=clamp(a.favor+10,0,100);b.favor=clamp(b.favor-10,0,100);logEvent('争宠','偏袒'+a.name);save();updateUI();showFeedback(`${a.name} <span class="pos">+10</span>，${b.name} <span class="neg">-10</span>`);}},
+      {text:'💝 偏袒'+b.name+'（'+b.name+'宠爱+10，'+a.name+'-10）',effect(){b.favor=clamp(b.favor+10,0,100);a.favor=clamp(a.favor-10,0,100);logEvent('争宠','偏袒'+b.name);save();updateUI();showFeedback(`${b.name} <span class="pos">+10</span>，${a.name} <span class="neg">-10</span>`);}},
+      {text:'🔒 都禁足1月（平息事端）',effect(){state.banned[a.id]=1;state.banned[b.id]=1;logEvent('争宠','都禁足');save();updateUI();showFeedback(`${a.name}、${b.name} 各禁足 1月`);}},
+      {text:'☠ 赐死'+a.name,effect(){state.concubines=state.concubines.filter(x=>x.id!==a.id);b.favor=clamp(b.favor+10,0,100);logEvent('争宠','赐死'+a.name);save();updateUI();showFeedback(`<span class="neg">${a.name}</span> 已被赐死<br>${b.name} 宠爱 <span class="pos">+10</span>`);}},
+      {text:'🔒 将'+b.name+'打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==b.id);b.health=clamp(b.health-20,0,100);state.coldPalaceList.push(b);logEvent('争宠','打入冷宫'+b.name);save();updateUI();showFeedback(`<span class="neg">${b.name}</span> 被打入冷宫`);}},
+    ]};
+  }
+
+  function genFramed(con){const a=con[0],b=con[1];
+    return{title:'【暗算陷害】',desc:`${a.rank}${a.name}告发${b.rank}${b.name}暗中行巫蛊之术，诅咒后宫，人证物证俱在，${b.name}矢口否认，声称冤枉。`,options:[
+      {text:'🔍 严查真相（国库-800）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;if(Math.random()<0.5){b.favor=clamp(b.favor-20,0,100);logEvent('陷害','查明属实');save();updateUI();showFeedback(`${b.name} 确有此事<br>宠爱 <span class="neg">-20</span>`);}else{a.favor=clamp(a.favor-15,0,100);b.favor=clamp(b.favor+10,0,100);logEvent('陷害','诬陷');save();updateUI();showFeedback(`${a.name} 诬陷败露<br>${a.name} <span class="neg">-15</span>，${b.name} <span class="pos">+10</span>`);}}},
+      {text:'☠ 处死'+b.name,effect(){state.concubines=state.concubines.filter(x=>x.id!==b.id);logEvent('陷害',`处死${b.name}`);save();updateUI();showFeedback(`<span class="neg">${b.name}</span> 已被赐死`);}},
+      {text:'🔒 都打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==a.id&&x.id!==b.id);a.health=clamp(a.health-20,0,100);b.health=clamp(b.health-20,0,100);state.coldPalaceList.push(a,b);logEvent('陷害','都打入冷宫');save();updateUI();showFeedback(`${a.name}、${b.name} 被打入冷宫`);}},
+      {text:' 不予理睬（无事发生）',effect(){logEvent('陷害','不予理睬');save();updateUI();showFeedback('皇上未予理睬，风平浪静。');}},
+    ]};
+  }
+
+  function genRumor(con){const a=con[0],b=con[1];
+    return{title:'【流言蜚语】',desc:`后宫流传${a.rank}${a.name}与${b.rank}${b.name}之争，宫女太监议论纷纷，有损皇家体面。`,options:[
+      {text:'🏥 安抚两人（国库-400，各+5宠爱）',effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;a.favor=clamp(a.favor+5,0,100);b.favor=clamp(b.favor+5,0,100);logEvent('流言','安抚');save();updateUI();showFeedback(`两人各 <span class="pos">+5</span> 宠爱<br>国库 <span class="neg">-400</span>`);}},
+      {text:' 严惩传谣者（各-10宠爱）',effect(){a.favor=clamp(a.favor-10,0,100);b.favor=clamp(b.favor-10,0,100);logEvent('流言','严惩');save();updateUI();showFeedback(`两人各 <span class="neg">-10</span> 宠爱`);}},
+      {text:' 不予理睬（宠爱各-3）',effect(){a.favor=clamp(a.favor-3,0,100);b.favor=clamp(b.favor-3,0,100);logEvent('流言','冷落');save();updateUI();showFeedback(`两人各 <span class="neg">-3</span> 宠爱`);}},
+      {text:'☠ 赐死'+a.name,effect(){state.concubines=state.concubines.filter(x=>x.id!==a.id);b.favor=clamp(b.favor-5,0,100);logEvent('流言','赐死'+a.name);save();updateUI();showFeedback(`<span class="neg">${a.name}</span> 已被赐死<br>${b.name} 宠爱 <span class="neg">-5</span>`);}},
+      {text:'🔒 将'+b.name+'打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==b.id);b.health=clamp(b.health-20,0,100);state.coldPalaceList.push(b);logEvent('流言','打入冷宫'+b.name);save();updateUI();showFeedback(`<span class="neg">${b.name}</span> 被打入冷宫`);}},
+    ]};
+  }
+
+  function generateEvent(){
+    const con=[...state.concubines].sort(()=>Math.random()-0.5);
+    if(con.length<2){
+      if(con.length===0)return null;
+      return genSingle(con[0]);
+    }
+    const r=Math.random();
+    if(r<0.15){const pe=genPregnancyEvent();if(pe)return pe;}
+    if(r<0.55)return genJealousy(con);
+    if(r<0.8)return genFramed(con);
+    return genRumor(con);
+  }
+
+  // ===== 事件处理 =====
+  function showEventModal(){
+    if(!state.pendingEvent)return;
+    const ev=state.pendingEvent;
+    const el=document.getElementById('event-content');
+    let html=`<div class="event-title">${ev.title}</div>`;
+    html+=`<div class="event-desc">${ev.desc}</div>`;
+    ev.options.forEach((opt,i)=>{
+      html+=`<button class="event-option" onclick="Game.handleEventOption(${i})">${opt.text}</button>`;
+    });
+    el.innerHTML=html;
+    document.getElementById('modal-event').classList.add('show');
+  }
+
+  function handleEventOption(idx){
+    if(!state.pendingEvent)return;
+    const ev=state.pendingEvent;
+    if(idx>=0&&idx<ev.options.length){ev.options[idx].effect();}
+    state.pendingEvent=null;
+    document.getElementById('modal-event').classList.remove('show');
+    save();updateUI();
+  }
+
+  function openPendingEvent(){
+    if(state.pendingEvent){showEventModal();}
+    else{showFeedback('当前没有待处理事件。');}
+  }
+
+  function closeEvent(){
+    if(state.pendingEvent){state.pendingEvent=null;save();updateUI();}
+    document.getElementById('modal-event').classList.remove('show');
+  }
+
+  function logEvent(type,detail){
+    state.eventLog.unshift({type,detail,month:state.month,year:state.year});
+    if(state.eventLog.length>100) state.eventLog.pop();
+  }
+
+  function triggerPalaceEvent(){
+    if(state.concubines.length<2)return;
+    if(state.pendingEvent)return;
+    if(state.eventTriggerRate<=0)return;
+    const ev=generateEvent();
+    if(ev){state.pendingEvent=ev;save();updateUI();setTimeout(()=>showEventModal(),500);}
+  }
+
+  // ===== 选秀系统 =====
+  function triggerDraft(){
+    if(state.concubines.length>30){showFeedback('后宫已满30人，无法选秀！');return;}
+    state._draftPool=[];
+    state._draftSelectedIds=[];
+    // Generate 5 candidates
+    for(let i=0;i<5;i++){
+      const c=genConcubine(true);
+      state._draftPool.push(c);
+    }
+    renderDraftSelection();
+  }
+
+  function renderDraftSelection(){
+    const el=document.getElementById('draft-content');
+    if(!el)return;
+    let html='<div style="display:flex;flex-direction:column;gap:8px;">';
+    state._draftPool.forEach((c,idx)=>{
+      const selected=state._draftSelectedIds.includes(c.id);
+      const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      const borderColor=selected?'rgba(200,160,80,0.6)':'rgba(200,160,80,0.15)';
+      const bg=selected?'rgba(240,220,200,0.9)':'rgba(255,245,230,0.6)';
+      const checkMark=selected?'&#9989;':'&#9744;';
+      html+=`<div class="draft-card-new" onclick="Game.toggleDraft('${c.id}')" style="display:flex;align-items:center;padding:8px;border-radius:10px;border:2px solid ${borderColor};background:${bg};transition:all 0.2s;">
+        <div style="font-size:18px;min-width:28px;text-align:center;">${checkMark}</div>
+        ${Portrait.generate(c.portraitSeed,42,53)}
+        <div style="flex:1;padding:0 10px;min-width:0;">
+          <div style="font-size:14px;font-weight:bold;color:#c49030;margin-bottom:2px;">${c.name}</div>
+          <div style="font-size:11px;color:#7a6a5a;line-height:1.5;">
+            <span style="color:${c.family.color};">家世 ${c.family.name}</span> | <span>推荐位份</span> <b style="color:#c49030;">${c.family.initRank}</b><br>
+            美貌 <b>${c.beauty}</b><br>
+            才华 <b>${c.talent}</b> | 智慧 <b>${c.wisdom}</b> | 特长 <b>${c.trait}</b><br>
+            性格 <b style="color:#9060c0;">${c.personality.name}</b> | 健康 <b style="color:${hp}">${c.health}</b> | 宠爱 <b>${c.favor}</b>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    el.innerHTML=html;
+    // Update confirm button style
+    const btn=document.getElementById('draft-confirm-btn');
+    if(btn){
+      if(state._draftSelectedIds.length>0){
+        btn.style.opacity='1';
+        btn.innerHTML=`&#30830;&#35748;&#20837;&#23475; (${state._draftSelectedIds.length}&#20154;)`;
+      } else {
+        btn.style.opacity='0.5';
+        btn.innerHTML='&#30830;&#35748;&#20837;&#23475;';
+      }
+    }
+    document.getElementById('modal-draft').classList.add('show');
+  }
+
+  function toggleDraft(id){
+    const idx=state._draftSelectedIds.indexOf(id);
+    if(idx>=0){state._draftSelectedIds.splice(idx,1);}
+    else{state._draftSelectedIds.push(id);}
+    renderDraftSelection();
+  }
+
+  function confirmDraft(){
+    const selected=state._draftPool.filter(c=>state._draftSelectedIds.includes(c.id));
+    if(selected.length===0){confirmDraftNone();return;}
+    const names=selected.map(c=>{state.concubines.push(c);return c.name;}).join('、');
+    state._draftPool=[];
+    state._draftSelectedIds=[];
+    logEvent('选秀',names+' 入宫');
+    document.getElementById('modal-draft').classList.remove('show');
+    save();updateUI();
+    showFeedback(`<span class="pos">${names}</span> 已选入后宫`);
+  }
+
+  function confirmDraftNone(){
+    state._draftPool=[];
+    state._draftSelectedIds=[];
+    logEvent('选秀','全部落选');
+    document.getElementById('modal-draft').classList.remove('show');
+    save();updateUI();
+    showFeedback('本次选秀全部落选');
+  }
+
+  // ===== 冷宫 =====
+  function showColdPalace(){
+    if(state.coldPalaceList.length===0){showFeedback('冷宫空无一人。');return;}
+    let html='<div style="padding:8px 14px;">';
+    state.coldPalaceList.forEach(c=>{
+      const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      html+=`<div style="display:flex;align-items:center;padding:10px;margin-bottom:10px;background:rgba(230,230,235,0.5);border:1px solid rgba(180,180,190,0.2);border-radius:12px;">
+        <div style="flex-shrink:0;">${Portrait.generate(c.portraitSeed,70,88)}</div>
+        <div style="flex:1;padding-left:12px;min-width:0;">
+          <div style="font-size:15px;font-weight:bold;color:#c49030;margin-bottom:2px;">${c.name} <span style="font-size:11px;color:#a08060;font-weight:normal;">${c.rank}</span></div>
+          <div style="font-size:11px;color:#8a7060;line-height:1.6;">
+            宠爱 <b>${c.favor}</b> · 美貌 <b>${c.beauty}</b> · 才华 <b>${c.talent}</b> · 智慧 <b>${c.wisdom}</b><br>
+            健康 <b style="color:${hp}">${c.health}</b>
+          </div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+          <button onclick="Game.actionColdRelease('${c.id}')" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(80,180,100,0.4);background:rgba(80,180,100,0.15);color:#4a9a5a;font-size:11px;font-family:inherit;cursor:pointer;font-weight:bold;white-space:nowrap;">释放</button>
+          <button onclick="Game.actionColdTorture('${c.id}')" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(200,160,80,0.3);background:rgba(200,160,80,0.1);color:#8a7060;font-size:11px;font-family:inherit;cursor:pointer;white-space:nowrap;">折磨</button>
+          <button onclick="Game.actionColdKill('${c.id}')" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(200,60,60,0.3);background:rgba(200,60,60,0.1);color:#c04040;font-size:11px;font-family:inherit;cursor:pointer;font-weight:bold;white-space:nowrap;">赐死</button>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    document.getElementById('cold-palace-list').innerHTML=html;
+    document.getElementById('cold-count').textContent=state.coldPalaceList.length;
+    showPage('cold');
+  }
+
+  // ===== 怀孕名单 =====
+  function showPregnantList(){
+    const preg=state.concubines.filter(c=>c.pregnant);
+    if(preg.length===0){showFeedback('目前没有妃嫔怀孕！');return;}
+    let html='<div style="padding:8px 0;">';
+    html+='<div style="text-align:center;font-size:14px;color:#d07090;margin-bottom:16px;">&#129324; 有喜妃嫔</div>';
+    preg.forEach(c=>{
+      html+=`<div class="morning-greeting-item">
+        ${Portrait.generate(c.portraitSeed,50,63)}
+        <div class="morning-info">
+          <div class="morning-name">${c.title?c.title+c.rank:c.name} <span style="font-size:11px;color:#a08060;">${c.rank}</span></div>
+          <div class="morning-favor" style="color:#e06080;font-size:13px;">&#129324; 怀孕 ${c.pregMonth}个月</div>
+          <div style="font-size:11px;color:#a08060;">健康 ${c.health} | 宠爱 ${c.favor}</div>
+          <div style="font-size:11px;color:#a08060;">预产：${c.pregMonth>=10?'随时可能分娩':'还剩 '+(10-c.pregMonth)+' 个月'}</div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    document.getElementById('morning-content').innerHTML=html;
+    document.querySelector('#modal-morning .modal-header').textContent='有 喜 名 单';
+    document.getElementById('modal-morning').classList.add('show');
+  }
+
+  // ===== 反馈弹窗 =====
+  function showFeedback(html){
+    document.getElementById('feedback-text').innerHTML=html;
+    document.getElementById('modal-feedback').classList.add('show');
+    setTimeout(()=>{document.getElementById('modal-feedback').classList.remove('show');},2500);
+  }
+
+  function closeFeedback(){
+    document.getElementById('modal-feedback').classList.remove('show');
+  }
+
+  // ===== 初始化 =====
+  function init(){
+    load();
+    updateUI();
+    initStart();
+    const ti=document.getElementById('title-input');
+    if(ti) ti.addEventListener('input', function(){
+      const c=state.concubines.find(x=>x.id===state._titleTarget);
+      if(c) updateTitlePreview(c);
+    });
+  }
+
+  // ===== 导出 =====
+  return{init,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,handleEventOption,openPendingEvent,closeEvent,closeFeedback,triggerPalaceEvent,openBanquet,confirmBanquet,closeBanquet};
+})();
+
+// ===== 启动 =====
+window.addEventListener('load', function(){
+  Game.init();
+});
+</script>
+</body>
+</html>
