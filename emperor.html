@@ -251,7 +251,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </div>
 <div id="modal-treasury" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#24320;&#22269;&#22823;&#20856;</div><div class="modal-body" style="text-align:center;"><p style="color:#6b5a3a;margin-bottom:10px;">&#24320;&#22269;&#20043;&#21021;&#65292;&#22269;&#24211;&#36164;&#37329;&#30001;&#22825;&#24847;&#32780;&#23450;&#8230;&#8230;</p><div style="font-size:38px;color:#ffd700;margin:18px 0;text-shadow:0 0 12px rgba(255,215,0,0.25);" id="treasury-amount"></div><button class="btn-primary" onclick="Game.confirmTreasury()">&#27491;&#24335;&#30331;&#22522;</button></div></div></div>
 <div id="modal-draft" class="modal-overlay"><div class="modal" style="max-height:90vh;"><div class="modal-header">&#31168;&#22899;&#20837;&#36873;</div><div class="modal-body" style="max-height:75vh;overflow-y:auto;"><p style="color:#6b5a3a;text-align:center;margin-bottom:12px;font-size:13px;">&#31168;&#22899;&#20837;&#36873;&#65292;&#35831;&#38491;&#19979;&#28857;&#20987;&#36873;&#20004;&#65292;&#21487;&#22810;&#36873;&#25110;&#20063;&#21487;&#20840;&#37096;&#33829;&#36873;</p><div id="draft-content"></div></div><div style="display:flex;gap:10px;padding:0 0 16px;"><button class="btn-primary" style="flex:1;margin:0;" id="draft-confirm-btn" onclick="Game.confirmDraft()">&#30830;&#35748;&#20837;&#23475;</button><button class="btn-primary" style="flex:1;margin:0;border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.confirmDraftNone()">&#20840;&#37096;&#33829;&#36873;</button></div></div></div>
-<div id="modal-event" class="modal-overlay modal-center"><div class="modal" style="max-height:85vh;display:flex;flex-direction:column;"><div class="modal-header">&#21518;&#23467;&#39118;&#20113;</div><div id="event-content" style="flex:1;overflow-y:auto;padding:16px 18px 8px;"></div><div style="padding:8px 18px 16px;display:flex;gap:10px;"><button class="btn-primary" style="flex:1;margin:0;opacity:0.5;" id="event-confirm-btn" onclick="Game.confirmEventOption()" disabled>&#30830;&#35748;</button><button class="btn-primary" style="flex:1;margin:0;border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeEvent()">&#21462;&#28040;</button></div></div></div>
+<div id="modal-event" class="modal-overlay modal-center"><div class="modal" style="max-height:85vh;display:flex;flex-direction:column;"><div class="modal-header">&#21518;&#23467;&#39118;&#20113;</div><div id="event-content" style="flex:1;overflow-y:auto;padding:16px 18px 8px;"></div></div></div>
 <div id="modal-morning" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#27599;&#26085;&#26223;&#35831;</div><div class="modal-body" id="morning-content" style="max-height:70vh;overflow-y:auto;padding:0;"></div></div></div>
 <div id="modal-title" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#36176;&#23553;&#21495;</div><div class="modal-body" id="title-content"><p style="color:#a08060;text-align:center;font-size:13px;margin-bottom:12px;" id="title-hint"></p><div style="text-align:center;margin-bottom:16px;"><input type="text" id="title-input" class="input-field" placeholder="&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;&#65306;&#23425;" maxlength="2" style="max-width:200px;margin:0 auto;"></div><p style="color:#a08060;text-align:center;font-size:11px;margin-bottom:16px;" id="title-preview"></p><button class="btn-primary" onclick="Game.confirmTitle()">&#30830;&#35748;&#36176;&#23553;</button><button class="btn-primary" style="border-color:rgba(200,160,80,0.2);color:#a08060;background:rgba(200,160,80,0.1);" onclick="Game.closeTitleModal()">&#21462;&#28040;</button></div></div></div>
 <div id="modal-rank-picker" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#35843;&#25972;&#20301;&#20221;</div><div class="modal-body" id="rank-picker-content"></div></div></div>
@@ -951,33 +951,20 @@ const Game = (function() {
     let html=`<div class="event-title">${ev.title}</div>`;
     html+=`<div class="event-desc">${ev.desc}</div>`;
     ev.options.forEach((opt,i)=>{
-      html+=`<button class="event-option" id="event-opt-${i}" onclick="Game.selectEventOption(${i})">${opt.text}</button>`;
+      html+=`<button class="event-option" onclick="Game.selectEventOption(${i})">${opt.text}</button>`;
     });
     el.innerHTML=html;
-    const btn=document.getElementById('event-confirm-btn');
-    if(btn){btn.disabled=true;btn.style.opacity='0.5';}
     document.getElementById('modal-event').classList.add('show');
   }
 
   function selectEventOption(idx){
     if(!state.pendingEvent)return;
-    state._selectedEventOption=idx;
-    // Highlight selected
     const ev=state.pendingEvent;
-    ev.options.forEach((_,i)=>{
-      const optEl=document.getElementById('event-opt-'+i);
-      if(optEl){
-        if(i===idx){
-          optEl.style.borderColor='rgba(200,160,80,0.6)';
-          optEl.style.background='rgba(240,220,200,0.9)';
-        } else {
-          optEl.style.borderColor='rgba(200,160,80,0.25)';
-          optEl.style.background='rgba(255,245,230,0.7)';
-        }
-      }
-    });
-    const btn=document.getElementById('event-confirm-btn');
-    if(btn){btn.disabled=false;btn.style.opacity='1';}
+    if(idx>=0&&idx<ev.options.length){ev.options[idx].effect();}
+    state.pendingEvent=null;
+    state._selectedEventOption=null;
+    document.getElementById('modal-event').classList.remove('show');
+    save();updateUI();
   }
 
   function confirmEventOption(){
@@ -998,11 +985,6 @@ const Game = (function() {
   function openPendingEvent(){
     if(state.pendingEvent){showEventModal();}
     else{showFeedback('当前没有待处理事件。');}
-  }
-
-  function closeEvent(){
-    if(state.pendingEvent){state.pendingEvent=null;save();updateUI();}
-    document.getElementById('modal-event').classList.remove('show');
   }
 
   function logEvent(type,detail){
@@ -1185,7 +1167,7 @@ const Game = (function() {
   // ===== 导出 =====
   function closeBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;}
   function confirmBanquet(){document.getElementById('modal-banquet').classList.remove('show');state._banquetSelected=null;save();updateUI();}
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet};
 })();
 
 // ===== 启动 =====
