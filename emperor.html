@@ -200,7 +200,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="start-form">
       <p style="color:#6b5a3a;font-size:13px;margin-bottom:6px;">&#20026;&#24744;&#30340;&#29579;&#26397;&#23450;&#19979;&#22269;&#21495;</p>
       <input type="text" id="dynasty-input" class="input-field" placeholder="&#22914;&#65306;&#22823;&#21608;" maxlength="6">
-      <button class="btn-primary" id="start-btn">&#24320;&#22269;&#30331;&#22522;</button>
+      <button class="btn-primary" id="start-btn" onclick="Game.startNewGame()">&#24320;&#22269;&#30331;&#22522;</button>
     </div>
   </div>
 </div>
@@ -404,14 +404,15 @@ const Game = (function() {
 
   function initStart(){
     showPage('start');
-    document.getElementById('start-btn').onclick=function(){
-      const v=document.getElementById('dynasty-input').value.trim();if(!v){alert('&#35831;&#36755;&#20837;&#22269;&#21495;&#65281;');return;}
-      // Clear old save data for fresh start
-      try{localStorage.removeItem('emperor_game');}catch(e){}
-      state.dynasty=v;state.treasury=rand(3000,8000);
-      document.getElementById('treasury-amount').textContent=state.treasury+' &#20004;';
-      document.getElementById('modal-treasury').classList.add('show');
-    };
+  }
+  function startNewGame(){
+    const v=document.getElementById('dynasty-input').value.trim();
+    if(!v){alert('&#35831;&#36755;&#20837;&#22269;&#21495;&#65281;');return;}
+    // Clear old save data for fresh start
+    try{localStorage.removeItem('emperor_game');}catch(e){}
+    state.dynasty=v;state.treasury=rand(3000,8000);
+    document.getElementById('treasury-amount').textContent=state.treasury+' &#20004;';
+    document.getElementById('modal-treasury').classList.add('show');
   }
   function confirmTreasury(){
     // Reset all game state
@@ -1148,18 +1149,27 @@ const Game = (function() {
 
   // ===== 初始化 =====
   function init(){
-    load();
-    updateUI();
-    initStart();
-    const ti=document.getElementById('title-input');
-    if(ti) ti.addEventListener('input', function(){
-      const c=state.concubines.find(x=>x.id===state._titleTarget);
-      if(c) updateTitlePreview(c);
-    });
+    try{
+      load();
+      updateUI();
+      initStart();
+      const ti=document.getElementById('title-input');
+      if(ti) ti.addEventListener('input', function(){
+        const c=state.concubines.find(x=>x.id===state._titleTarget);
+        if(c) updateTitlePreview(c);
+      });
+    }catch(e){
+      console.error('Init error:', e);
+      // Emergency reset - clear everything
+      try{localStorage.removeItem('emperor_game');}catch(e){}
+      state={dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3};
+      updateUI();
+      initStart();
+    }
   }
 
   // ===== 导出 =====
-  return{init,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeEvent,closeFeedback,triggerPalaceEvent,openBanquet,confirmBanquet,closeBanquet};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,openMorning,adjustFavorMorning,closeMorning,closeBirth,toggleDraft,confirmDraft,confirmDraftNone,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeEvent,closeFeedback,triggerPalaceEvent,openBanquet,confirmBanquet,closeBanquet};
 })();
 
 // ===== 启动 =====
