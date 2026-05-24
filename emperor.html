@@ -148,6 +148,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .btn-princess-decline { flex:1; padding:14px; border:1px solid rgba(160,80,180,0.4); border-radius:10px; background:linear-gradient(180deg,rgba(160,80,180,0.2),rgba(140,60,160,0.2)); color:#a060c0; font-size:15px; font-family:inherit; font-weight:bold; cursor:pointer; letter-spacing:3px; transition:all 0.2s; box-shadow:0 2px 6px rgba(140,60,160,0.1); }
 .btn-princess-decline:active { transform:scale(0.97); }
 .feedback-text { font-size:13px; color:#8a7060; line-height:1.7; padding:12px; background:rgba(0,0,0,0.05); border-radius:8px; margin-bottom:14px; }
+#month-transition { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:#000; z-index:9999; opacity:0; pointer-events:none; transition: opacity 0.6s ease-in-out; }
 .feedback-text .pos { color:#2a8a4a; } .feedback-text .neg { color:#c04040; } .feedback-text .neu { color:#c49030; }
 .cold-card { display:flex; align-items:center; padding:12px; background:rgba(230,230,235,0.4); border:1px solid rgba(180,180,190,0.2); border-radius:12px; margin-bottom:10px; opacity:0.75; }
 .event-log-item { padding:10px 12px; margin-bottom:6px; background:rgba(255,245,230,0.6); border-left:2px solid rgba(200,160,80,0.3); border-radius:0 8px 8px 0; font-size:12px; }
@@ -239,6 +240,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
   <button id="intro-skip" onclick="Game.skipIntro()">跳过动画</button>
 </div>
 <div class="scroll-container">
+<div id="month-transition"></div>
 <div id="page-start" class="page active">
   <div class="start-page">
     <div class="start-logo">&#127963;</div>
@@ -1101,6 +1103,26 @@ const Game = (function() {
 
   function nextMonth(){
     if(state.pendingEvent){showFeedback('&#35831;&#20808;&#22788;&#29702;&#21518;&#23467;&#24322;&#21160;&#20107;&#20214;&#65281;');return;}
+    // 月份切换转场
+    var overlay=document.getElementById('month-transition');
+    if(overlay){
+      overlay.style.display='block';
+      overlay.style.opacity='0';
+      requestAnimationFrame(function(){
+        overlay.style.opacity='1';
+        setTimeout(function(){
+          doNextMonth();
+          setTimeout(function(){
+            overlay.style.opacity='0';
+            setTimeout(function(){ overlay.style.display='none'; },600);
+          },100);
+        },600);
+      });
+    } else {
+      doNextMonth();
+    }
+  }
+  function doNextMonth(){
     state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});}
     state.treasury+=10000;state.actionsLeft=5;state.banquetHeld=false;state.morningTriggered=false;state.eventTriggeredThisMonth=false;state.monthEventAction=Math.floor(Math.random()*3)+1;
     processBannedDecay();processColdDecay();processPregnancy();save();updateUI();
