@@ -683,7 +683,6 @@ const Game = (function() {
     "Photo/0117586C-28E1-4AE6-8744-557684D77DB7.PNG",
     "Photo/023AEB38-A702-41F0-9E27-9314B2F85BFB.PNG",
     "Photo/0B0E134D-61AF-4CD4-A5E7-D43C9D9B28BC.PNG",
-    "Photo/0B34BF97-F898-4972-8939-E029A8E87989.PNG",
     "Photo/0C5004C1-E05B-4774-BE6D-F23856EA20C5.PNG",
     "Photo/0E8EAA48-9602-4355-B898-2D69AE0FBCA0.PNG",
     "Photo/10F3FB1B-A390-4621-BEFD-FA2F89EF1F0F.PNG",
@@ -724,18 +723,15 @@ const Game = (function() {
     "Photo/5C38B941-75FC-4FC4-80D9-00550E78B30B.PNG",
     "Photo/62B823F2-9871-44D2-B55F-8BE264AF6ECF.PNG",
     "Photo/6714EBFE-3E81-494E-9C23-40CCBBD3B684.PNG",
-    "Photo/68044B7B-0699-4FA9-8B49-4B1EF300D0E6.PNG",
     "Photo/69A10FE8-9B71-4741-B3D5-ACCC72C0CC5A.PNG",
     "Photo/6C2B8BA0-D35F-4A9F-AFE8-B0E8D28587A9.PNG",
     "Photo/6F75D77D-A541-4DA2-8C59-3C0AFD29E684.PNG",
     "Photo/71C3DEB8-302E-45C8-88E0-CFA60A94A282.PNG",
-    "Photo/7490E9EF-2771-46A8-B81C-328DB5B812B6.PNG",
     "Photo/74ABD42C-1BBF-4AAF-8DFD-38894A6B0B9B.PNG",
     "Photo/750CE97D-AB54-4D53-B4C5-56F3A3D0CF1F.PNG",
     "Photo/769313DA-5B8E-4A29-9848-A16F22977572.PNG",
     "Photo/7BAF335B-0162-44C6-8AF2-070618A3E4A5.PNG",
     "Photo/81FB520B-19F4-4175-AEE2-CB9BA5A1A7E6.PNG",
-    "Photo/86ABCC91-FC84-4DA8-8FB5-D341A6D87FAD.PNG",
     "Photo/882216EE-D445-4F91-A7EC-DE0162DA2EE3.PNG",
     "Photo/89D3E2F8-35CD-4D16-A6CD-67A8415CFB1A.PNG",
     "Photo/8B1AD353-DD16-4E74-87AB-7F7AB0080F52.PNG",
@@ -824,9 +820,10 @@ const Game = (function() {
   ];
   function portraitHTML(idx, w, h, src) {
     const r = w<100?8:12;
-    const url = src ? src : PORTRAIT_DATA[idx-1];
+    const url = src ? src : (PORTRAIT_DATA[idx-1] || '');
+    if(!url) return `<div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:flex;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
     const onclick = src ? '' : ` onclick="Game.showPortraitZoom(${idx})"`;
-    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="">`;
+    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:none;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
   }
 
   function updateUI() {
