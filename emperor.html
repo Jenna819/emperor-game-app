@@ -474,7 +474,7 @@ const Game = (function() {
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -676,7 +676,7 @@ const Game = (function() {
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -842,11 +842,11 @@ const Game = (function() {
     if(state.children.length>0){heirsBadge.style.display='flex';heirsBadge.textContent=state.children.length;}else{heirsBadge.style.display='none';}
     document.getElementById('palace-alert').style.display=state.pendingEvent?'block':'none';
     const btn=document.getElementById('next-month-btn'); if(btn)btn.classList.toggle('urgent',state.actionsLeft<=0);
-    // Draft countdown
+    // 选秀提示
     const draftLabel=document.getElementById('draft-countdown');
     if(draftLabel){
-      if(state.nextDraftIn>0){
-        draftLabel.innerHTML=`&#31168;&#36873;&#20498;&#35745;&#26376;: <b>${state.nextDraftIn}</b>`;
+      if(state.month===1){
+        draftLabel.innerHTML='&#27599;&#24180;1&#26376;&#31168;&#36873;';
         draftLabel.style.display='block';
       } else {
         draftLabel.style.display='none';
@@ -1079,7 +1079,7 @@ const Game = (function() {
     state.year=1;state.month=1;state.actionsLeft=5;
     state.concubines=[];state.coldPalaceList=[];state.banned={};
     state.eventLog=[];state.pendingEvent=null;
-    state.eventTriggerRate=60;state.nextDraftIn=3;
+    state.eventTriggerRate=60;
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
     state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;
     state._banquetSelected=null;state.banquetHeld=false;state.morningTriggered=false;
@@ -1106,8 +1106,11 @@ const Game = (function() {
       setTimeout(()=>triggerPrincessEvent(),400);
       return;
     }
-    state.nextDraftIn--;
-    if(state.nextDraftIn<=0){state.nextDraftIn=3;setTimeout(()=>triggerDraft(),300);}
+    // 选秀：每年1月触发一次
+    if(state.month===1&&!state.draftTriggeredThisYear){
+      state.draftTriggeredThisYear=true;
+      setTimeout(()=>triggerDraft(),300);
+    }
   }
 
   function processPregnancy(){
@@ -1265,8 +1268,8 @@ const Game = (function() {
     state.dynasty='';state.treasury=0;state.year=1;state.month=1;state.actionsLeft=5;
     state.concubines=[];state.coldPalaceList=[];state.banned={};
     state.eventLog=[];state.pendingEvent=null;state.children=[];
-    state.nextDraftIn=3;state.banquetHeld=false;state.morningTriggered=false;
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
+    state.draftTriggeredThisYear=false;state.princessEventTriggered=false;
     state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;
     state._banquetSelected=null;closeModal();
     showPage('start');
