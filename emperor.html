@@ -2412,6 +2412,31 @@ const Game = (function() {
     ]};
   }
 
+  // ===== 克扣用度 =====
+  function genEmbezzle(con){
+    // 需要至少一个高位妃子（妃及以上）和一个低位妃子（常在及以下）
+    const highRank=con.filter(c=>ri(c.rank)<=ri('妃')&&c.rank!=='皇后');
+    if(highRank.length===0)return null;
+    const lowRank=con.filter(c=>ri(c.rank)>=ri('常在'));
+    if(lowRank.length===0)return null;
+    const perp=pick(highRank);
+    const victim=pick(lowRank);
+    if(perp.id===victim.id)return genEmbezzle(con);
+    const reasons=[
+      '以"节约用度"为由，暗中削减其月例银子、炭火、膳食',
+      '借口宫规整顿，克扣其日常份例，连冬日炭火也不足',
+      '以"冲撞凤驾"为由，将其份例减至最低',
+      '暗中指使管事嬷嬷层层克扣，低位妃子寒冬挨饿受冻',
+    ];
+    const reason=pick(reasons);
+    return{title:'【克扣用度】',desc:`${perp.rank}${perp.name}协理六宫期间${reason}，${victim.rank}${victim.name}份例锐减，寒冬中衣着单薄、饮食粗劣，已病倒在床，宫人暗中上报求皇上做主。`,perpetrator:perp,victim:victim,options:[
+      {text:'🏥 太医诊治（国库-800，'+victim.name+'健康+15）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;victim.health=clamp(victim.health+15,0,100);logEvent('克扣用度','太医诊治');save();updateUI();showFeedback(`太医诊治 <span class="pos">${victim.name}</span><br>健康 <span class="pos">+15</span>（当前${victim.health}）<br>国库 <span class="neg">-800</span>`);}},
+      {text:' 补发份例（国库-1000，'+victim.name+'宠爱+10，'+perp.name+'势力-15）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;victim.favor=clamp(victim.favor+10,0,2200);perp.power=clamp(perp.power-15,0,500);const rc=checkRankChange(perp);logEvent('克扣用度','补发份例');save();updateUI();let msg=`补发份例 <span class="pos">${victim.name}</span><br>宠爱 <span class="pos">+10</span><br>${perp.name} 势力 <span class="neg">-15</span><br>国库 <span class="neg">-1000</span>`;if(rc){msg+='<br><span class="pos">'+perp.name+' 势力不足，降为 '+rc.rank+'</span>';}showFeedback(msg);}},
+      {text:'🔍 严查账目（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.7){const demoteText=victim.rank==='官女子'?'':'降位份1级';if(perp.rank!=='官女子'){perp.power=clamp(perp.power-30,0,500);const rc2=checkRankChange(perp);logEvent('克扣用度','查实贪墨');save();updateUI();let msg=`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>势力 <span class="neg">-30</span>`;if(rc2){msg+='<br><span class="pos">'+perp.name+' 降为 '+rc2.rank+'</span>';}showFeedback(msg);}else{logEvent('克扣用度','查实贪墨');save();updateUI();showFeedback(`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>但其位份已是最低，改为削减宠爱 <span class="neg">-20</span>`);perp.favor=clamp(perp.favor-20,0,2200);}}else{_showNoEvidence('【克扣用度】','经查账目虽有疏漏，但并无确凿贪墨证据，'+perp.name+' 辩称是下人办事不力，恐难定其罪。');}}},
+      {text:' 置之不理',effect(){victim.health=clamp(victim.health-20,0,100);victim.favor=clamp(victim.favor-10,0,2200);perp.power=clamp(perp.power+3,0,500);logEvent('克扣用度','置之不理');save();updateUI();showFeedback(`皇上置之不理<br>${victim.name} 健康 <span class="neg">-20</span>（当前${victim.health}），宠爱 <span class="neg">-10</span><br>${perp.name} 势力 <span class="pos">+3</span>`);}},
+    ]};
+  }
+
   // ===== 母家获罪 =====
   function genFamilyCrime(con){
     const eligible=con.filter(c=>c.rank!=='皇后'&&c.family&&c.family.name!=='平民秀女');
@@ -2570,8 +2595,9 @@ const Game = (function() {
     if(r<0.54){const hce=genHarmChild(con);if(hce)return hce;}
     if(r<0.66){const ae=genAdultery(con);if(ae)return ae;}
     if(r<0.79){const fe=genFamilyCrime(con);if(fe)return fe;}
-    if(r<0.87)return genJealousy(con);
-    if(r<0.97)return genFramed(con);
+    if(r<0.88){const ee=genEmbezzle(con);if(ee)return ee;}
+    if(r<0.94)return genJealousy(con);
+    if(r<0.98)return genFramed(con);
     return genRumor(con);
   }
 
