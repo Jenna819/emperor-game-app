@@ -822,9 +822,11 @@ const Game = (function() {
     "visit/7490E9EF-2771-46A8-B81C-328DB5B812B6.PNG",
     "visit/86ABCC91-FC84-4DA8-8FB5-D341A6D87FAD.PNG",
   ];
-  function portraitHTML(idx, w, h) {
+  function portraitHTML(idx, w, h, src) {
     const r = w<100?8:12;
-    return `<img src="${PORTRAIT_DATA[idx-1]}" onclick="Game.showPortraitZoom(${idx})" style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="">`;
+    const url = src ? src : PORTRAIT_DATA[idx-1];
+    const onclick = src ? '' : ` onclick="Game.showPortraitZoom(${idx})"`;
+    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="">`;
   }
 
   function updateUI() {
@@ -888,7 +890,7 @@ const Game = (function() {
       const isBanned=state.banned[c.id];
       const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
       const rankName=getRankName(c);
-      html+=`<div class="concubine-card" onclick="Game.showDetail('${c.id}')">${portraitHTML(c.portraitIdx,80,100)}<div class="concubine-info"><div class="concubine-name"><span class="concubine-rank ${rc}">${rankName}</span><span class="concubine-fullname">${c.name}</span>${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}</div><div class="concubine-stats"><span>&#24180;&#40831; <b>${c.age}</b></span><span>&#21183;&#21147; <b style="color:#9060c0;">${c.power}</b></span><span>&#32654;&#35980; <b>${c.beauty}</b></span><span>&#20581;&#24247; <b style="color:${hp}">${c.health}</b></span>${c.pregnant?'<span class="badge badge-pregnant">&#129324; &#26377;&#21916;<span class="badge-pregnant-month">'+c.pregMonth+'&#26376;</span></span>':''}</div></div></div>`;
+      html+=`<div class="concubine-card" onclick="Game.showDetail('${c.id}')">${portraitHTML(c.portraitIdx,80,100,c.princessPortrait)}<div class="concubine-info"><div class="concubine-name"><span class="concubine-rank ${rc}">${rankName}</span><span class="concubine-fullname">${c.name}</span>${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}</div><div class="concubine-stats"><span>&#24180;&#40831; <b>${c.age}</b></span><span>&#21183;&#21147; <b style="color:#9060c0;">${c.power}</b></span><span>&#32654;&#35980; <b>${c.beauty}</b></span><span>&#20581;&#24247; <b style="color:${hp}">${c.health}</b></span>${c.pregnant?'<span class="badge badge-pregnant">&#129324; &#26377;&#21916;<span class="badge-pregnant-month">'+c.pregMonth+'&#26376;</span></span>':''}</div></div></div>`;
     });
     el.innerHTML=html;
   }
@@ -1286,7 +1288,7 @@ const Game = (function() {
     const rc=RC[c.rank]||'rank-low';const isBanned=state.banned[c.id];
     const dis=(state.actionsLeft<=0||isBanned)?'disabled':'';
     document.getElementById('detail-content').innerHTML=`
-      <div class="detail-header"><div class="detail-portrait-wrap">${portraitHTML(c.portraitIdx,140,175)}</div><div class="detail-name">${c.name}</div><div class="detail-rank ${rc}">${getRankName(c)}${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}${c.title?'<span class="badge" style="background:rgba(200,160,80,0.2);color:#c49030;margin-left:6px;">'+c.title+'</span>':''}</div></div>
+      <div class="detail-header"><div class="detail-portrait-wrap">${portraitHTML(c.portraitIdx,140,175,c.princessPortrait)}</div><div class="detail-name">${c.name}</div><div class="detail-rank ${rc}">${getRankName(c)}${isBanned?'<span class="badge badge-banned">&#31105;&#36275;</span>':''}${c.title?'<span class="badge" style="background:rgba(200,160,80,0.2);color:#c49030;margin-left:6px;">'+c.title+'</span>':''}</div></div>
       <button class="back-btn" onclick="Game.showPage('main')">&#8592; &#36820;&#22238;</button>
       <div class="stats-card"><div class="stats-title">&#23646; &#24615;</div>
 
@@ -1401,7 +1403,7 @@ const Game = (function() {
     const c=findC(id);if(!c)return;
     if(state.treasury<200){showFeedback('国库银两不足！');return;}
     state._bedInteractTarget=id;
-    let html=`<div class="bed-modal-portrait">${portraitHTML(c.portraitIdx,120,150)}</div>`;
+    let html=`<div class="bed-modal-portrait">${portraitHTML(c.portraitIdx,120,150,c.princessPortrait)}</div>`;
     html+=`<div class="bed-modal-name">${c.title?c.title+c.rank:c.name}</div>`;
     html+=`<div class="bed-dialogue-box" id="bed-dlg-text"><span style="color:#b0a090;">请皇上选择动作……</span></div>`;
     html+=`<div class="bed-action-btns">`;
@@ -1566,7 +1568,7 @@ const Game = (function() {
     state._bedTarget=c.id;
     const el=document.getElementById('bed-card-'+idx);
     el.classList.add('revealed');
-    el.innerHTML=`${portraitHTML(c.portraitIdx,70,90)}<div style="margin-top:6px;font-weight:bold;color:#5a3e28;">${c.title?c.title+c.rank:c.name}</div>`;
+    el.innerHTML=`${portraitHTML(c.portraitIdx,70,90,c.princessPortrait)}<div style="margin-top:6px;font-weight:bold;color:#5a3e28;">${c.title?c.title+c.rank:c.name}</div>`;
     setTimeout(()=>{
       document.getElementById('modal-bed-select').classList.remove('show');
       showBedDialogue(c);
@@ -1578,7 +1580,7 @@ const Game = (function() {
     const dlg=pick(BED_DIALOGUES);
     const el=document.getElementById('bed-dialogue-content');
     let html='<div style="text-align:center;margin-bottom:16px;">';
-    html+=portraitHTML(c.portraitIdx,80,100);
+    html+=portraitHTML(c.portraitIdx,80,100,c.princessPortrait);
     html+=`<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:8px;">${c.title?c.title+c.rank:c.name}</div>`;
     html+='</div>';
     html+='<div class="bed-dialogue">';
@@ -1838,7 +1840,7 @@ const Game = (function() {
     const opts=state._morningOptions;
     const el=document.getElementById('morning-content');
     let html='<div style="padding:8px;">';
-    html+=`<div style="text-align:center;margin-bottom:12px;">${portraitHTML(c.portraitIdx,60,76)}
+    html+=`<div style="text-align:center;margin-bottom:12px;">${portraitHTML(c.portraitIdx,60,76,c.princessPortrait)}
       <div style="font-size:15px;font-weight:bold;color:#c49030;margin-top:4px;">${c.rank} ${c.name}</div>
       <div style="font-size:11px;color:#9060c0;">${c.personality.name}</div></div>`;
     if(state._morningRound===1){
@@ -1992,7 +1994,7 @@ const Game = (function() {
           <div style="font-size:14px;font-weight:bold;color:${isChampion?'#c49030':'#5a3e28'};">${r.concubine.name}${traitNote}</div>
           <div style="font-size:11px;color:#8a7060;">${r.prog} | 得分 <b style="color:${scoreColor}">${r.score}</b>${favorNote}${promoteNote}</div>
         </div>
-        <div style="font-size:20px;">${portraitHTML(r.concubine.portraitIdx,30,38)}</div>
+        <div style="font-size:20px;">${portraitHTML(r.concubine.portraitIdx,30,38,r.concubine.princessPortrait)}</div>
       </div>`;
     });
     html+='</div></div>';
@@ -2490,7 +2492,8 @@ const Game = (function() {
       pregnant: false,
       pregMonth: 0,
       portraitIdx: p.portraitIdx,
-      _favored: false
+      _favored: false,
+      princessPortrait: PRINCESS_PORTRAIT_DATA[p.portraitIdx]
     };
     state.concubines.push(concubine);
     logEvent('西域来访', p.country+'公主'+p.name+' 收入后宫，册封为嫔');
@@ -2719,7 +2722,7 @@ const Game = (function() {
     const dis=state.actionsLeft<=0||isBanned?'disabled':'';
     const el=document.getElementById('kunning-content');
     let html=`<div style="text-align:center;padding:16px;">`;
-    html+=portraitHTML(queen.portraitIdx,200,250);
+    html+=portraitHTML(queen.portraitIdx,200,250,queen.princessPortrait);
     html+=`<div style="font-size:24px;font-weight:bold;color:#c49030;margin-top:12px;">${getRankName(queen)}</div>`;
     html+=`<div style="font-size:14px;color:#a08060;margin-top:4px;">${queen.name}</div>`;
     html+=`<div style="font-size:12px;color:#9060c0;margin-top:2px;">${queen.personality.name} · ${queen.family.name}</div>`;
@@ -2780,7 +2783,7 @@ const Game = (function() {
     state.coldPalaceList.forEach(c=>{
       const hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
       html+=`<div style="display:flex;align-items:center;padding:10px;margin-bottom:10px;background:rgba(230,230,235,0.5);border:1px solid rgba(180,180,190,0.2);border-radius:12px;">
-        <div style="flex-shrink:0;">${portraitHTML(c.portraitIdx,70,88)}</div>
+        <div style="flex-shrink:0;">${portraitHTML(c.portraitIdx,70,88,c.princessPortrait)}</div>
         <div style="flex:1;padding-left:12px;min-width:0;">
           <div style="font-size:15px;font-weight:bold;color:#c49030;margin-bottom:2px;">${getRankName(c)} <span style="font-size:11px;color:#a08060;font-weight:normal;">${c.name}</span></div>
           <div style="font-size:11px;color:#8a7060;line-height:1.6;">
@@ -2810,7 +2813,7 @@ const Game = (function() {
     preg.forEach(c=>{
       const hpColor=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
       html+=`<div class="morning-row">
-        ${portraitHTML(c.portraitIdx,38,48)}
+        ${portraitHTML(c.portraitIdx,38,48,c.princessPortrait)}
         <div class="morning-info">
           <div class="morning-name-row">${getRankName(c)}<span class="morning-rank"></span></div>
           <div class="morning-greeting" style="color:#e06080;">&#129324; 怀孕 ${c.pregMonth}个月</div>
