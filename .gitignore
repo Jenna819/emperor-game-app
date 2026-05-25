@@ -16,9 +16,5 @@ emperor.html.bak
 # 开发工具
 .claude/
 
-# Python 脚本（源构建用，不传）
-build.py
-rebuild_portraits.py
-
 # 输出目录（本地用）
 out/

@@ -237,7 +237,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 #modal-unavailable .modal-body p { color:#8a7060;font-size:15px;margin-bottom:18px; }
 
 /* ===== 江南寻美 ===== */
-#page-jiangnan { position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:linear-gradient(180deg,#8ec5fc 0%,#e0c3fc 50%,#f5e6d0 100%);display:none;flex-direction:column; }
+#page-jiangnan { position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:url('皇帝下江南风景图生成.png') center/cover no-repeat;display:none;flex-direction:column; }
 #page-jiangnan.active { display:flex; }
 .jn-header { position:relative;width:100%;padding:12px 16px;background:linear-gradient(180deg,rgba(255,240,220,0.95) 0%,rgba(255,235,215,0.9) 95%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,160,80,0.3);z-index:10;display:flex;align-items:center; }
 .jn-back-btn { background:none;border:none;font-size:16px;color:#8a7060;cursor:pointer;padding:6px 12px;font-family:inherit;font-weight:bold;letter-spacing:2px; }
@@ -4625,15 +4625,9 @@ const Game = (function() {
 
   function showJiangnan(){
     document.getElementById('page-jiangnan').classList.add('active');
-    // Banner image - try to find a Jiangnan-style image
-    var bannerImg=document.getElementById('jn-banner-img');
-    var visitFiles=[];
-    try{
-      var xhr=new XMLHttpRequest();xhr.open('GET','visit/',false);xhr.send();
-      // Can't list directory via XHR, use default gradient
-    }catch(e){}
-    bannerImg.style.display='none';
-    document.querySelector('.jn-banner').style.background='linear-gradient(180deg,#8ec5fc 0%,#e0c3fc 60%,#f5e6d0 100%)';
+    // Hide banner since page uses background image now
+    var banner=document.querySelector('.jn-banner');
+    if(banner) banner.style.display='none';
     updateJnLocations();
     updateJnStatus();
   }
