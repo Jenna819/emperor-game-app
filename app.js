@@ -1723,9 +1723,15 @@ const ZH_PORTRAIT_DATA = [
 ];
   function portraitHTML(idx, w, h, src) {
     const r = w<100?8:12;
-    const url = src ? src : (PORTRAIT_DATA[idx-1] || '');
+    let url = src ? src : '';
+    if (!url) {
+      if (typeof idx === 'string' && idx) url = idx;
+      else if (typeof idx === 'number' && idx > 0) url = PORTRAIT_DATA[idx-1] || '';
+    }
     if(!url) return `<div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:flex;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
-    const onclick = src ? '' : ` onclick="Game.showPortraitZoom(${idx})"`;
+    const onclick = typeof idx === 'string'
+      ? ` onclick="Game.showPortraitZoomUrl('${idx}')"`
+      : (typeof idx === 'number' ? ` onclick="Game.showPortraitZoom(${idx})"` : '');
     return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:none;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
   }
 
@@ -2072,7 +2078,7 @@ const ZH_PORTRAIT_DATA = [
       c.health=clamp(c.health+10,0,100);
       const icon=childType==='&#30343;&#23376;'?'&#128118;':'&#128117;';
       const childName=genChildName(childType);
-      state.children.push({id:'child_'+Date.now()+'_'+Math.random().toString(36).substr(2,4),name:childName,gender:childType==='&#30343;&#23376;'?'皇子':'公主',birthYear:state.year,birthMonth:state.month,motherId:c.id,motherName:c.name,motherRank:c.rank,age:0,talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100)});
+      state.children.push({id:'child_'+Date.now()+'_'+Math.random().toString(36).substr(2,4),name:childName,gender:childType==='&#30343;&#23376;'?'皇子':'公主',birthYear:state.year,birthMonth:state.month,motherId:c.id,motherName:c.name,motherRank:c.rank,age:0,talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0});
       html+=`<div class="birth-icon">${icon}</div><div class="baby-type">${c.name} &#35806;&#19979;${childType}&#65281;</div><div class="baby-info">${c.rank} ${c.name}&#65292;&#21313;&#26376;&#24576;&#32974;&#65292;&#19968;&#26397;&#20998;&#23081;<br>&#27597;&#23376;&#24179;&#23433;</div><div class="baby-promote">&#22240;&#35806;&#19979;${childType}&#65292;${c.name} &#23456;&#29233;+${favorInc}&#65292;&#21183;&#21147;+${powerInc}</div>`;
     });
     html+='<button class="btn-primary" onclick="Game.closeBirth()">&#22823;&#21916;&#65292;&#21516;&#24198;&#65281;</button></div>';
@@ -2107,7 +2113,7 @@ const ZH_PORTRAIT_DATA = [
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#c49030;margin-bottom:2px;">${ch.name}</div>
               <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 武力${ch.martial||0}</div>
-              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}</div>
+              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
             </div>
           </div>`;
         });
@@ -2123,7 +2129,7 @@ const ZH_PORTRAIT_DATA = [
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#d07090;margin-bottom:2px;">${ch.name}</div>
               <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 品德${ch.virtue||0}</div>
-              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}</div>
+              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
             </div>
           </div>`;
         });
@@ -2239,7 +2245,14 @@ const ZH_PORTRAIT_DATA = [
     showFeedback('&#32531;&#23384;&#24050;&#28165;&#38500;&#65292;&#35831;&#37325;&#26032;&#24320;&#21487;&#30331;&#22522;');
   }
   function showPortraitZoom(idx){
-    document.getElementById('portrait-zoom-img').src=PORTRAIT_DATA[idx-1];
+    const url = typeof idx === 'string' ? idx : (PORTRAIT_DATA[idx-1] || '');
+    if(!url) return;
+    document.getElementById('portrait-zoom-img').src=url;
+    document.getElementById('modal-portrait-zoom').classList.add('show');
+  }
+  function showPortraitZoomUrl(url){
+    if(!url) return;
+    document.getElementById('portrait-zoom-img').src=url;
     document.getElementById('modal-portrait-zoom').classList.add('show');
   }
   function closePortraitZoom(){
@@ -2283,7 +2296,7 @@ const ZH_PORTRAIT_DATA = [
   }
 
   function findC(id){return state.concubines.find(x=>x.id===id);}
-  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='皇后')return;state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
+  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='皇后')return;var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));if(kids.length>0){triggerOrphanAdoption(c,kids);}state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
   function canAct(){if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#27425;&#25968;&#24050;&#29992;&#23436;&#65281;<br>&#35831;&#28857;&#20987;&#12300;&#36827;&#20837;&#19979;&#26376;&#12301;&#21047;&#26032;&#12290;');return false;}return true;}
 
   function actionFavor(id){
@@ -2640,6 +2653,8 @@ const ZH_PORTRAIT_DATA = [
     var method=EXECUTION_METHODS[state._executeMethod]||{name:'赐死'};
     if(cold){
       var coldC=state.coldPalaceList.find(x=>x.id===id);
+      var coldKids=state.children.filter(ch=>ch.motherId===id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
+      if(coldKids.length>0&&coldC){triggerOrphanAdoption(coldC,coldKids);}
       state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);
       logEvent('赐死','冷宫中的'+(coldC?coldC.rank+coldC.name:'妃子')+'被'+method.name);
       var fb='<span class="neg">妃子已被赐死</span>';
@@ -2651,6 +2666,8 @@ const ZH_PORTRAIT_DATA = [
     } else {
       var c=state.concubines.find(x=>x.id===id);
       if(c){
+        var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
+        if(kids.length>0){triggerOrphanAdoption(c,kids);}
         state.concubines=state.concubines.filter(x=>x.id!==id);
         logEvent('赐死',c.rank+c.name+'被'+method.name);
         if(consume){consumeAction();}
@@ -3509,15 +3526,153 @@ const ZH_PORTRAIT_DATA = [
   }
 
 
-  // ===== 妃子病故 =====
+  // ===== 渐进病故系统 =====
   function genIllnessDeath(con){
+    // Stage 2: 病入膏肓 (health 1-20)
+    const stage2=con.filter(c=>c.health>=1&&c.health<20&&c.rank!=='皇后');
+    if(stage2.length>0&&Math.random()<0.7){
+      const c=pick(stage2);
+      return{title:'【病入膏肓】',desc:`${c.rank}${c.name}已病入膏肓，形销骨立，汤药难进。太医悄悄说，恐熬不过这个月了。`,options:[
+        {text:'💊 不惜代价救治（国库-2000，健康+15）',effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
+        {text:' 静养调理（国库-800，健康+5）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
+        {text:' 安排后事（默认病故）',effect(){var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));state.concubines=state.concubines.filter(x=>x.id!==c.id);if(kids.length>0)triggerOrphanAdoption(c,kids);logEvent('病故',`${c.name}病故`);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 不幸病故`);}},
+      ]};
+    }
+    // Stage 1: 缠绵病榻 (health 20-40)
+    const stage1=con.filter(c=>c.health>=20&&c.health<40&&c.rank!=='皇后');
+    if(stage1.length>0&&Math.random()<0.4){
+      const c=pick(stage1);
+      c._illnessStage=1;
+      return{title:'【缠绵病榻】',desc:`${c.rank}${c.name}近日缠绵病榻，面色日渐憔悴。太医诊脉后说，若不好生调养，恐有性命之忧。`,options:[
+        {text:'💊 重金求医（国库-1200，健康+15）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+15,0,100);c._illnessStage=0;logEvent('缠绵病榻','重金求医'+c.name);save();updateUI();showFeedback(`重金求医 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-1200</span>`);}},
+        {text:'👑 亲自探望（宠爱+50，健康+3）',effect(){c.favor=clamp(c.favor+50,0,2200);c.health=clamp(c.health+3,0,100);c._illnessStage=0;logEvent('缠绵病榻','亲自探望'+c.name);save();updateUI();showFeedback(`亲自探望 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+50</span>，健康 <span class="pos">+3</span>`);}},
+        {text:' 继续服药（国库-400，健康+8）',effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;c.health=clamp(c.health+8,0,100);logEvent('缠绵病榻','继续服药'+c.name);save();updateUI();showFeedback(`继续服药 <span class="pos">${c.name}</span><br>健康 <span class="pos">+8</span><br>国库 <span class="neg">-400</span>`);}},
+      ]};
+    }
+    // Fallback: original behavior for health < 40
     const eligible=con.filter(c=>c.health<40&&c.rank!=='皇后');
     if(eligible.length===0)return null;
     const c=pick(eligible);
     return{title:'【妃子病故】',desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`,options:[
       {text:'🏥 全力救治（国库-1500，健康+20）',effect(){if(state.treasury<1500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1500;c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
       {text:' 派太医照料（国库-600，健康+10）',effect(){if(state.treasury<600){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=600;c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
-      {text:' 听天由命（50%概率病故）',effect(){if(Math.random()<0.5){state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('病故',`${c.name}病故`);save();updateUI();showFeedback(`<span class="neg">${c.name} 不幸病故</span>`);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
+      {text:' 听天由命（50%概率病故）',effect(){if(Math.random()<0.5){var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));state.concubines=state.concubines.filter(x=>x.id!==c.id);if(kids.length>0)triggerOrphanAdoption(c,kids);logEvent('病故',`${c.name}病故`);save();updateUI();showFeedback(`<span class="neg">${c.name} 不幸病故</span>`);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
+    ]};
+  }
+
+  // ===== 孤儿抚养事件 =====
+  function triggerOrphanAdoption(deceased, kids){
+    state._orphanData = {deceasedName:deceased.name, deceasedRank:deceased.rank, childIds:kids.map(ch=>ch.id)};
+    var kidNames = kids.map(ch=>ch.name).join('、');
+    state._orphanEvent = {
+      title:'【孤儿抚养】',
+      desc:`${deceased.rank}${deceased.name}已故，留下${kidNames}无人抚养。皇室血脉不可断绝，需尽快安排妥当。`,
+      options:[
+        {text:' 指给高位妃嫔抚养',effect(){
+          var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔');
+          if(eligible.length===0){eligible=state.concubines.filter(c=>c.rank!=='皇后');}
+          if(eligible.length===0){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('无妃嫔可抚养孤儿');return;}
+          var adopter=pick(eligible);
+          state.children.forEach(ch=>{
+            if(state._orphanData.childIds.includes(ch.id)){
+              ch.adoptiveMotherId=adopter.id;
+              ch.adoptiveMotherName=adopter.name;
+              ch.isOrphan=true;
+              ch.orphanMonth=1;
+              ch.monthlyCost=200;
+            }
+          });
+          adopter.favor=clamp(adopter.favor+80,0,2200);
+          adopter.power=clamp(adopter.power+15,0,500);
+          logEvent('孤儿抚养','指给'+adopter.name+'抚养');
+          state._orphanData=null;state._orphanEvent=null;
+          save();updateUI();
+          showFeedback(`指给 <span class="pos">${adopter.name}</span> 抚养<br>${adopter.name} 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>`);
+        }},
+        {text:' 交由皇后照管',effect(){
+          var empress=state.concubines.find(c=>c.rank==='皇后');
+          if(!empress){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('皇后不在宫中');return;}
+          state.children.forEach(ch=>{
+            if(state._orphanData.childIds.includes(ch.id)){
+              ch.adoptiveMotherId=empress.id;
+              ch.adoptiveMotherName=empress.name;
+              ch.isOrphan=true;
+              ch.orphanMonth=1;
+              ch.monthlyCost=100;
+            }
+          });
+          logEvent('孤儿抚养','交由皇后照管');
+          state._orphanData=null;state._orphanEvent=null;
+          save();updateUI();
+          showFeedback('交由<span class="pos">皇后</span>照管');
+        }},
+        {text:' 交由嬷嬷抚养（每月国库-150/人）',effect(){
+          state.children.forEach(ch=>{
+            if(state._orphanData.childIds.includes(ch.id)){
+              ch.adoptiveMotherId='nanny';
+              ch.adoptiveMotherName='奶嬷嬷';
+              ch.isOrphan=true;
+              ch.orphanMonth=1;
+              ch.monthlyCost=150;
+            }
+          });
+          logEvent('孤儿抚养','交由嬷嬷抚养');
+          state._orphanData=null;state._orphanEvent=null;
+          save();updateUI();
+          showFeedback('交由<span class="pos">奶嬷嬷</span>抚养<br>每月国库<span class="neg">-150</span>/人');
+        }},
+        {text:' 送往皇陵守孝（孩子成年后可召回）',effect(){
+          state.children.forEach(ch=>{
+            if(state._orphanData.childIds.includes(ch.id)){
+              ch.adoptiveMotherId='temple';
+              ch.adoptiveMotherName='皇陵';
+              ch.isOrphan=true;
+              ch.orphanMonth=1;
+              ch.monthlyCost=50;
+              ch.health=clamp(ch.health-10,0,100);
+            }
+          });
+          logEvent('孤儿抚养','送往皇陵守孝');
+          state._orphanData=null;state._orphanEvent=null;
+          save();updateUI();
+          showFeedback('送往<span class="neg">皇陵</span>守孝<br>健康<span class="neg">-10</span>');
+        }},
+      ]
+    };
+    state.pendingEvent = state._orphanEvent;
+    showEventModal();
+  }
+
+  // ===== 子嗣夺宠事件 =====
+  function genChildRivalry(con){
+    const mothers=con.filter(c=>{
+      return state.children.some(ch=>ch.motherId===c.id&&ch.age>=3);
+    });
+    if(mothers.length<2)return null;
+    const m1=pick(mothers);
+    const m2=mothers.find(c=>c.id!==m1.id)||pick(con.filter(c=>c.id!==m1.id));
+    if(!m2)return null;
+    const c1=pick(state.children.filter(ch=>ch.motherId===m1.id&&ch.age>=3));
+    const c2=pick(state.children.filter(ch=>ch.motherId===m2.id&&ch.age>=3));
+    if(!c1||!c2)return null;
+    return{title:'【子嗣夺宠】',desc:`${m1.name}之子${c1.name}与${m2.name}之子${c2.name}在御花园争抢玩具，闹得不可开交。两位妃嫔也因此起了嫌隙。`,options:[
+      {text:' 各打五十大板（双方宠爱-30）',effect(){m1.favor=clamp(m1.favor-30,0,2200);m2.favor=clamp(m2.favor-30,0,2200);c1.talent=clamp((c1.talent||0)-5,0,100);c2.talent=clamp((c2.talent||0)-5,0,100);logEvent('夺宠','各打五十大板');save();updateUI();showFeedback('双方宠爱<span class="neg">-30</span>');}},
+      {text:' 赏赐安抚（国库-500）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;m1.favor=clamp(m1.favor+20,0,2200);m2.favor=clamp(m2.favor+20,0,2200);logEvent('夺宠','赏赐安抚');save();updateUI();showFeedback('国库<span class="neg">-500</span>，双方宠爱<span class="pos">+20</span>');}},
+      {text:' 严惩${c1.name}之母（${m1.name}宠爱-60，势力-20）',effect(){m1.favor=clamp(m1.favor-60,0,2200);m1.power=clamp(m1.power-20,0,500);m2.favor=clamp(m2.favor+30,0,2200);logEvent('夺宠','严惩'+m1.name);save();updateUI();showFeedback(`${m1.name} 宠爱<span class="neg">-60</span>，势力<span class="neg">-20</span><br>${m2.name} 宠爱<span class="pos">+30</span>`);}},
+      {text:' 请太傅教导（孩子品德+10，国库-300）',effect(){if(state.treasury<300){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=300;c1.virtue=clamp((c1.virtue||0)+10,0,100);c2.virtue=clamp((c2.virtue||0)+10,0,100);logEvent('夺宠','请太傅教导');save();updateUI();showFeedback('孩子品德<span class="pos">+10</span>，国库<span class="neg">-300</span>');}},
+    ]};
+  }
+
+  // ===== 冷宫病危事件 =====
+  function genColdPalaceIllness(con){
+    if(state.coldPalaceList.length===0)return null;
+    const eligible=state.coldPalaceList.filter(c=>c.health<30);
+    if(eligible.length===0)return null;
+    const c=pick(eligible);
+    return{title:'【冷宫病危】',desc:`冷宫传来消息，${c.rank}${c.name}在冷宫中病势沉重，奄奄一息。虽犯过错，毕竟是皇家旧人。`,options:[
+      {text:'🏥 派太医救治（国库-500，健康+15）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;c.health=clamp(c.health+15,0,100);logEvent('冷宫病危','派太医救治'+c.name);save();showColdPalace();showFeedback(`派太医救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-500</span>`);}},
+      {text:' 放出冷宫，恢复位份',effect(){state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==c.id);state.concubines.push(c);c.health=clamp(c.health+5,0,100);logEvent('冷宫病危','放出'+c.name);save();updateUI();showFeedback(`${c.name} 被放出冷宫<br>健康 <span class="pos">+5</span>`);}},
+      {text:' 不予理会',effect(){c.health=clamp(c.health-10,0,100);logEvent('冷宫病危','不予理会');save();showColdPalace();showFeedback(`${c.name} 健康 <span class="neg">-10</span>`);}},
     ]};
   }
 
@@ -4151,7 +4306,7 @@ const ZH_PORTRAIT_DATA = [
     document.getElementById('page-out').classList.remove('active');
   }
   function clickLocation(name){
-    document.getElementById('unavailable-text').innerHTML='&#8220;'+name+'&#8221; &#26426;&#21672;&#39044;&#36793;&#65292;&#25954;&#35831;&#26391;&#24453;&#65281;';
+    document.getElementById('unavailable-text').innerHTML='"'+name+'" 还没开放，敬请期待！';
     document.getElementById('modal-unavailable').classList.add('show');
   }
   function closeUnavailable(){
@@ -5096,7 +5251,7 @@ const ZH_PORTRAIT_DATA = [
     if(opt===0){
       // 接入宫
       var genderText=p.childGender==='male'?'皇子':'皇女';
-      var child={id:genId(),name:p.childName,gender:p.childGender,age:0,motherId:p.beautyId,motherName:p.beautyName,type:p.beautyData?p.beautyData.type:'',talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),fromHonglou:true};
+      var child={id:genId(),name:p.childName,gender:p.childGender,age:0,motherId:p.beautyId,motherName:p.beautyName,type:p.beautyData?p.beautyData.type:'',talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),fromHonglou:true,adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0};
       state.children.push(child);
       // 母亲入宫
       if(p.beautyData){
@@ -5787,7 +5942,7 @@ const ZH_PORTRAIT_DATA = [
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion};
 })();
 
 // ===== 启动 =====
