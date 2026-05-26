@@ -1360,6 +1360,9 @@ const Game = (function() {
     // All used, allow repeat
     return Math.floor(Math.random()*total)+1;
   }
+  function pickZhPortrait(){
+    return ZH_PORTRAIT_DATA[Math.floor(Math.random()*ZH_PORTRAIT_DATA.length)];
+  }
   function genConcubine(draft) {
     const s=pick(SURS);
     const r=Math.random();const nameLen=r<0.5?1:r<0.99?2:3;
@@ -1661,6 +1664,63 @@ const Game = (function() {
     "visit/7490E9EF-2771-46A8-B81C-328DB5B812B6.jpg",
     "visit/86ABCC91-FC84-4DA8-8FB5-D341A6D87FAD.jpg",
   ];
+
+const ZH_PORTRAIT_DATA = [
+    "zuihonglou/086E198B-6BDA-4263-92CC-FECB90586FCA.jpg",
+    "zuihonglou/13896E94-7BDF-4CE8-86DD-C344959AD94C.jpg",
+    "zuihonglou/1CA3FFEF-2241-4E4A-ACEE-1A1A217DB392.jpg",
+    "zuihonglou/2402A3E3-9967-4C79-987F-7FAD62EC475D.jpg",
+    "zuihonglou/2714EE95-5C41-466C-BEE8-5DAC75446D05.jpg",
+    "zuihonglou/2A8EC950-3C38-42B0-A91E-CB685B565DAA.jpg",
+    "zuihonglou/2EDD0912-1B1C-486E-95B1-14620D090CB0.jpg",
+    "zuihonglou/381DA11C-B5BF-4C8D-990E-89F48CC9D1EA.jpg",
+    "zuihonglou/3E42B697-5B8A-4A8D-9A3A-FC5DFFE800C8.jpg",
+    "zuihonglou/3F326678-A81F-4731-A0B6-D409F08813A3.jpg",
+    "zuihonglou/3F399869-8297-46F2-B79A-9378B08071BB.jpg",
+    "zuihonglou/40E20E1A-E3E1-40F8-9A86-5F57D7BFD80D.jpg",
+    "zuihonglou/4811DC19-4DB3-4D4F-8A96-FC383D98C790.jpg",
+    "zuihonglou/499D1B73-C809-49A4-BCAF-7DB232ED4E71.jpg",
+    "zuihonglou/4C2A0784-65C9-41C5-85F5-A71DCDE63DD5.jpg",
+    "zuihonglou/4CEF3105-D905-4CAC-B6F4-5E654D2D2E51.jpg",
+    "zuihonglou/4EC47A04-9799-4A6B-84E3-435AC77E0E65.jpg",
+    "zuihonglou/523DA301-4373-4C02-9A11-A3629198E6FA.jpg",
+    "zuihonglou/581E4FF7-783B-46A9-A545-4A4D033C1EB8.jpg",
+    "zuihonglou/5AA7A248-D3BE-4E69-AFF6-26FC76C377E4.jpg",
+    "zuihonglou/60A28FEF-7DC0-4BF6-927B-64BEFCE91C0A.jpg",
+    "zuihonglou/6186DD76-7697-478A-9427-A3527AA44FB3.jpg",
+    "zuihonglou/6D18907F-9EC2-491E-91AD-C6A9A020B389.jpg",
+    "zuihonglou/73A54403-8DC8-4C0D-A3EE-F36CDA17E8AC.jpg",
+    "zuihonglou/76DBDCAA-A66E-4CDD-9711-1056F3BD5E20.jpg",
+    "zuihonglou/7A866AF4-767D-45CC-BEE3-A676003F9132.jpg",
+    "zuihonglou/805AF4CC-9337-4462-BA9A-48B6B14B1186.jpg",
+    "zuihonglou/891AE5C9-B620-4123-9F7E-D28627520383.jpg",
+    "zuihonglou/91246DF2-EC1F-4C75-89F2-ABFDE47927F4.jpg",
+    "zuihonglou/938441A1-1203-43AC-8F7F-D733E2D5E1CA.jpg",
+    "zuihonglou/93EB29E8-D0DE-4C93-BD5E-511B9D5A88BD.jpg",
+    "zuihonglou/948FF402-D21A-4D59-8DAD-4A20AC426A3B.jpg",
+    "zuihonglou/9C76391F-3245-4FDC-82A1-8D51020AEF54.jpg",
+    "zuihonglou/9DA8CF75-C175-440A-A402-BA83CCC5BD42.jpg",
+    "zuihonglou/9EAC0923-DA1E-4E6B-9DDF-74A31AC08404.jpg",
+    "zuihonglou/A05A3794-72E8-4FF8-9624-A1E130BB021F.jpg",
+    "zuihonglou/A8B40893-656C-4CD4-B13A-E687CA8E63ED.jpg",
+    "zuihonglou/B3BB31AB-F643-42BD-86EE-8F8B855E4458.jpg",
+    "zuihonglou/B4A6B9B2-3D9D-44AF-9D8A-F7DB1D655CEF.jpg",
+    "zuihonglou/BE86C767-1EFA-4019-8D4A-6F8438E7AA5B.jpg",
+    "zuihonglou/C13E6FC9-FAD9-4976-87FA-1D10078D3969.jpg",
+    "zuihonglou/C2E75D30-DAA4-4163-86FF-522BF76ED0F5.jpg",
+    "zuihonglou/CCAD3275-CFAE-453C-9430-C9A3F8837BBA.jpg",
+    "zuihonglou/CD13587A-9371-46E0-858E-9256E0AEDB6E.jpg",
+    "zuihonglou/CD9234FE-4203-41F1-8564-36E3454CC8B4.jpg",
+    "zuihonglou/DA98FB8B-E39A-4055-98E1-280E7DA53A80.jpg",
+    "zuihonglou/E20F7B1F-B280-450C-BC80-A446A7127E2E.jpg",
+    "zuihonglou/E669636E-93B6-4A30-BE50-226233E941E0.jpg",
+    "zuihonglou/E6EB2C72-349E-4938-AEF0-0246A347EFE8.jpg",
+    "zuihonglou/EA6B33C8-03FE-443D-9419-BC3C0F09BCDB.jpg",
+    "zuihonglou/EB53B3D3-D074-4C9E-9985-4F837C03372F.jpg",
+    "zuihonglou/ED725C6A-9BBE-443D-9942-58496BC6B536.jpg",
+    "zuihonglou/ED8B5B48-E7CD-49A3-9C9A-360D73D4A698.jpg",
+    "zuihonglou/FE159C33-CF2A-498D-AAD3-7C129C96F792.jpg"
+];
   function portraitHTML(idx, w, h, src) {
     const r = w<100?8:12;
     const url = src ? src : (PORTRAIT_DATA[idx-1] || '');
@@ -4210,7 +4270,7 @@ const Game = (function() {
     var price=Math.round(basePrice*(avgS/70));
     if(isQueen)price=Math.round(price*1.5);
     price=clamp(price,200,2000);
-    var portraitIdx=pickPortrait();
+    var portraitIdx=pickZhPortrait();
     var portraitSeed=Math.random().toString(36).slice(2)+name;
     var greeting=pick(HL_GREETINGS).replace('{name}',name);
     var favorLevel='stranger';
