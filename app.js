@@ -4221,20 +4221,20 @@ const ZH_PORTRAIT_DATA = [
     const r=Math.random();
     if(r<0.05){const ce=genColdPalacePlea();if(ce)return ce;}
     if(r<0.10){const pe=genPregnancyEvent();if(pe)return pe;}
-    if(r<0.17){const ie=genIllnessDeath(con);if(ie)return ie;}
-    if(r<0.20){const cr=genChildRivalry(con);if(cr)return cr;}
-    if(r<0.23){const ci=genColdPalaceIllness(con);if(ci)return ci;}
-    if(r<0.33){const pe=genPoisoning(con);if(pe)return pe;}
-    if(r<0.41){const he=genHarmHeir(con);if(he)return he;}
-    if(r<0.47){const hce=genHarmChild(con);if(hce)return hce;}
-    if(r<0.57){const ae=genAdultery(con);if(ae)return ae;}
-    if(r<0.67){const fe=genFamilyCrime(con);if(fe)return fe;}
-    if(r<0.74){const ee=genEmbezzle(con);if(ee)return ee;}
+    if(r<0.20){const ie=genIllnessDeath(con);if(ie)return ie;}
+    if(r<0.23){const cr=genChildRivalry(con);if(cr)return cr;}
+    if(r<0.26){const ci=genColdPalaceIllness(con);if(ci)return ci;}
+    if(r<0.40){const pe=genPoisoning(con);if(pe)return pe;}
+    if(r<0.52){const he=genHarmHeir(con);if(he)return he;}
+    if(r<0.60){const hce=genHarmChild(con);if(hce)return hce;}
+    if(r<0.62){const ae=genAdultery(con);if(ae)return ae;}
+    if(r<0.71){const ee=genEmbezzle(con);if(ee)return ee;}
+    if(r<0.72){const fe=genFamilyCrime(con);if(fe)return fe;}
     if(r<0.79)return genJealousy(con);
-    if(r<0.83)return genFramed(con);
-    if(r<0.87)return genRumor(con);
-    // 争宠博弈类（新增）
-    if(r<0.91){const pf=genPerformance(con);if(pf)return pf;}
+    if(r<0.85)return genFramed(con);
+    if(r<0.92)return genRumor(con);
+    // 争宠博弈类
+    if(r<0.94){const pe2=genPerformance(con);if(pe2)return pe2;}
     if(r<0.95){const sc=genScheme(con);if(sc)return sc;}
     return genFlatter(con);
   }
