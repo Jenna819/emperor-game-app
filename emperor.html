@@ -3140,9 +3140,23 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         var perpReact=getConcubineDeathReact(pname);
         html+='<div class="death-scene-module"><div class="death-scene-title">&#128142; 涉事妃嫔反应</div>';
         html+='<div class="death-involved-item"><strong>'+v.perpName+'</strong> <span style="color:#9060c0;font-size:11px;">（'+(v.perpPname||pname)+'）</span><br><span style="font-size:13px;color:#5a3e28;line-height:1.8;">'+perpReact+'</span></div>';
-        if(v.victimName){
+        // 有真实妃子受害者的事件才显示受害者反应
+        var hasVictim=['暗中下毒','谋害皇嗣','暗害子嗣','暗算陷害','孕期风波'];
+        if(hasVictim.indexOf(evt.eventType)!==-1 && v.victimName){
           var victimReact=getVictimDeathReact(v.victimPname||'温婉');
           html+='<div class="death-involved-item"><strong>'+v.victimName+'</strong> <span style="color:#9060c0;font-size:11px;">（受害者）</span><br><span style="font-size:13px;color:#5a3e28;line-height:1.8;">'+victimReact+'</span></div>';
+        }
+        // 无妃子受害者的事件，显示后宫其他妃嫔反应
+        var noVictim=['私通败露','母家获罪','克扣用度','争风吃醋'];
+        if(noVictim.indexOf(evt.eventType)!==-1){
+          var otherReact=getOtherConcubinesReact(pname);
+          if(otherReact.length>0){
+            html+='</div>';
+            html+='<div class="death-scene-module"><div class="death-scene-title">&#128142; 后宫其他妃反应</div>';
+            otherReact.forEach(function(r){
+              html+='<div class="death-involved-item"><strong>'+r.name+'</strong> <span style="color:#9060c0;font-size:11px;">（'+r.pname+'）</span><br><span style="font-size:13px;color:#5a3e28;line-height:1.8;">'+r.react+'</span></div>';
+            });
+          }
         }
         html+='</div>';
       }
