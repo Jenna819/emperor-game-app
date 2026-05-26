@@ -3812,7 +3812,7 @@ const ZH_PORTRAIT_DATA = [
     const mothers=state.concubines.filter(c=>c.rank!=='皇后');
     if(preg.length===0&&mothers.length<2)return null;
     const victim=preg.length>0?pick(preg):pick(mothers);
-    const perp=pickWeighted(mothers.filter(c=>c.id!==victim.id),'谋害皇嗣','perp');
+    const perp=pickWeighted(mothers.filter(c=>c.id!==victim.id),'谋害皇嗣','perpetrator');
     if(!perp)return null;
     const isPreg=victim.pregnant;
     const desc=isPreg
@@ -3878,7 +3878,6 @@ const ZH_PORTRAIT_DATA = [
     if(!perp)return null;
     const lowRank=con.filter(c=>ri(c.rank)>=ri('常在'));
     if(lowRank.length===0)return null;
-    const perp=pick(highRank);
     const victim=pick(lowRank);
     if(perp.id===victim.id)return genEmbezzle(con);
     const reasons=[
