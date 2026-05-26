@@ -2037,6 +2037,10 @@ const ZH_PORTRAIT_DATA = [
     state._banquetSelected=null;state.banquetHeld=false;state.morningTriggered=false;
     state._drafting=false;
     state._punishmentShown=false;
+    state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;
+    state.honglouPregnancies=[];state.honglouOutsideFamily=[];state.honglouOldFlames=[];
+    state.jiangnanYear=undefined;
+    initJiangnan();
     document.getElementById('modal-treasury').classList.remove('show');
     save();
     // 播放开局动画，结束后进入正式游戏
