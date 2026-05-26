@@ -4220,8 +4220,6 @@ const ZH_PORTRAIT_DATA = [
     };
   }
 
-}
-
   function triggerPalaceEvent(){
     if(state.concubines.length<2)return;
     if(state.pendingEvent)return;
