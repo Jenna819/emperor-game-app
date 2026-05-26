@@ -4127,7 +4127,7 @@ const ZH_PORTRAIT_DATA = [
   function logEvent(type,detail){
     state.eventLog.unshift({type,detail,month:state.month,year:state.year});
     if(state.eventLog.length>100) state.eventLog.pop();
-  
+  }
 
   // ===== 履历衰减因子 =====
   function historyFactor(concubine, eventType){
