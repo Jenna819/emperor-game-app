@@ -2117,7 +2117,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._honglou)state._honglou=null;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -6274,6 +6274,36 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
      dialogue:[{s:'皇上：「姑娘好箭法，这林中飞鸟竟百发百中。」',r:'燕飞飞：「哼，这算什么。我爹说女子也能百步穿杨，我可比他还准！」'},{s:'皇上：「姑娘可愿入府，教教府中侍卫？」',r:'燕飞飞：「教那些笨蛋？……行吧，总比在这林子里闷着强。」'}]},
   ];
 
+  // 江南姓名池
+  const JN_SURNAMES = [
+    '沈','苏','顾','陆','白','柳','林','秦','楚','谢',
+    '温','阮','叶','乔','江','何','萧','韩','洛','安'
+  ];
+  const JN_GIVEN_NAMES = [
+    '婉清','如眉','若雪','青娥','绣儿','悠然','清辞','弄影','飞燕','芷若',
+    '语嫣','灵芸','含烟','梦蝶','雨萱','清漪','晚晴','若兰','诗韵','凝香',
+    '碧云','素心','雅琴','明月','流萤','秋蕊','霜华','翠微','晓月','念真',
+    '思柔','静姝','曼吟','绮罗','锦瑟','琉璃','珊瑚','琉璃','芙蓉','海棠',
+    '竹韵','梅影','兰心','菊芳','荷香','桃夭','柳絮','梨花','樱雪','杏雨'
+  ];
+
+  function genJiangnanName(){
+    if(!state._usedJnNames)state._usedJnNames=[];
+    var maxAttempts=100;
+    for(var i=0;i<maxAttempts;i++){
+      var sn=JN_SURNAMES[Math.floor(Math.random()*JN_SURNAMES.length)];
+      var gn=JN_GIVEN_NAMES[Math.floor(Math.random()*JN_GIVEN_NAMES.length)];
+      var fullName=sn+gn;
+      if(state._usedJnNames.indexOf(fullName)===-1){
+        state._usedJnNames.push(fullName);
+        return fullName;
+      }
+    }
+    var sn=JN_SURNAMES[Math.floor(Math.random()*JN_SURNAMES.length)];
+    var gn=JN_GIVEN_NAMES[Math.floor(Math.random()*JN_GIVEN_NAMES.length)];
+    return sn+gn+state._usedJnNames.length;
+  }
+
   // 状态初始化
   function initJiangnan(){
     state._jiangnan = {active:false,actions:3,beauties:[],explored:{boat:0,market:0,teahouse:0,outing:0},currentEvent:null,done:false};
@@ -6378,7 +6408,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var pool=JN_BEAUTIES.filter(function(b){return b.location===locId;});
     var beauty=pick(pool);
     var favor=rand(5,15);
-    var beautyState={id:beauty.id,name:beauty.name,age:beauty.age,personality:beauty.personality,beauty:rand(beauty.beauty[0],beauty.beauty[1]),talent:rand(beauty.talent[0],beauty.talent[1]),wisdom:rand(beauty.wisdom[0],beauty.wisdom[1]),trait:beauty.trait,portraitIdx:pickPortrait(),favor:favor,recruited:false};
+    var rndName=genJiangnanName();
+    var beautyState={id:beauty.id,name:rndName,age:beauty.age,personality:beauty.personality,beauty:rand(beauty.beauty[0],beauty.beauty[1]),talent:rand(beauty.talent[0],beauty.talent[1]),wisdom:rand(beauty.wisdom[0],beauty.wisdom[1]),trait:beauty.trait,portraitIdx:pickPortrait(),favor:favor,recruited:false,_templateName:beauty.name};
     // Check if already recruited
     var existing=jn.beauties.find(function(b){return b.id===beauty.id;});
     if(existing){
@@ -6417,9 +6448,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function renderJnEventScene(bs,beauty){
+    var tName=beauty.name;
+    var rName=bs.name;
+    var intro=rName!==tName?beauty.intro.split(tName).join(rName):beauty.intro;
     var html='<div style="padding:14px 16px;">';
-    html+='<div style="font-size:13px;color:#c49030;font-weight:bold;margin-bottom:8px;">&#127752; '+beauty.name+'</div>';
-    html+='<div class="jn-event-scene">'+beauty.intro+'</div>';
+    html+='<div style="font-size:13px;color:#c49030;font-weight:bold;margin-bottom:8px;">&#127752; '+rName+'</div>';
+    html+='<div class="jn-event-scene">'+intro+'</div>';
     // Portrait
     html+='<div class="jn-event-portrait">';
     html+=portraitHTML(bs.portraitIdx,120,150,'');
@@ -6432,7 +6466,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     html+='<div style="font-size:11px;color:#8a7060;">好感度</div>';
     html+='<div class="jn-favor-bar"><div class="jn-favor-fill" style="width:'+favorPct+'%;background:'+favorColor+';"></div></div>';
     html+='</div>';
-    document.getElementById('jn-event-header').innerHTML='&#127752; '+beauty.name;
+    document.getElementById('jn-event-header').innerHTML='&#127752; '+rName;
     document.getElementById('jn-event-content').innerHTML=html;
     // Actions
     var acts=document.getElementById('jn-event-actions');
@@ -6457,9 +6491,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       var d=beauty.dialogue[dIdx];
       bs._dialogueIdx=dIdx+1;
       bs.favor=clamp(bs.favor+10,0,100);
+      var tN=beauty.name;var rN=bs.name;
+      var sTxt=rN!==tN?d.s.split(tN).join(rN):d.s;
+      var rTxt=rN!==tN?d.r.split(tN).join(rN):d.r;
       var html='<div style="padding:14px 16px;">';
-      html+='<div class="jn-dialogue">'+d.s+'</div>';
-      html+='<div class="jn-dialogue" style="border-left-color:#9060c0;">'+d.r+'</div>';
+      html+='<div class="jn-dialogue">'+sTxt+'</div>';
+      html+='<div class="jn-dialogue" style="border-left-color:#9060c0;">'+rTxt+'</div>';
       html+='<div style="font-size:12px;color:#4caf50;text-align:center;margin:8px 0;">好感度 +10（当前：'+bs.favor+'）</div>';
       html+='</div>';
       document.getElementById('jn-event-content').innerHTML=html;
