@@ -2419,12 +2419,12 @@ const ZH_PORTRAIT_DATA = [
   function actionFavor(id){
     if(!canAct())return;const c=findC(id);if(!c)return;
     if(state.treasury<200){showFeedback('&#22269;&#24211;&#38134;&#20004;&#19981;&#36275;&#65281;');return;}
-    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.health=clamp(c.health+5,0,100);c.power=clamp(c.power+2,0,500);
+    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     const rc=checkRankChange(c);
     if(!c.pregnant&&c.rank!=='皇后'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     consumeAction();save();updateUI();
-    let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
+    let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}
     showFeedback(msg);
     showDetail(id);
@@ -2549,7 +2549,7 @@ const ZH_PORTRAIT_DATA = [
     delete state._bedInteractTarget;
   }
 
-  function actionGift(id){if(!canAct())return;const c=findC(id);if(!c)return;if(state.treasury<1000){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}state.treasury-=1000;c.favor=clamp(c.favor+30,0,2200);c.beauty=clamp(c.beauty+5,0,100);c.health=clamp(c.health+3,0,100);c.power=clamp(c.power+5,0,500);const rc=checkRankChange(c);consumeAction();save();updateUI();let msg='&#36192;&#36865;&#31036;&#29289;&#32473; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+30</span>&#65292;&#21183;&#21147; <span class="pos">+5</span>&#65292;&#32654;&#35980; <span class="pos">+5</span>&#65292;&#20581;&#24247; <span class="pos">+3</span><br>&#22269;&#24211; <span class="neg">-1000</span>&#20004;';if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}showFeedback(msg);showDetail(id);}
+  function actionGift(id){if(!canAct())return;const c=findC(id);if(!c)return;if(state.treasury<1000){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}state.treasury-=1000;c.favor=clamp(c.favor+30,0,2200);c.power=clamp(c.power+5,0,500);const rc=checkRankChange(c);consumeAction();save();updateUI();let msg='&#36192;&#36865;&#31036;&#29289;&#32473; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+30</span>&#65292;&#21183;&#21147; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-1000</span>&#20004;';if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}showFeedback(msg);showDetail(id);}
 
   function actionCold(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#23558; '+c.name+' &#25171;&#20837;&#20919;&#23467;&#65281;'))return;c.health=clamp(c.health-30,0,100);c.power=clamp(c.power-30,0,500);state.concubines=state.concubines.filter(x=>x.id!==id);state.coldPalaceList.push(c);consumeAction();delete state.banned[id];save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#25171;&#20837;&#20919;&#23467;<br>&#20581;&#24247; <span class="neg">-30</span>&#65292;&#21183;&#21147; <span class="neg">-30</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
 
