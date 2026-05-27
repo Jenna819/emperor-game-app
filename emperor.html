@@ -83,6 +83,35 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .kunning-btn:active { transform:scale(0.9); }
 .kunning-icon { width:44px; height:44px; border-radius:8px; border:1px solid rgba(200,160,80,0.4); background:linear-gradient(135deg,rgba(255,248,235,0.85),rgba(255,240,220,0.85)); color:#c49030; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,0,0,0.12); font-size:22px; }
 .kunning-label { font-size:11px; color:#c49030; margin-top:3px; letter-spacing:1px; }
+.small-banquet-btn { position:fixed; bottom:256px; right:14px; z-index:101; display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:all 0.2s; }
+.small-banquet-btn:active { transform:scale(0.9); }
+.small-banquet-icon { width:44px; height:44px; border-radius:8px; border:1px solid rgba(200,160,80,0.4); background:linear-gradient(135deg,rgba(255,248,235,0.85),rgba(255,240,220,0.85)); color:#c49030; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,0,0,0.12); font-size:20px; }
+.small-banquet-label { font-size:11px; color:#c49030; margin-top:3px; letter-spacing:1px; }
+.btn-governance { display:block; width:100%; padding:11px 14px; border:2px solid #2060a0; border-radius:10px; background:linear-gradient(180deg,#60a0e0 0%,#3070b0 40%,#2060a0 100%); color:#fff; font-size:15px; font-family:inherit; font-weight:bold; text-align:center; cursor:pointer; letter-spacing:2px; transition:all 0.2s; box-shadow:0 2px 6px rgba(30,60,120,0.3),inset 0 1px 0 rgba(200,220,255,0.3); text-shadow:0 1px 0 rgba(0,0,0,0.2); }
+.btn-governance:active { transform:scale(0.97); }
+.btn-governance.disabled { opacity:0.5; cursor:not-allowed; border-color:#8090a0; background:linear-gradient(180deg,#a0b0c0 0%,#8090a0 100%); }
+.gov-modal { max-width:520px; width:92%; max-height:90vh; display:flex; flex-direction:column; background:#fffaf0; border-radius:16px; overflow:hidden; }
+.gov-modal-header { padding:14px 20px; background:linear-gradient(135deg,#2060a0,#4080c0); color:#fff; font-size:16px; font-weight:bold; letter-spacing:2px; display:flex; align-items:center; justify-content:space-between; }
+.gov-modal-body { flex:1; overflow-y:auto; padding:20px; }
+.gov-question { font-size:14px; color:#2a2a2a; line-height:1.8; margin-bottom:16px; font-weight:bold; }
+.gov-option { display:flex; align-items:center; padding:12px 16px; margin:8px 0; border:2px solid #e0d8c8; border-radius:10px; cursor:pointer; transition:all 0.2s; font-size:14px; color:#3a3a3a; background:#fffef8; }
+.gov-option:hover { border-color:#c0b090; background:#fff8e8; }
+.gov-option.selected { border-color:#2060a0; background:#e8f0ff; }
+.gov-option.correct { border-color:#40a060; background:#e8ffe8; color:#208040; font-weight:bold; }
+.gov-option.wrong { border-color:#d04040; background:#ffe8e8; color:#c03030; text-decoration:line-through; }
+.gov-letter { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#c49030,#a07020); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; margin-right:12px; flex-shrink:0; }
+.gov-option.correct .gov-letter { background:linear-gradient(135deg,#40a060,#308040); }
+.gov-option.wrong .gov-letter { background:linear-gradient(135deg,#d04040,#b03030); }
+.gov-explanation { margin-top:16px; padding:14px; background:#f8f4ec; border-radius:10px; border-left:4px solid #c49030; font-size:13px; color:#5a4a3a; line-height:1.8; }
+.gov-result-text { font-size:16px; font-weight:bold; text-align:center; margin-bottom:12px; padding:8px; border-radius:8px; }
+.gov-result-text.correct { background:#e8ffe8; color:#208040; }
+.gov-result-text.wrong { background:#ffe8e8; color:#c03030; }
+.gov-btn { padding:12px 24px; border:none; border-radius:10px; font-size:14px; font-family:inherit; font-weight:bold; cursor:pointer; transition:all 0.2s; letter-spacing:1px; }
+.gov-btn-next { background:linear-gradient(135deg,#2060a0,#4080c0); color:#fff; }
+.gov-btn-next:active { transform:scale(0.97); }
+.gov-summary { text-align:center; padding:10px 0; }
+.gov-summary-score { font-size:48px; font-weight:bold; color:#c49030; margin:10px 0; }
+.gov-summary-reward { font-size:16px; color:#40a060; margin:8px 0; padding:10px; background:#e8ffe8; border-radius:10px; }
 #page-kunning.kunning-bg { background-size:cover !important; background-position:center !important; }
 .fab-badge { position:absolute; top:-3px; right:-3px; min-width:16px; height:16px; border-radius:8px; background:#d44040; color:#c49030; font-size:10px; display:flex; align-items:center; justify-content:center; padding:0 3px; font-weight:bold; }
 .settings-btn { position:fixed; top:60px; right:14px; z-index:101; width:36px; height:36px; border-radius:50%; background:rgba(255,245,230,0.9); border:1px solid rgba(200,160,80,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:all 0.2s; box-shadow:0 2px 6px rgba(160,120,60,0.1); }
@@ -429,7 +458,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="info-row">
       <div class="info-item"><div class="info-label">&#24180;&#21495;</div><div class="info-value" id="main-year"></div></div>
       <div class="info-item"><div class="info-label">&#26376;&#20221;</div><div class="info-value" id="main-month"></div></div>
-      <div class="info-item"><div class="info-label">&#22269;&#24211;&#38134;&#20004;</div><div class="info-value gold" id="main-treasury"></div></div>
+      <div class="info-item"><div class="info-label">&#22269;&#24211;&#38134;&#20004;</div><div class="info-value gold" id="main-treasury"></div><div id="main-treasury-change" style="font-size:11px;text-align:center;margin-top:2px;"></div></div>
     </div>
     <div class="action-row"><span class="action-label">&#34892;&#21160;</span><div class="action-pips" id="main-actions"></div><div id="draft-countdown" class="draft-countdown"></div></div>
   </div>
@@ -443,6 +472,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
   <div class="settings-btn" onclick="Game.openSettings()">&#9881;</div>
   <div class="heirs-btn" onclick="Game.showHeirs()"><div class="heirs-icon">&#128118;<div class="fab-badge" id="fab-heirs-badge" style="display:none;">0</div></div><div class="heirs-label">子嗣</div></div>
   <div class="cold-palace-btn" id="fab-cold" onclick="Game.showColdPalace()"><div class="cold-house">&#127968;<div class="fab-badge" id="fab-cold-badge" style="display:none;">0</div></div><div class="cold-label">冷宫</div></div>
+  <div class="small-banquet-btn" id="fab-banquet" onclick="Game.openBanquet()"><div class="small-banquet-icon">&#127926;</div><div class="small-banquet-label">宴会</div></div>
   <div class="kunning-btn" id="fab-kunning" onclick="Game.showKunning()"><div class="kunning-icon">&#128081;</div><div class="kunning-label">坤宁宫</div></div>
 </div>
 <div id="page-detail" class="page"><div id="detail-content"></div></div>
@@ -520,6 +550,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 <div id="modal-bed-interact" class="modal-overlay modal-center"><div class="modal" style="max-width:400px;"><div class="modal-body" id="bed-interact-content" style="padding:16px;"></div></div></div>
 <div id="modal-bed-rate" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#20365;&#23517;&#32467;&#26463;</div><div class="modal-body" id="bed-rate-content"></div></div></div>
 <div id="modal-banquet" class="modal-overlay modal-center"><div class="modal"><div class="modal-header">&#23476;&#20250;&#30427;&#20856;</div><div class="modal-body" id="banquet-content"></div></div></div>
+<div id="modal-governance" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeGovernance()"><div class="gov-modal"><div class="gov-modal-header"><span id="gov-modal-title">&#128220; 治国理政</span><span id="gov-modal-close" style="cursor:pointer;font-size:20px;" onclick="Game.closeGovernance()">&#10005;</span></div><div class="gov-modal-body" id="governance-content"></div></div></div>
 <div id="modal-portrait-zoom" class="portrait-zoom-overlay" onclick="Game.closePortraitZoom()"><button class="portrait-zoom-close" onclick="Game.closePortraitZoom()"></button><img id="portrait-zoom-img" src=""></div>
 <div id="modal-heirs" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeHeirs()"><div class="modal" style="max-width:520px;max-height:85vh;display:flex;flex-direction:column;" onclick="event.stopPropagation();"><div class="modal-header">&#23376;&#34932;</div><div class="modal-body" id="heirs-content" style="max-height:70vh;overflow-y:auto;padding:0;"></div><div style="padding:12px 16px;"><button class="btn-primary" onclick="Game.closeHeirs()">&#30830;&#35748;</button></div></div></div>
 <div id="modal-child-detail" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeChildDetail()"><div class="modal" style="max-width:420px;" onclick="event.stopPropagation();"><div class="modal-header" id="child-detail-title">&#23376;&#34932;&#35814;&#24773;</div><div class="modal-body" id="child-detail-content" style="padding:20px;"></div><div style="padding:12px 16px;"><button class="btn-primary" onclick="Game.closeChildDetail()">&#20851;&#38381;</button></div></div></div>
@@ -585,6 +616,7 @@ const Portrait = (function() {
 // ========== 游戏核心 ==========
 const Game = (function() {
   const RANKS = ['皇后','皇贵妃','贵妃','妃','嫔','贵人','常在','答应','官女子'];
+  const RANK_ALLOWANCE = {'皇后':500,'皇贵妃':400,'贵妃':350,'妃':300,'嫔':250,'贵人':150,'常在':100,'答应':60,'官女子':30};
   const RANK_POWER_MIN = {'官女子':0,'答应':11,'常在':26,'贵人':46,'嫔':71,'妃':106,'贵妃':156,'皇贵妃':226,'皇后':321};
   const RANK_POWER_MAX = {'官女子':10,'答应':25,'常在':45,'贵人':70,'嫔':105,'妃':155,'贵妃':225,'皇贵妃':320,'皇后':500};
   const RC = {'皇后':'rank-queen','皇贵妃':'rank-imperial','贵妃':'rank-imperial','妃':'rank-noble','嫔':'rank-noble','贵人':'rank-low','常在':'rank-low','答应':'rank-low','官女子':'rank-low'};
@@ -1814,25 +1846,24 @@ const Game = (function() {
     },
   };
   const FAMILY_TIERS = [
-    {name:'宗室王族',desc:'皇室宗亲，尊贵无比',weight:1,initRank:'贵妃',color:'#d4a017'},
-    {name:'国公世家',desc:'异姓国公，功勋卓著',weight:1,initRank:'贵妃',color:'#d4a017'},
-    {name:'一品文臣',desc:'正从一品文官，朝廷重臣',weight:2,initRank:'妃',color:'#c49030'},
-    {name:'一品武将',desc:'正从一品武将，战功赫赫',weight:2,initRank:'妃',color:'#c49030'},
-    {name:'侯爵世家',desc:'侯爵之后，门第显赫',weight:2,initRank:'妃',color:'#c49030'},
-    {name:'二品文臣',desc:'正从二品文官，尚书大人',weight:4,initRank:'嫔',color:'#d48030'},
-    {name:'二品武将',desc:'正从二品武将，威武将军',weight:4,initRank:'嫔',color:'#d48030'},
-    {name:'伯爵世家',desc:'伯爵之后，世家大族',weight:4,initRank:'嫔',color:'#d48030'},
-    {name:'三品文臣',desc:'三品文官，侍郎之家',weight:6,initRank:'贵人',color:'#a08060'},
-    {name:'三品武将',desc:'三品武将，参将之家',weight:6,initRank:'贵人',color:'#a08060'},
-    {name:'四品朝臣',desc:'四品文官，地方要员',weight:8,initRank:'贵人',color:'#8a7060'},
-    {name:'四品武将',desc:'四品武将，军中骨干',weight:8,initRank:'贵人',color:'#8a7060'},
-    {name:'五品文臣',desc:'五品文官，中层官吏',weight:10,initRank:'常在',color:'#8a7060'},
-    {name:'五品武将',desc:'五品武将，中层军官',weight:10,initRank:'常在',color:'#8a7060'},
-    {name:'六品主事',desc:'六品小吏，清贫之家',weight:12,initRank:'常在',color:'#7a6a5a'},
-    {name:'七品县令',desc:'七品小官，地方乡绅',weight:12,initRank:'答应',color:'#7a6a5a'},
-    {name:'八品典吏',desc:'八品微吏，家道一般',weight:10,initRank:'答应',color:'#6a5a4a'},
-    {name:'乡绅富户',desc:'地方乡绅，无官身',weight:8,initRank:'答应',color:'#6a5a4a'},
-    {name:'平民秀女',desc:'民间女子，无官身百姓',weight:15,initRank:'官女子',color:'#6a5a4a'},
+    {name:'宗室王族',desc:'皇室宗亲，尊贵无比',weight:1,initRank:'贵妃',powerMin:180,powerMax:220,color:'#d4a017'},
+    {name:'国公世家',desc:'异姓国公，功勋卓著',weight:1,initRank:'贵妃',powerMin:180,powerMax:220,color:'#d4a017'},
+    {name:'一品文臣',desc:'正从一品文官，朝廷重臣',weight:2,initRank:'妃',powerMin:115,powerMax:150,color:'#c49030'},
+    {name:'一品武将',desc:'正从一品武将，战功赫赫',weight:2,initRank:'妃',powerMin:115,powerMax:150,color:'#c49030'},
+    {name:'侯爵世家',desc:'侯爵之后，门第显赫',weight:2,initRank:'妃',powerMin:115,powerMax:150,color:'#c49030'},
+    {name:'二品文臣',desc:'正从二品文官，尚书大人',weight:4,initRank:'',powerMin:80,powerMax:100,color:'#d48030'},
+    {name:'二品武将',desc:'正从二品武将，威武将军',weight:4,initRank:'嫔',powerMin:80,powerMax:100,color:'#d48030'},
+    {name:'伯爵世家',desc:'伯爵之后，世家大族',weight:4,initRank:'嫔',powerMin:80,powerMax:100,color:'#d48030'},
+    {name:'三品文臣',desc:'三品文官，侍郎之家',weight:6,initRank:'贵人',powerMin:50,powerMax:65,color:'#a08060'},
+    {name:'三品武将',desc:'三品武将，参将之家',weight:6,initRank:'贵人',powerMin:50,powerMax:65,color:'#a08060'},
+    {name:'四品朝臣',desc:'四品文官，地方要员',weight:8,initRank:'常在',powerMin:30,powerMax:42,color:'#8a7060'},
+    {name:'四品武将',desc:'四品武将，军中骨干',weight:8,initRank:'常在',powerMin:30,powerMax:42,color:'#8a7060'},
+    {name:'五品文臣',desc:'五品文官，中层官吏',weight:10,initRank:'答应',powerMin:15,powerMax:24,color:'#8a7060'},
+    {name:'五品武将',desc:'五品武将，中层军官',weight:10,initRank:'答应',powerMin:15,powerMax:24,color:'#8a7060'},
+    {name:'六品主事',desc:'六品小吏，清贫之家',weight:12,initRank:'答应',powerMin:13,powerMax:22,color:'#7a6a5a'},
+    {name:'七品县令',desc:'七品小官，地方乡绅',weight:12,initRank:'官女子',powerMin:3,powerMax:9,color:'#7a6a5a'},
+    {name:'八品典吏',desc:'八品微吏，家道一般',weight:10,initRank:'官女子',powerMin:3,powerMax:8,color:'#6a5a4a'},
+    {name:'乡绅富户',desc:'地方乡绅，无官身',weight:8,initRank:'官女子',powerMin:3,powerMax:8,color:'#6a5a4a'},
   ];
   const POWER_D = {200:'权倾朝野',150:'炙手可热',100:'风头正盛',70:'渐成气候',50:'初露锋芒',30:'略有根基',10:'势单力薄',0:'人微言轻'};
   const TALENT_D = {90:'才高八斗',80:'才华横溢',70:'颇有才学',60:'略通文墨',50:'才学一般',0:'才疏学浅'};
@@ -1890,7 +1921,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function ri(r){return RANKS.indexOf(r);}
   function ru(r){const i=ri(r);return i>0?RANKS[i-1]:r;}
   function rd(r){const i=ri(r);return i<RANKS.length-1?RANKS[i+1]:r;}
-  function calcInitPower(family){const w=FAMILY_TIERS.indexOf(family);return Math.max(0,25-w*2+rand(-5,5));}
+  function calcInitPower(family){const min=family.powerMin||0;const max=family.powerMax||10;return rand(min,max);}
   function calcPowerDelta(c){let d=0;d+=c.personality.favInc-1;if(c.title)d+=3;d+=Math.floor(c.favor/300);return d;}
   function applyPower(c,amount){c.power=clamp(c.power+amount,0,500);}
   function getRankByPower(p){for(const rank of RANKS){const min=RANK_POWER_MIN[rank];if(p>=min)return rank;}return '官女子';}
@@ -1912,7 +1943,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[]};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[]};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -1932,10 +1963,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const total=PORTRAIT_DATA.length;
     // Collect portraits already in use
     const used=new Set();
-    state.concubines.forEach(c=>{if(c.portraitIdx)used.add(c.portraitIdx);}
-  function pickZhPortrait(){
-    return ZH_PORTRAIT_DATA[Math.floor(Math.random()*ZH_PORTRAIT_DATA.length)];
-  });
+    state.concubines.forEach(c=>{if(c.portraitIdx)used.add(c.portraitIdx);});
     state.coldPalaceList.forEach(c=>{if(c.portraitIdx)used.add(c.portraitIdx);});
     // If not all portraits used, pick from unused ones
     if(used.size<total){
@@ -1945,6 +1973,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     // All used, allow repeat
     return Math.floor(Math.random()*total)+1;
+  }
+  function pickZhPortrait(){
+    return ZH_PORTRAIT_DATA[Math.floor(Math.random()*ZH_PORTRAIT_DATA.length)];
   }
   function genConcubine(draft) {
     const s=pick(SURS);
@@ -2117,7 +2148,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2323,6 +2354,25 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('main-year').textContent = state.dynasty+state.year+'年';
     document.getElementById('main-month').textContent = '第'+state.month+'月';
     document.getElementById('main-treasury').textContent = state.treasury;
+    // 收支变化指示
+    var changeEl = document.getElementById('main-treasury-change');
+    if(changeEl){
+      var income = state._monthlyIncome || 0;
+      var expense = state._monthlyExpense || 0;
+      var net = income - expense;
+      if(income > 0){
+        var netStr = net >= 0 ? '<span style="color:#4caf50;">+' + net + '</span>' : '<span style="color:#e55555;">' + net + '</span>';
+        var detail = '';
+        if(expense > 0){
+          var expenses = calcMonthlyExpenses();
+          if(expenses.allowance > 0) detail += '月例-' + expenses.allowance;
+          if(expenses.childSupport > 0) detail += (detail?' | ':'') + '子嗣-' + expenses.childSupport;
+        }
+        changeEl.innerHTML = '月入 <span style="color:#4caf50;">+' + income + '</span> 月出 <span style="color:#e55555;">-' + expense + '</span> 净变 ' + netStr + (detail ? '<br><span style="font-size:10px;color:#a08060;">' + detail + '</span>' : '');
+      } else {
+        changeEl.innerHTML = '';
+      }
+    }
     const pips = document.getElementById('main-actions'); pips.innerHTML='';
     for(let i=0;i<5;i++){const p=document.createElement('div');p.className='action-pip'+(i>=state.actionsLeft?' used':'');pips.appendChild(p);}
     const badge = document.getElementById('fab-cold-badge');
@@ -2349,7 +2399,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function renderBottomBtns(containerId){
     const container=document.getElementById(containerId);if(!container)return;
     let html=`<button class="btn-next" id="next-month-btn" onclick="Game.nextMonth()">&#36827;&#20837;&#19979;&#26376;</button>`;
-    html+=`<button class="btn-banquet" onclick="Game.openBanquet()">&#20030;&#21150;&#23476;&#20250;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>`;
+    // Check if governance is available this month
+    var govDone=state._governanceLastMonth===(state.year*12+state.month);
+    var govCls=govDone?'btn-governance disabled':'btn-governance';
+    var govLabel=govDone?'本月已答过':'治国理政';
+    var govSub=govDone?'<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">下月再来</span>':'<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">每月一次</span>';
+    var govOnclick=govDone?'':'Game.openGovernance()';
+    html+=`<button class="${govCls}" onclick="${govOnclick}">${govLabel}${govSub}</button>`;
     html+=`<button class="btn-bed" onclick="Game.openBed()">&#32763;&#29260;&#20365;&#23517;<br><span style="font-size:10px;font-weight:normal;opacity:0.8;">-1&#34892;&#21160;</span></button>`;
     html+=`<button class="btn-out" onclick="Game.showOut()">&#20986;&#23467;</button>`;
     container.innerHTML=html;
@@ -2573,6 +2629,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._banquetSelected=null;state.banquetHeld=false;state.morningTriggered=false;
     state._drafting=false;
     state._punishmentShown=false;
+    state._lastTributeYear=0;state._monthlyIncome=0;state._monthlyExpense=0;
     state._coronationCooldown=null;
     state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;
     state.honglouPregnancies=[];state.honglouOutsideFamily=[];state.honglouOldFlames=[];
@@ -2612,7 +2669,28 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function doNextMonth(){
     state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.draftTriggeredThisYear=false;}
     state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});
-    state.treasury+=10000;state.actionsLeft=5;state.banquetHeld=false;state.morningTriggered=false;state.eventTriggeredThisMonth=false;state.monthEventAction=Math.floor(Math.random()*3)+1;
+    // 经济系统：基础税收
+    const taxIncome = 4000;
+    // 母家进贡（每年6月触发，避开选秀月1月）
+    let tributeIncome = 0;
+    if(state.month === 6 && state.year !== state._lastTributeYear){
+      tributeIncome = calcTributeIncome();
+      if(tributeIncome > 0){
+        state._lastTributeYear = state.year;
+        state.treasury += tributeIncome;
+        setTimeout(function(){
+          showFeedback('📬 <b>母家进贡</b><br>后宫妃嫔母家本年进贡，国库 <span class="pos">+' + tributeIncome + '</span> 两');
+        }, 800);
+      }
+    }
+    // 计算本月支出
+    var expenses = calcMonthlyExpenses();
+    // 净收入
+    var netIncome = taxIncome + tributeIncome - expenses.total;
+    state._monthlyIncome = taxIncome + tributeIncome;
+    state._monthlyExpense = expenses.total;
+    state.treasury += netIncome;
+    state.actionsLeft = 5;state.banquetHeld = false;state.morningTriggered = false;state.eventTriggeredThisMonth = false;state.monthEventAction = Math.floor(Math.random() * 3) + 1;
     processBannedDecay();processColdDecay();processPregnancy();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
     // 醉红楼认亲剧情判定
     checkHonglouReunion();
@@ -2688,6 +2766,40 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       state._selectedEventOption=0;
       showEventModal();
     }
+  }
+
+  // 计算每月支出（妃嫔月例 + 子嗣抚养）
+  function calcMonthlyExpenses(){
+    var allowanceTotal = 0;
+    state.concubines.forEach(function(c){
+      allowanceTotal += (RANK_ALLOWANCE[c.rank] || 30);
+    });
+    state.coldPalaceList.forEach(function(c){
+      allowanceTotal += (RANK_ALLOWANCE[c.rank] || 30);
+    });
+    var childSupport = state.children.length * 20;
+    return {allowance:allowanceTotal, childSupport:childSupport, total:allowanceTotal + childSupport};
+  }
+
+  // 母家进贡收入
+  function calcTributeIncome(){
+    var total = 0;
+    var allC = state.concubines.concat(state.coldPalaceList);
+    allC.forEach(function(c){
+      if(!c.family || c.family.name === '平民秀女') return;
+      var fn = c.family.name;
+      var inc = 0;
+      if(fn.indexOf('国公')>=0 || fn.indexOf('宗室')>=0) inc = rand(800,1500);
+      else if(fn.indexOf('一品')>=0 || fn.indexOf('侯爵')>=0) inc = rand(500,1000);
+      else if(fn.indexOf('二品')>=0 || fn.indexOf('伯爵')>=0) inc = rand(300,600);
+      else if(fn.indexOf('三品')>=0) inc = rand(200,400);
+      else if(fn.indexOf('四品')>=0) inc = rand(100,250);
+      else if(fn.indexOf('五品')>=0) inc = rand(60,150);
+      var rankMultiplier = {'皇后':2,'皇贵妃':1.8,'贵妃':1.5,'妃':1.3,'嫔':1.1,'贵人':1,'常在':0.8,'答应':0.5,'官女子':0.3};
+      inc = Math.round(inc * (rankMultiplier[c.rank] || 1));
+      total += inc;
+    });
+    return total;
   }
 
   function processPregnancy(){
@@ -4696,7 +4808,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       updateUI();
       return;
     }
-    const initPower = 71 + rand(0, 34); // 嫔起步势力值范围
+    const initPower = 80 + rand(0, 20); // 嫔起步势力值范围 80~100
     const concubine = {
       id: genId(),
       name: p.country + '.' + p.name,
@@ -5019,13 +5131,32 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-draft').classList.remove('show');
     if(state._draftSelected.length>0){
       const names=[];
+      var totalDowry = 0;
       state._draftSelected.forEach(c=>{
+        // 选秀陪嫁：母家带来一次性收入
+        var dowry = 0;
+        if(c.family && c.family.name !== '平民秀女'){
+          var fn = c.family.name;
+          if(fn.indexOf('国公')>=0 || fn.indexOf('宗室')>=0) dowry = rand(300,600);
+          else if(fn.indexOf('一品')>=0 || fn.indexOf('侯爵')>=0) dowry = rand(200,500);
+          else if(fn.indexOf('二品')>=0 || fn.indexOf('伯爵')>=0) dowry = rand(100,300);
+          else if(fn.indexOf('三品')>=0) dowry = rand(60,150);
+          else if(fn.indexOf('四品')>=0) dowry = rand(40,100);
+          else if(fn.indexOf('五品')>=0) dowry = rand(20,60);
+        }
+        if(dowry > 0) totalDowry += dowry;
         state.concubines.push(c);
         names.push(c.name);
         logEvent('选秀',`${c.name} 入宫`);
       });
-      save();updateUI();
-      showFeedback(`<span class="pos">${names.join('、')}</span> 已选入后宫`);
+      if(totalDowry > 0){
+        state.treasury += totalDowry;
+        save();updateUI();
+        showFeedback(`<span class="pos">${names.join('、')}</span> 已选入后宫<br>📦 母家陪嫁 <span class="pos">+${totalDowry}</span> 两`);
+      } else {
+        save();updateUI();
+        showFeedback(`<span class="pos">${names.join('、')}</span> 已选入后宫`);
+      }
     } else {
       logEvent('选秀','全部落选');
       save();updateUI();
@@ -5844,9 +5975,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     selected.forEach(function(b){
       var disc=calcPriceDiscount(b);
       var finalPrice=Math.round(b.price*disc);
-      var initRank=b.beauty>=85&&b.talent>=70?'贵人':b.beauty>=70?'常在':'答应';
-      if(b.favorLevel==='obsessed')initRank=RANKS[Math.max(0,RANKS.indexOf(initRank)-1)]||initRank;
-      var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:rand(5,20),rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
+      var initRank='官女子';
+      var initPower=rand(3,8);
+      var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:initPower,rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
       state.concubines.push(concubine);
       names.push(b.name);
       logEvent('醉红楼',b.name+' 赎身入宫，封为 '+initRank);
@@ -5875,9 +6006,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(state.concubines.length>=30){showFeedback('后宫已满30人！');return;}
     showConfirm('&#32435;&#22914;','&#30830;&#23450;&#35201;&#32435; <b style="color:#c49030;">'+b.name+'</b> &#20026;&#22914;&#21527;&#65311;<br>&#36176;&#36523;&#20215; <b style="color:#ffd700;">'+finalPrice+'</b> &#20004;&#12290;',function(){
       state.treasury-=finalPrice;
-      var initRank=b.beauty>=85&&b.talent>=70?'贵人':b.beauty>=70?'常在':'答应';
-      if(b.favorLevel==='obsessed')initRank=RANKS[Math.max(0,RANKS.indexOf(initRank)-1)]||initRank;
-      var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:rand(5,20),rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
+      var initRank='官女子';
+      var initPower=rand(3,8);
+      var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:initPower,rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
       state.concubines.push(concubine);
       state._honglou.beauties=state._honglou.beauties.filter(function(x){return x.id!==b.id;});
       if(state._honglou.oldFlames)state._honglou.oldFlames=state._honglou.oldFlames.filter(function(x){return x.id!==b.id;});
@@ -6233,43 +6364,43 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   const JN_BEAUTIES = [
     // 画舫游湖
-    {id:'su_wanqing',name:'苏婉清',age:17,personality:'清冷',beauty:[80,90],talent:[88,98],wisdom:[65,75],trait:'精通音律',location:'boat',
+    {id:'su_wanqing',name:'苏婉清',age:17,personality:'清冷',beauty:[80,90],talent:[88,98],wisdom:[65,75],trait:'精通音律',location:'boat',jnFamily:'名门',
      intro:'画舫上传来婉转歌声，循声而去，见一女子立于船头抚琴。她身着淡青色长裙，长发如瀑，指尖在琴弦上翻飞，一曲《平沙落雁》凄美动人。见来人走近，她停下琴音，盈盈下拜：「民女苏婉清，见过大人。」',
      dialogue:[{s:'皇上：「姑娘琴艺精湛，不知师从何人？」',r:'苏婉清：「回大人，婉清自幼随家父学琴，不敢称精湛，只是喜欢罢了。」'},{s:'皇上：「此曲名为《平沙落雁》，姑娘弹来别有一番意境。」',r:'苏婉清：（眼中闪过一丝惊喜）「大人竟听得出此曲？婉清遇知音了。」'}]},
-    {id:'liu_rumei',name:'柳如眉',age:18,personality:'文雅诗意',beauty:[75,85],talent:[90,99],wisdom:[80,90],trait:'才高八斗',location:'boat',
+    {id:'liu_rumei',name:'柳如眉',age:18,personality:'文雅诗意',beauty:[75,85],talent:[90,99],wisdom:[80,90],trait:'才高八斗',location:'boat',jnFamily:'名门',
      intro:'湖心亭中一女子独立凭栏，见人来，随口吟道：「烟波江上使人愁。」声音清越，才气逼人。她转身见到来人，微微一笑：「小女子柳如眉，见笑了。」',
      dialogue:[{s:'皇上：「姑娘好文采，此句出自何处？」',r:'柳如眉：「唐人崔颢《黄鹤楼》之句，大人也熟读唐诗？」'},{s:'皇上：「略知一二。姑娘独自在此，可是赏景？」',r:'柳如眉：「景自好，但缺个懂景的人。大人若不嫌弃，可愿陪如眉吟诗一首？」'}]},
-    {id:'a_yuan',name:'阿沅',age:16,personality:'活泼',beauty:[85,95],talent:[40,60],wisdom:[50,70],trait:'天真烂漫',location:'boat',
+    {id:'a_yuan',name:'阿沅',age:16,personality:'活泼',beauty:[85,95],talent:[40,60],wisdom:[50,70],trait:'天真烂漫',location:'boat',jnFamily:'平民',
      intro:'忽闻「扑通」一声，岸边丫鬟打扮的少女不慎落水，扑腾呼救。来人将其救起，少女浑身湿透，咳了几声，却还笑嘻嘻地道：「谢谢大人！我叫阿沅，是陪我家小姐出来玩的——哎呀，小姐！」',
      dialogue:[{s:'皇上：「你没事吧？怎会落水？」',r:'阿：「没事没事！就是脚滑了一下，嘿嘿……大人您真好！」'},{s:'皇上：「你一个小丫头，怎么一个人跑到水边？」',r:'阿沅：「我不是一个人呀！我家小姐在画舫上呢……大人您见过她吗？」'}]},
     // 灯市闲逛
-    {id:'shen_xiuer',name:'沈绣儿',age:19,personality:'温婉',beauty:[78,88],talent:[85,95],wisdom:[60,75],trait:'绣工精湛',location:'market',
+    {id:'shen_xiuer',name:'沈绣儿',age:19,personality:'温婉',beauty:[78,88],talent:[85,95],wisdom:[60,75],trait:'绣工精湛',location:'market',jnFamily:'平民',
      intro:'路过一家绣庄，店内一女子正低头刺绣。针线翻飞间，一朵牡丹跃然绢上，栩栩如生。她抬头见人来，放下针线，轻声道：「客人想看看绣品吗？我叫沈绣儿，这些都是我亲手绣的。」',
      dialogue:[{s:'皇上：「姑娘手艺精湛，这牡丹绣得如同真的一般。」',r:'沈绣儿：（羞涩低头）「大人过奖了，绣儿只是喜欢刺绣罢了。」'},{s:'皇上：「这手艺若入宫中，定能惊艳六宫。」',r:'沈绣儿：「宫中……绣儿从没想过能进那种地方。」'}]},
-    {id:'huo_qinge',name:'霍青娥',age:20,personality:'刚烈执拗',beauty:[88,98],talent:[50,70],wisdom:[55,75],trait:'身手矫健',location:'market',
+    {id:'huo_qinge',name:'霍青娥',age:20,personality:'刚烈执拗',beauty:[88,98],talent:[50,70],wisdom:[55,75],trait:'身手矫健',location:'market',jnFamily:'寒门',
      intro:'街头一女子抛球卖艺，身手矫健，一招一式干净利落。她挽起袖口，露出结实的手臂，引得路人喝彩。表演完毕，她抱拳一礼：「小女霍青娥，献丑了。」',
      dialogue:[{s:'皇上：「姑娘好身手，这拳法是何门何派？」',r:'霍青娥：「家传拳法，不值一提。大人看着像个识货的，不如下场比划比划？」'},{s:'皇上：「比武就不必了。姑娘可愿入府，教教府中护卫？」',r:'霍青娥：「入府？给那些软脚虾当教头？……也行吧，包吃住就行。」'}]},
-    {id:'bai_ruoxue',name:'白若雪',age:18,personality:'端庄',beauty:[85,95],talent:[70,85],wisdom:[75,90],trait:'气质出众',location:'market',
+    {id:'bai_ruoxue',name:'白若雪',age:18,personality:'端庄',beauty:[85,95],talent:[70,85],wisdom:[75,90],trait:'气质出众',location:'market',jnFamily:'寒门',
      intro:'牙婆在拍卖几名江南女子，其中一人气质出众，虽身着粗布衣裙，却难掩眉宇间的贵气。她站得笔直，不卑不亢，与旁人判若两人。牙婆吆喝：「这位白姑娘，书香门第出身，识文断字——」',
      dialogue:[{s:'皇上：「你出身书香门第，怎会沦落至此？」',r:'白若雪：「家道中落，父亲病逝，母亲也随去了。若雪别无选择。」'},{s:'皇上：「你可愿跟我走？',r:'白若雪：（沉默片刻）「若能吃饱穿暖，若雪别无他求。」'}]},
     // 茶楼听曲
-    {id:'qu_youran',name:'曲悠然',age:19,personality:'冷清疏离',beauty:[80,90],talent:[92,99],wisdom:[70,85],trait:'琴艺绝',location:'teahouse',
+    {id:'qu_youran',name:'曲悠然',age:19,personality:'冷清疏离',beauty:[80,90],talent:[92,99],wisdom:[70,85],trait:'琴艺绝',location:'teahouse',jnFamily:'平民',
      intro:'屏风后传来一曲《高山流水》，琴音空灵，指法精妙。曲终，来人绕过屏风，见一素衣女子端坐琴前。她抬眼看来，神色平淡：「客官要听曲？一百文一曲。」',
      dialogue:[{s:'皇上：「姑娘琴艺堪称一绝，不知可否再弹一曲？」',r:'曲悠然：「可以。但要先付钱。」'},{s:'皇上：「钱自然不少给。姑娘姓甚名谁？」',r:'曲悠然：「曲悠然。曲子曲悠然，悠然见南山。」'}]},
-    {id:'hua_nongying',name:'花弄影',age:20,personality:'娇媚',beauty:[92,99],talent:[75,90],wisdom:[60,80],trait:'舞姿曼妙',location:'teahouse',
+    {id:'hua_nongying',name:'花弄影',age:20,personality:'娇媚',beauty:[92,99],talent:[75,90],wisdom:[60,80],trait:'舞姿曼妙',location:'teahouse',jnFamily:'寒门',
      intro:'茶楼名妓登台献舞，红袖翩跹，腰肢柔软如柳。一曲终了，满堂喝彩。她微微喘息，眼波流转，向台下一礼：「小女子花弄影，献丑了。」',
      dialogue:[{s:'皇上：「姑娘舞姿绝美，不知师从何人？」',r:'花弄影：「教坊司的老嬷嬷教的，让大人见笑了~」'},{s:'皇上：「这舞姿，只怕宫中舞姬也比不上。」',r:'花弄影：（掩嘴轻笑）「大人真会说话~弄影可当真了。」'}]},
-    {id:'lu_qingci',name:'陆清辞',age:21,personality:'聪慧博闻',beauty:[72,82],talent:[80,92],wisdom:[85,95],trait:'见多识广',location:'teahouse',
+    {id:'lu_qingci',name:'陆清辞',age:21,personality:'聪慧博闻',beauty:[72,82],talent:[80,92],wisdom:[85,95],trait:'见多识广',location:'teahouse',jnFamily:'名门',
      intro:'邻桌一素衣女子正与茶博士论茶，言谈间引经据典，从陆羽《茶经》讲到各地名茶，见解独到。她察觉到来人的目光，转头微微一笑：「这位公子也对茶感兴趣？」',
      dialogue:[{s:'皇上：「姑娘对茶道颇有研究，令在下佩服。」',r:'陆清辞：「不过闲暇时读了几本书罢了。公子若感兴趣，清辞愿以茶会友。」'},{s:'皇上：「姑娘见解不凡，不知可否请教一二？」',r:'陆清辞：「清辞不敢当请教二字，只是喜欢与人论道罢了。公子请坐。」'}]},
     // 郊外踏青
-    {id:'xi_zi',name:'西子',age:16,personality:'柔弱楚楚',beauty:[90,99],talent:[45,65],wisdom:[45,65],trait:'倾国倾城',location:'outing',
+    {id:'xi_zi',name:'西子',age:16,personality:'柔弱楚楚',beauty:[90,99],talent:[45,65],wisdom:[45,65],trait:'倾国倾城',location:'outing',jnFamily:'平民',
      intro:'溪边一少女浣纱，水光映面，宛如画中人。她低着头，双手在水中搓洗白纱，阳光洒在她身上，镀上一层金色。察觉到来人，她慌忙起身，纱巾滑落半肩，露出雪白的肌肤。',
      dialogue:[{s:'皇上：「姑娘莫慌，在下只是路过。」',r:'西子：（慌忙整理衣衫，脸红）「对、对不起……民女失礼了。」'},{s:'皇上：「姑娘生得如此貌美，在这溪边浣纱，岂不可惜？」',r:'西子：（低头不语，手指绞着衣角）「……民女命薄，能吃饱就知足了。」'}]},
-    {id:'cai_wei',name:'采薇',age:17,personality:'直率爽朗',beauty:[78,88],talent:[50,70],wisdom:[55,75],trait:'识得百草',location:'outing',
+    {id:'cai_wei',name:'采薇',age:17,personality:'直率爽朗',beauty:[78,88],talent:[50,70],wisdom:[55,75],trait:'识得百草',location:'outing',jnFamily:'平民',
      intro:'山林中偶遇一采药女子，背着竹篓，笑容明媚。她熟练地采摘着草药，见有人来，大方地打招呼：「哟，这深山老林的，怎么来了位贵客？我是采薇，这山的草药我都认得！」',
      dialogue:[{s:'皇上：「姑娘认识这么多草药，好本事。」',r:'采薇：「那当然！我从小跟着爷爷上山采药，什么草治什么病，我门儿清！」'},{s:'皇上：「姑娘可愿入府？府中太医正缺个识药的助手。」',r:'采薇：「入府？那能天天上山采药吗？能的话我就去！」'}]},
-    {id:'yan_feifei',name:'燕飞飞',age:18,personality:'桀骜不羁',beauty:[85,95],talent:[45,65],wisdom:[50,70],trait:'箭法精准',location:'outing',
+    {id:'yan_feifei',name:'燕飞飞',age:18,personality:'桀骜不羁',beauty:[85,95],talent:[45,65],wisdom:[50,70],trait:'箭法精准',location:'outing',jnFamily:'寒门',
      intro:'林间一女子挽弓搭箭，「嗖」的一声，飞鸟应声而落。她收了弓，转头看来人，挑眉道：「看什么看？没见过女子打猎？」',
      dialogue:[{s:'皇上：「姑娘好箭法，这林中飞鸟竟百发百中。」',r:'燕飞飞：「哼，这算什么。我爹说女子也能百步穿杨，我可比他还准！」'},{s:'皇上：「姑娘可愿入府，教教府中侍卫？」',r:'燕飞飞：「教那些笨蛋？……行吧，总比在这林子里闷着强。」'}]},
   ];
@@ -6576,7 +6707,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var bs=state._jnCurrentBeauty;
     var beauty=state._jnCurrentBeautyTemplate;
     if(!bs)return;
-    // Pick a random portrait if not already set
+    // Determine rank and power based on family origin
+    var jnFam=beauty?beauty.jnFamily:'平民';
+    var jnRank,jnPowerMin,jnPowerMax;
+    if(jnFam==='名门'){jnRank='贵人';jnPowerMin=55;jnPowerMax=70;}
+    else if(jnFam==='寒门'){jnRank='常在';jnPowerMin=35;jnPowerMax=50;}
+    else{jnRank='官女子';jnPowerMin=3;jnPowerMax=10;}
     var html='<div style="padding:16px;">';
     html+='<div style="font-size:14px;color:#5a3e28;text-align:center;margin-bottom:14px;">确定将 <b style="color:#c49030;">'+bs.name+'</b> 带回后宫吗？</div>';
     html+='<div class="jn-event-portrait">';
@@ -6589,7 +6725,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     html+='<div>才华：<b style="color:#6080e0;">'+bs.talent+'</b></div>';
     html+='<div>智慧：<b style="color:#40a080;">'+bs.wisdom+'</b></div>';
     html+='<div>特长：<b style="color:#c49030;">'+bs.trait+'</b></div>';
-    html+='<div>初始位份：<b>答应</b></div>';
+    html+='<div>出身：<b style="color:#806030;">江南'+jnFam+'</b></div>';
+    html+='<div>初始位份：<b>'+jnRank+'</b></div>';
     html+='</div>';
     html+='</div>';
     html+='<div style="display:flex;gap:8px;padding:0 16px 16px;">';
@@ -6604,18 +6741,25 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var bs=state._jnCurrentBeauty;
     var beauty=state._jnCurrentBeautyTemplate;
     if(!bs)return;
+    // Determine rank and power based on family origin
+    var jnFam=beauty?beauty.jnFamily:'平民';
+    var jnRank,jnPowerMin,jnPowerMax,jnFamilyDesc;
+    if(jnFam==='名门'){jnRank='贵人';jnPowerMin=55;jnPowerMax=70;jnFamilyDesc='江南名门望族';}
+    else if(jnFam==='寒门'){jnRank='常在';jnPowerMin=35;jnPowerMax=50;jnFamilyDesc='江南寒门士族';}
+    else{jnRank='官女子';jnPowerMin=3;jnPowerMax=10;jnFamilyDesc='江南民间';}
+    var initPower=rand(jnPowerMin,jnPowerMax);
     // Create concubine entry
     var pname=bs.personality;
     var pObj=PERSONALITIES.find(function(p){return p.name===pname;})||PERSONALITIES[0];
     var c={
       id:genId(),name:bs.name,age:bs.age,
       beauty:bs.beauty,talent:bs.talent,wisdom:bs.wisdom,
-      trait:bs.trait,favor:30,power:15,health:rand(70,90),
-      rank:'答应',pregnant:false,pregMonth:0,
+      trait:bs.trait,favor:30,power:initPower,health:rand(70,90),
+      rank:jnRank,pregnant:false,pregMonth:0,
       portraitIdx:bs.portraitIdx,
       personality:pObj,
-      family:{name:'江南民间',desc:'江南寻美入宫',weight:1,initRank:'答应',color:'#6a5a4a'},
-      title:'',fromJiangnan:true,
+      family:{name:jnFamilyDesc,desc:'江南'+jnFam+'入宫',weight:1,initRank:jnRank,color:'#6a5a4a'},
+      title:'',fromJiangnan:true,jnFamily:jnFam,
       stress:0,stressCap:getStressCap(pObj.name),
       behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0
     };
@@ -6626,7 +6770,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-jn-event').classList.remove('show');
     closeJnEvent();
     save();updateUI();
-    showFeedback('<b style="color:#c49030;">&#128111; '+bs.name+' 已入后宫</b><br>位份：答应<br>性格：'+bs.personality);
+    showFeedback('<b style="color:#c49030;">&#128111; '+bs.name+' 已入后宫</b><br>出身：江南'+jnFam+'<br>位份：'+jnRank+'<br>势力：'+initPower+'<br>性格：'+bs.personality);
     // Refresh Jiangnan page
     updateJnLocations();
     updateJnStatus();
@@ -6916,7 +7060,191 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice};
+  // ===== 治国理政 =====
+  var GOV_QUESTIONS = [
+    // 历史人文
+    {q:'中国历史上第一个统一的中央集权的封建王朝是？',opts:['夏朝','秦朝','汉朝','商朝'],ans:1,expl:'秦始皇统一六国，建立中国历史上第一个统一的中央集权的封建王朝——秦朝（公元前221年）。'},
+    {q:'"贞观之治"是哪位皇帝在位时期的盛世？',opts:['唐高祖','唐太宗','唐玄宗','武则天'],ans:1,expl:'唐太宗李世民在位期间（627-649年），政治清明，经济繁荣，史称"贞观之治"。'},
+    {q:'四大发明中，造纸术的改进者是？',opts:['张衡','蔡伦','毕昇','祖冲之'],ans:1,expl:'东汉蔡伦改进了造纸术，用树皮、麻头、破布、渔网等原料造纸，大大降低了造纸成本。'},
+    {q:'"丝绸之路"的开辟与哪位历史人物有关？',opts:['郑和','张骞','班超','玄奘'],ans:1,expl:'西汉张骞出使西域，开辟了连接中国与中亚、西亚的贸易通道，后人称之为"丝绸之路"。'},
+    {q:'"三顾茅庐"请出的是哪位历史人物？',opts:['荀彧','诸葛亮','庞统','法正'],ans:1,expl:'刘备三次到隆中草庐拜访诸葛亮，最终请其出山辅佐，这就是著名的"三顾茅庐"典故。'},
+    {q:'《史记》的作者是？',opts:['班固','司马迁','司马光','陈寿'],ans:1,expl:'西汉司马迁撰写了中国第一部纪传体通史《史记》，被鲁迅誉为"史家之绝唱，无韵之离骚"。'},
+    {q:'"杯酒释兵权"发生在哪个朝代？',opts:['唐朝','宋朝','明朝','清朝'],ans:1,expl:'宋太祖赵匡胤通过"杯酒释兵权"的方式，和平解除了石守信等大将的兵权，加强了中央集权。'},
+    {q:'中国现存最早的兵书是？',opts:['《吴子》','《孙膑兵法》','《孙子兵法》','《六韬》'],ans:2,expl:'《孙子兵法》由春秋末期孙武所著，是中国现存最早的兵书，也是世界上最早的军事著作。'},
+    {q:'"开元盛世"是哪位皇帝在位时期？',opts:['唐太宗','唐高宗','唐玄宗','唐宪宗'],ans:2,expl:'唐玄宗李隆基在位前期，年号"开元"，政治清明，经济繁荣，史称"开元盛世"。'},
+    {q:'"罢黜百家，独尊儒术"是谁提出的？',opts:['李斯','董仲舒','韩非子','荀子'],ans:1,expl:'西汉董仲舒向汉武帝建议"罢黜百家，独尊儒术"，使儒家思想成为中国封建社会的正统思想。'},
+    {q:'郑和下西洋是在哪个朝代？',opts:['唐朝','宋朝','明朝','清朝'],ans:2,expl:'明朝永乐年间（1405-1433年），郑和七次下西洋，最远到达非洲东海岸。'},
+    {q:'"赤壁之战"的交战双方是？',opts:['曹操与袁绍','曹操与孙权刘备联军','刘备与孙权','曹操与诸葛亮'],ans:1,expl:'公元208年，曹操率军南下，孙权与刘备联合在赤壁大败曹军，奠定了三国鼎立的基础。'},
+    {q:'科举制度创立于哪个朝代？',opts:['汉朝','隋朝','唐朝','宋朝'],ans:1,expl:'隋文帝时开始用分科考试选拔人才，隋炀帝时正式设立进士科，标志着科举制度的正式创立。'},
+    {q:'"焚书坑儒"发生在哪个朝代？',opts:['商朝','秦朝','汉朝','隋朝'],ans:1,expl:'秦始皇统一六国后，为加强思想控制，下令焚烧除秦纪、医药、卜筮、种树之外的所有书籍，并坑杀了一批儒生。'},
+    {q:'《资治通鉴》的主编是？',opts:['司马迁','司马光','班固','范晔'],ans:1,expl:'北宋司马光主持编纂了中国第一部编年体通史《资治通鉴》，记载了从战国到五代共1362年的历史。'},
+    {q:'"文景之治"出现在哪个朝代？',opts:['秦朝','汉朝','唐朝','明朝'],ans:1,expl:'西汉文帝、景帝在位期间，实行轻徭薄赋、与民休息的政策，社会经济得到恢复和发展，史称"文景之治"。'},
+    // 地理自然
+    {q:'中国最大的淡水湖是？',opts:['鄱阳湖','洞庭湖','太湖','洪泽湖'],ans:0,expl:'鄱阳湖位于江西省，是中国最大的淡水湖，面积约3583平方公里。'},
+    {q:'世界上最长的河流是？',opts:['长江','亚马逊河','尼罗河','密西西比河'],ans:2,expl:'尼罗河全长约6650公里，是世界上最长的河流，流经非洲东北部11个国家。'},
+    {q:'中国领土的最南端位于？',opts:['海南岛','曾母暗沙','西沙群岛','南沙群岛'],ans:1,expl:'中国领土最南端位于南海南沙群岛的曾母暗沙，北纬约3°58′。'},
+    {q:'"五岳"中位于山东省的是？',opts:['华山','泰山','衡山','恒山'],ans:1,expl:'泰山位于山东省泰安市，海拔1545米，被称为"五岳之首"。'},
+    {q:'世界上最大的沙漠是？',opts:['戈壁沙漠','撒哈拉沙漠','阿拉伯沙漠','塔克拉玛干沙漠'],ans:1,expl:'撒哈拉沙漠位于非洲北部，面积约920万平方公里，是世界上最大的热带沙漠。'},
+    {q:'长江的发源地是？',opts:['青海巴颜喀拉山','青海唐古拉山','西藏念青唐古拉山','四川岷山'],ans:1,expl:'长江发源于青海省唐古拉山脉主峰各拉丹冬雪山，全长约6300公里，是中国第一长河。'},
+    {q:'中国面积最大的省级行政区是？',opts:['西藏','内蒙古','新疆','青海'],ans:2,expl:'新疆维吾尔自治区面积约166万平方公里，是中国面积最大的省级行政区。'},
+    {q:'珠穆朗玛峰位于哪两个国家的边境？',opts:['中国和印度','中国和尼泊尔','中国和巴基斯坦','中国和缅甸'],ans:1,expl:'珠穆朗玛峰位于中国与尼泊尔边境的喜马拉雅山脉中，海拔8848.86米，是世界最高峰。'},
+    {q:'黄河最终注入哪个海域？',opts:['黄海','东海','渤海','南海'],ans:2,expl:'黄河发源于青海，流经9个省区，最终在山东省东营市注入渤海。'},
+    {q:'中国最大的平原是？',opts:['华北平原','东北平原','长江中下游平原','成都平原'],ans:1,expl:'东北平原面积约35万平方公里，是中国最大的平原，位于中国东北部。'},
+    // 科技常识
+    {q:'光年是什么单位？',opts:['时间单位','距离单位','速度单位','质量单位'],ans:1,expl:'光年是光在真空中一年内传播的距离，约等于9.46万亿公里，是天文学中常用的距离单位。'},
+    {q:'水的沸点在标准大气压下是多少摄氏度？',opts:['90','95','100','110'],ans:2,expl:'在标准大气压（101.325kPa）下，纯水的沸点是100摄氏度。'},
+    {q:'人体最大的器官是？',opts:['肝脏','心脏','皮肤','肺'],ans:2,expl:'皮肤是人体最大的器官，成人皮肤面积约1.5-2平方米，具有保护、感觉、调节体温等功能。'},
+    {q:'地球上最大的洲是？',opts:['非洲','北美洲','欧洲','亚洲'],ans:3,expl:'亚洲面积约4458万平方公里，是世界上面积最大的洲，也是人口最多的洲。'},
+    {q:'声音在以下哪种介质中传播速度最快？',opts:['空气','水','钢铁','真空'],ans:2,expl:'声音在钢铁中的传播速度约为5200米/秒，远快于在空气（约340米/秒）和水（约1500米/秒）中的速度。声音不能在真空中传播。'},
+    {q:'以下哪种气体是温室气体？',opts:['氧气','氮气','二氧化碳','氦气'],ans:2,expl:'二氧化碳是主要的温室气体之一，它能吸收地面辐射的红外线，使大气温度升高，产生温室效应。'},
+    {q:'元素周期表中，原子序数为1的元素是？',opts:['氧','氦','氢','锂'],ans:2,expl:'氢是元素周期表中原子序数为1的元素，是最轻、最简单的元素，也是宇宙中最丰富的元素。'},
+    {q:'以下哪个不是太阳系中的行星？',opts:['天王星','海王星','冥王星','土星'],ans:2,expl:'冥王星于2006年被国际天文学联合会重新分类为"矮行星"，不再被视为太阳系的正式行星。'},
+    {q:'DNA的全称是？',opts:['脱氧核糖核酸','核糖核酸','氨基酸','脂肪酸'],ans:0,expl:'DNA的全称是脱氧核糖核酸（Deoxyribonucleic Acid），是携带遗传信息的生物大分子。'},
+    {q:'地球上最大的海洋是？',opts:['大西洋','印度洋','太平洋','北冰洋'],ans:2,expl:'太平洋是世界上最大的海洋，面积约1.652亿平方公里，占地球表面积的约三分之一。'},
+    // 法律政治
+    {q:'中华人民共和国的宪法日是每年的？',opts:['3月15日','5月1日','10月1日','12月4日'],ans:3,expl:'2014年11月1日，十二届全国人大常委会第十一次会议决定将12月4日设立为国家宪法日。'},
+    {q:'我国最高国家权力机关是？',opts:['国务院','全国人民代表大会','最高人民法院','最高人民检察院'],ans:1,expl:'全国人民代表大会是我国最高国家权力机关，行使立法权、决定权、任免权和监督权。'},
+    {q:'《中华人民共和国民法典》于何时起施行？',opts:['2019年1月1日','2020年1月1日','2021年1月1日','2022年1月1日'],ans:2,expl:'《中华人民共和国民法典》于2020年5月28日通过，自2021年1月1日起施行，是中国第一部以"法典"命名的法律。'},
+    {q:'我国的根本政治制度是？',opts:['民族区域自治制度','人民代表大会制度','基层群众自治制度','中国共产党领导的多党合作制度'],ans:1,expl:'人民代表大会制度是我国的根本政治制度，是中国人民当家作主的根本途径和最高实现形式。'},
+    {q:'我国的国徽图案中不包含以下哪个元素？',opts:['天安门','齿轮','五星','长城'],ans:3,expl:'中华人民共和国国徽中间是五星照耀下的天安门，周围是谷穗和齿轮，不包含长城。'},
+    {q:'中华人民共和国国歌是？',opts:['《东方红》','《义勇军进行曲》','《歌唱祖国》','《没有共产党就没有新中国》'],ans:1,expl:'《义勇军进行曲》由田汉作词、聂耳作曲，是中华人民共和国的国歌。'},
+    {q:'我国公民年满多少周岁享有选举权？',opts:['16周岁','18周岁','20周岁','22周岁'],ans:1,expl:'《中华人民共和国宪法》规定，中华人民共和国年满十八周岁的公民，不分民族、种族、性别、职业、家庭出身、宗教信仰、教育程度、财产状况、居住期限，都有选举权和被选举权。'},
+    {q:'以下哪项不是我国的基本国策？',opts:['计划生育','环境保护','对外开放','全民皆兵'],ans:3,expl:'我国的基本国策包括计划生育、环境保护、对外开放等，"全民皆兵"不是我国的基本国策。'},
+    {q:'中华人民共和国的国旗是？',opts:['五色旗','十八星旗','五星红旗','青天白日旗'],ans:2,expl:'中华人民共和国国旗为五星红旗，旗面为红色，左上方有五颗五角星，象征着中国共产党领导下的革命人民大团结。'},
+    {q:'我国的特别行政区是？',opts:['深圳、珠海','香港、澳门','上海、北京','台湾、海南'],ans:1,expl:'香港特别行政区和澳门特别行政区是中华人民共和国的两个特别行政区，实行"一国两制"。'},
+    // 经济常识
+    {q:'GDP的中文全称是？',opts:['国民收入','国内生产总值','国民生产总值','消费者物价指数'],ans:1,expl:'GDP（Gross Domestic Product）即国内生产总值，指一个国家或地区所有常住单位在一定时期内生产活动的最终成果。'},
+    {q:'"看不见的手"是哪位经济学家提出的概念？',opts:['凯恩斯','亚当·斯密','马克思','弗里德曼'],ans:1,expl:'苏格兰经济学家亚当·斯密在《国富论》中提出了"看不见的手"的概念，用来描述市场机制自发调节经济的作用。'},
+    {q:'以下哪个不是货币政策工具？',opts:['存款准备金率','利率','税收','公开市场操作'],ans:2,expl:'税收属于财政政策工具，存款准备金率、利率和公开市场操作都属于货币政策工具。'},
+    {q:'通货膨胀是指？',opts:['物价持续下降','物价持续上涨','货币升值','货币供应量减少'],ans:1,expl:'通货膨胀是指物价水平持续、普遍上涨的经济现象，通常伴随货币购买力下降。'},
+    {q:'世界贸易组织（WTO）的总部设在？',opts:['纽约','伦敦','日内瓦','巴黎'],ans:2,expl:'世界贸易组织（WTO）总部设在瑞士日内瓦，于1995年1月1日正式成立，中国于2001年加入。'},
+    {q:'"市场经济"这一概念的核心是？',opts:['政府计划决定资源配置','市场在资源配置中起决定性作用','企业自主定价','完全自由竞争'],ans:1,expl:'市场经济的核心是市场在资源配置中起决定性作用，通过价格机制、供求机制和竞争机制来实现资源的有效配置。'},
+    {q:'以下哪种收入属于按劳分配？',opts:['股票分红','银行存款利息','企业职工的工资','出租房屋的租金'],ans:2,expl:'按劳分配是社会主义公有制经济中个人消费品分配的基本原则，企业职工的工资是按劳分配的主要形式。'},
+    {q:'CPI（居民消费价格指数）上涨意味着？',opts:['通货紧缩','通货膨胀','经济衰退','失业率上升'],ans:1,expl:'CPI是衡量通货膨胀的重要指标，CPI持续上涨意味着物价水平上升，通常表示存在通货膨胀。'},
+    {q:'"供给侧改革"的主要目的是？',opts:['刺激消费需求','提高供给体系质量和效率','增加政府支出','扩大出口'],ans:1,expl:'供给侧结构性改革的主要目的是提高供给体系质量和效率，使供给能力更好满足人民日益增长的美好生活需要。'},
+    {q:'以下哪个组织被称为"世界银行"？',opts:['IMF','WTO','IBRD','UNDP'],ans:2,expl:'世界银行集团的核心机构是国际复兴开发银行（IBRD），成立于1945年，总部设在华盛顿。'},
+    // 综合常识
+    {q:'奥运会每几年举办一次？',opts:['2年','3年','4年','5年'],ans:2,expl:'夏季奥林匹克运动会每四年举办一次，这是自古希腊奥运会以来的传统。'},
+    {q:'中国第一部诗歌总集是？',opts:['《楚辞》','《诗经》','《论语》','《尚书》'],ans:1,expl:'《诗经》是中国第一部诗歌总集，收录了西周初年至春秋中叶约500年间的诗歌305篇。'},
+    {q:'以下哪位科学家被称为"杂交水稻之父"？',opts:['钱学森','邓稼先','袁隆平','屠呦呦'],ans:2,expl:'袁隆平（1930-2021）是中国著名农业科学家，成功培育出杂交水稻，被誉为"杂交水稻之父"。'},
+    {q:'中国传统节日"端午节"是为了纪念谁？',opts:['李白','屈原','杜甫','白居易'],ans:1,expl:'端午节（农历五月初五）是为了纪念战国时期楚国爱国诗人屈原，传统习俗包括吃粽子、赛龙舟等。'},
+    {q:'中国的"二十四节气"中，春季的最后一个节气是？',opts:['春分','清明','谷雨','立夏'],ans:2,expl:'谷雨是春季的最后一个节气，每年4月19日至21日视太阳到达黄经30度时为谷雨。'},
+    {q:'"但愿人长久，千里共婵娟"是谁的名句？',opts:['李白','杜甫','苏轼','辛弃疾'],ans:2,expl:'此句出自宋代苏轼的《水调歌头·明月几时有》，是中秋词中的千古绝唱。'},
+    {q:'以下哪座城市不是中国的直辖市？',opts:['北京','上海','深圳','重庆'],ans:2,expl:'中国有四个直辖市：北京、上海、天津、重庆。深圳是广东省辖计划单列市，不是直辖市。'},
+    {q:'诺贝尔奖中没有设立以下哪个奖项？',opts:['物理学奖','数学奖','文学奖','和平奖'],ans:1,expl:'诺贝尔奖设立了物理学、化学、生理学或医学、文学、和平五个原始奖项，后来增设了经济学奖，但没有数学奖。'},
+    {q:'中国传统的"文房四宝"是指？',opts:['笔墨纸砚','琴棋书画','诗词歌赋','风花雪月'],ans:0,expl:'"文房四宝"指笔、墨、纸、砚，是中国传统文化中文房（书房）必备的四种文具。'},
+    {q:'"知之为知之，不知为不知，是知也"出自哪部著作？',opts:['《孟子》','《论语》','《大学》','《中庸》'],ans:1,expl:'此句出自《论语·为政》，是孔子关于求知态度的名言，意思是知道就是知道，不知道就是不知道，这才是真正的智慧。'},
+    {q:'世界上第一个登上月球的人是？',opts:['加加林','阿姆斯特朗','杨利伟','奥尔德林'],ans:1,expl:'1969年7月20日，美国宇航员尼尔·阿姆斯特朗乘坐阿波罗11号飞船成为第一个踏上月球表面的人。'},
+    {q:'中国现行的学制中，义务教育共几年？',opts:['6年','9年','12年','15年'],ans:1,expl:'中国实行九年义务教育制度，包括小学6年和初中3年（部分地区为小学5年、初中4年）。'},
+    {q:'"天时不如地利，地利不如人和"出自？',opts:['《论语》','《孟子》','《荀子》','《庄子》'],ans:1,expl:'此句出自《孟子·公孙丑下》，意思是良好的时机不如有利的地形条件，有利的地形条件不如人心团结。'},
+    {q:'以下哪位画家以画虾闻名？',opts:['徐悲鸿','张大千','齐白石','吴冠中'],ans:2,expl:'齐白石（1864-1957）是中国近现代著名画家，以画虾、蟹、虫、花、鸟见长，尤以画虾最为著名。'},
+    {q:'"天下兴亡，匹夫有责"是谁的名言？',opts:['林则徐','顾炎武','龚自珍','梁启超'],ans:1,expl:'此语出自明末清初思想家顾炎武的《日知录》，意思是国家的兴衰，每个普通人都有责任。'},
+  ];
+
+  // 治国理政状态
+  var _govState = {questions:[],currentIdx:0,correctCount:0,answered:false};
+
+  function openGovernance(){
+    var govDone=state._governanceLastMonth===(state.year*12+state.month);
+    if(govDone){showFeedback('本月已经答过治国理政了，下月再来！');return;}
+    // Pick 5 random questions
+    var shuffled=GOV_QUESTIONS.slice().sort(function(){return 0.5-Math.random();});
+    _govState.questions=shuffled.slice(0,5);
+    _govState.currentIdx=0;
+    _govState.correctCount=0;
+    _govState.answered=false;
+    renderGovQuestion();
+    document.getElementById('modal-governance').classList.add('show');
+  }
+
+  function renderGovQuestion(){
+    var qi=_govState.currentIdx;
+    var total=5;
+    if(qi>=total){showGovSummary();return;}
+    var q=_govState.questions[qi];
+    _govState.answered=false;
+    var html='<div style="text-align:center;font-size:12px;color:#a08060;margin-bottom:12px;">第 '+(qi+1)+' / '+total+' 题</div>';
+    html+='<div class="gov-question">'+q.q+'</div>';
+    html+='<div id="gov-options">';
+    var letters=['A','B','C','D'];
+    q.opts.forEach(function(opt,i){
+      html+='<div class="gov-option" id="gov-opt-'+i+'" onclick="Game.selectGovAnswer('+i+')"><span class="gov-letter">'+letters[i]+'</span>'+opt+'</div>';
+    });
+    html+='</div>';
+    html+='<div id="gov-feedback" style="display:none;"></div>';
+    html+='<div style="text-align:center;margin-top:16px;">';
+    html+='<button id="gov-next-btn" class="gov-btn gov-btn-next" style="display:none;" onclick="Game.nextGovQuestion()">下一题</button>';
+    html+='</div>';
+    document.getElementById('governance-content').innerHTML=html;
+    document.getElementById('gov-modal-title').innerHTML='&#128220; 治国理政';
+  }
+
+  function selectGovAnswer(idx){
+    if(_govState.answered)return;
+    _govState.answered=true;
+    var q=_govState.questions[_govState.currentIdx];
+    var isCorrect=idx===q.ans;
+    if(isCorrect)_govState.correctCount++;
+    // Highlight options
+    var letters=['A','B','C','D'];
+    for(var i=0;i<4;i++){
+      var el=document.getElementById('gov-opt-'+i);
+      if(!el)continue;
+      if(i===q.ans){el.className='gov-option correct';}
+      else if(i===idx&&!isCorrect){el.className='gov-option wrong';}
+      el.style.cursor='default';
+    }
+    // Show feedback
+    var fb=document.getElementById('gov-feedback');
+    var resultText=isCorrect?'✅ 回答正确！ +500两':'❌ 回答错误！';
+    var resultCls=isCorrect?'gov-result-text correct':'gov-result-text wrong';
+    var html='<div class="'+resultCls+'">'+resultText+'</div>';
+    html+='<div class="gov-explanation"><b>&#128218; 解析：</b>'+q.expl+'</div>';
+    fb.innerHTML=html;
+    fb.style.display='block';
+    // Show next button
+    document.getElementById('gov-next-btn').style.display='inline-block';
+  }
+
+  function nextGovQuestion(){
+    _govState.currentIdx++;
+    if(_govState.currentIdx>=5){
+      showGovSummary();
+    }else{
+      renderGovQuestion();
+    }
+  }
+
+  function showGovSummary(){
+    var score=_govState.correctCount;
+    var reward=score*500;
+    var html='<div class="gov-summary">';
+    html+='<div style="font-size:20px;color:#5a3e28;margin-bottom:6px;">&#128220; 治国理政 · 答卷</div>';
+    html+='<div class="gov-summary-score">'+score+' / 5</div>';
+    html+='<div style="font-size:14px;color:#8a7060;margin-bottom:12px;">答对 '+score+' 题</div>';
+    if(reward>0){
+      html+='<div class="gov-summary-reward">&#128176; 获得 '+reward+' 两</div>';
+      state.treasury+=reward;
+      // Record the month
+      state._governanceLastMonth=state.year*12+state.month;
+    }else{
+      html+='<div style="font-size:14px;color:#a08060;margin:8px 0;">再接再厉，下月继续！</div>';
+      state._governanceLastMonth=state.year*12+state.month;
+    }
+    html+='<div style="margin-top:16px;">';
+    html+='<button class="gov-btn gov-btn-next" onclick="Game.closeGovernance()">确 定</button>';
+    html+='</div></div>';
+    document.getElementById('governance-content').innerHTML=html;
+    document.getElementById('gov-modal-title').innerHTML='&#128220; 治国理政 · 完成';
+    save();updateUI();
+  }
+
+  function closeGovernance(){
+    document.getElementById('modal-governance').classList.remove('show');
+    closeModal();
+  }
+
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice};
 })();
 
 // ===== 启动 =====
