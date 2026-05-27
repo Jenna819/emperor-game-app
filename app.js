@@ -4832,7 +4832,7 @@ const ZH_PORTRAIT_DATA = [
   function genHonglouBeauty(isQueen,isReunion,oldData){
     if(isReunion&&oldData){
       var od=oldData;
-      var b={id:od.id,name:od.name,type:od.type,typeName:od.typeName,age:od.age,beauty:od.beauty,talent:od.talent,wisdom:od.wisdom,health:od.health,personality:od.personality,trait:od.trait,price:od.price,portraitIdx:od.portraitIdx,portraitSeed:od.portraitSeed,favor:od.favor||0,favorLevel:getFavorKey(od.favor||0),visitCount:od.visitCount||0,isFlowerQueen:od.isFlowerQueen||false,isReunion:true,isQueen:false};
+      var b={id:od.id,name:od.name,type:od.type,typeName:od.typeName,age:od.age||rand(17,25),beauty:od.beauty||rand(60,90),talent:od.talent||rand(40,80),wisdom:od.wisdom||rand(30,70),health:od.health||rand(75,100),personality:od.personality,trait:od.trait,price:od.price,portraitIdx:od.portraitIdx,portraitSeed:od.portraitSeed,favor:od.favor||0,favorLevel:getFavorKey(od.favor||0),visitCount:od.visitCount||0,isFlowerQueen:od.isFlowerQueen||false,isReunion:true,isQueen:false,greeting:od.greeting||pick(HL_GREETINGS)};
       // 重逢加成
       if(od.visitsSinceLastSeen>=3){b.favor=Math.min((b.favor||0)+10,100);b.price=Math.round(b.price*0.8);}
       return b;
@@ -5071,6 +5071,7 @@ const ZH_PORTRAIT_DATA = [
     var hl=state._honglou;
     if(!hl||!hl.active)return;
     var b=hl.beauties.find(function(x){return x.id===id;});
+    if(!b&&hl.oldFlames)b=hl.oldFlames.find(function(x){return x.id===id;});
     if(!b){showFeedback('找不到这位女子……');return;}
     hl.currentBeauty=b;
     renderHonglouRoom();
@@ -5088,7 +5089,7 @@ const ZH_PORTRAIT_DATA = [
     var canBed=b.favor>=20;
     var html='<div class="hl-room">';
     html+='<div class="hl-room-portrait">'+portraitHL(b,140,180)+'</div>';
-    html+='<div class="hl-room-greeting">「'+b.greeting.replace('{name}',b.name)+'」</div>';
+    html+='<div class="hl-room-greeting">「'+(b.greeting?b.greeting.replace('{name}',b.name):'公子来了呀~')+'」</div>';
     html+='<div class="hl-room-stats">';
     html+='<div class="hl-room-stats-row">';
     html+='<div>美貌 <b style="color:#e06080;">'+b.beauty+'</b></div>';
@@ -5356,6 +5357,7 @@ const ZH_PORTRAIT_DATA = [
       logEvent('醉红楼',b.name+' 赎身入宫，封为 '+initRank);
       // 从beauties移除
       hl.beauties=hl.beauties.filter(function(x){return x.id!==b.id;});
+      if(hl.oldFlames)hl.oldFlames=hl.oldFlames.filter(function(x){return x.id!==b.id;});
     });
     save();updateUI();
     document.getElementById('modal-honglou-adopt').classList.remove('show');
@@ -5383,6 +5385,7 @@ const ZH_PORTRAIT_DATA = [
       var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:rand(5,20),rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
       state.concubines.push(concubine);
       state._honglou.beauties=state._honglou.beauties.filter(function(x){return x.id!==b.id;});
+      if(state._honglou.oldFlames)state._honglou.oldFlames=state._honglou.oldFlames.filter(function(x){return x.id!==b.id;});
       logEvent('醉红楼',b.name+' 赎身入宫，封为 '+initRank);
       state._honglou.currentBeauty=null;
       save();updateUI();
@@ -5524,6 +5527,7 @@ const ZH_PORTRAIT_DATA = [
     var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:rand(5,20),rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0};
     state.concubines.push(concubine);
     state._honglou.beauties=state._honglou.beauties.filter(function(x){return x.id!==b.id;});
+    if(state._honglou.oldFlames)state._honglou.oldFlames=state._honglou.oldFlames.filter(function(x){return x.id!==b.id;});
     logEvent('醉红楼',b.name+' 花魁入宫，封为 '+initRank);
     document.getElementById('modal-honglou-contest').classList.remove('show');
     closeModal();
@@ -5553,7 +5557,7 @@ const ZH_PORTRAIT_DATA = [
       if(b.visitCount>0){
         var keepRate=b.favorLevel==='obsessed'?1.0:b.favorLevel==='love'?0.8:0.4;
         if(Math.random()<keepRate){
-          state.honglouOldFlames.push({id:b.id,name:b.name,type:b.type,portraitIdx:b.portraitIdx,portraitSeed:b.portraitSeed,favor:b.favor,visitCount:b.visitCount,personality:{name:b.personality.name},trait:b.trait,price:b.price,typeName:b.typeName,isFlowerQueen:b.isFlowerQueen,lastVisitVisits:state.honglouTotalVisits||0});
+          state.honglouOldFlames.push({id:b.id,name:b.name,type:b.type,portraitIdx:b.portraitIdx,portraitSeed:b.portraitSeed,favor:b.favor,visitCount:b.visitCount,personality:{name:b.personality.name},trait:b.trait,price:b.price,typeName:b.typeName,isFlowerQueen:b.isFlowerQueen,lastVisitVisits:state.honglouTotalVisits||0,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,greeting:b.greeting});
         }
       }
     });
