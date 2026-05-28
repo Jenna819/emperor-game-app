@@ -2177,7 +2177,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
             const pn=mother.personality?mother.personality.name:'';
             if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
-              const targets=state.concubines.filter(c=>c.id!==mother.id&&c.rank!=='皇后');
+              const targets=state.concubines.filter(c=>c.id!==mother.id);
               if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
             }
           }
@@ -4072,7 +4072,6 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function executeDeath(c){
     if(!c || c.health > 0) return;
-    if(c.rank === '皇后') return;
     // 生成临终遗言
     const quote = genDeathQuote(c);
     // 处理亲生孩子
@@ -4084,7 +4083,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const pn = c.personality ? c.personality.name : '';
     if(pn === '心机深沉'){
       // 暗示被害，对随机一个高位妃子生成grudge（皇上代为记恨）
-      const suspects = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后' && x.power > 50);
+      const suspects = state.concubines.filter(x => x.id !== c.id && x.power > 50);
       if(suspects.length > 0){
         const rival = suspects[Math.floor(Math.random() * suspects.length)];
         // 给皇上的"记恨"记录
@@ -4113,7 +4112,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     save(); updateUI();
     let msg = '<span class="neg">' + c.rank + c.name + '</span> 不幸病故<br><i style="color:#9060c0;font-size:12px;">' + quote + '</i>';
     // 国丧判定（妃位以上，20%概率）
-    const highRanks = ['妃', '嫔', '贵人', '贵妃', '皇贵妃'];
+    const highRanks = ['妃', '嫔', '贵人', '贵妃', '皇贵妃', '皇后'];
     if(highRanks.includes(c.rank) && Math.random() < 0.20){
       state._mourningEvent = {victimName: c.name, victimRank: c.rank};
       setTimeout(function(){ triggerMourningEvent(c); }, 600);
@@ -4189,7 +4188,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function processCriticalIllness(){
     // 1. 健康 <= 0 的妃子立即处理病故
     state.concubines.forEach(function(c){
-      if(c.health <= 0 && c.rank !== '皇后'){
+      if(c.health <= 0){
         executeDeath(c);
       }
     });
@@ -4227,13 +4226,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function genIllnessDeath(con){
     // Stage 2: 病入膏肓 (health 1-20, 70%概率)
-    const stage2 = con.filter(c => c.health >= 1 && c.health < 20 && c.rank !== '皇后');
+    const stage2 = con.filter(c => c.health >= 1 && c.health < 20);
     if(stage2.length > 0 && Math.random() < 0.7){
       const c = pick(stage2);
       c._illnessStage = 2;
       // 有孩子时 40% 概率触发托孤事件
       const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0 && (!ch.adoptiveMotherId || ch.adoptiveMotherId === null));
-      const hasQueen = state.concubines.some(x => x.rank === '皇后');
+      const hasQueen = state.concubines.some(x => x.rank === '皇后' && x.id !== c.id);
       if(aliveKids.length > 0 && Math.random() < 0.4){
         return genEntrustOrphanEvent(c, aliveKids, hasQueen);
       }
@@ -4244,7 +4243,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       ]};
     }
     // Stage 1: 缠绵病榻 (health 20-40, 40%概率)
-    const stage1 = con.filter(c => c.health >= 20 && c.health < 40 && c.rank !== '皇后');
+    const stage1 = con.filter(c => c.health >= 20 && c.health < 40);
     if(stage1.length > 0 && Math.random() < 0.4){
       const c = pick(stage1);
       c._illnessStage = 1;
@@ -4259,7 +4258,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       ]};
     }
     // Fallback: original behavior for health < 40
-    const eligible = con.filter(c => c.health < 40 && c.rank !== '皇后');
+    const eligible = con.filter(c => c.health < 40);
     if(eligible.length === 0) return null;
     const c = pick(eligible);
     return {title:'【妃子病故】', desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`, options:[
@@ -4272,7 +4271,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   // 托孤遗愿事件
   function genEntrustOrphanEvent(c, kids, hasQueen){
     var kidNames = kids.map(ch => ch.name).join('、');
-    const otherConcs = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+    const otherConcs = state.concubines.filter(x => x.id !== c.id && x.id !== (state.concubines.find(q=>q.rank==='皇后')||{}).id);
     const canAssignConc = otherConcs.length > 0;
     const queenOption = hasQueen ? `{text:' 交由皇后照管', effect(){
       var empress = state.concubines.find(x => x.rank === '皇后');
@@ -4282,8 +4281,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       showFeedback('交由<span class="pos">皇后 ' + empress.name + '</span>照管<br>' + kidNames + ' 交由皇后抚养');
     }},` : '';
     const assignConcOption = canAssignConc ? `{text:' 指给高位妃嫔抚养', effect(){
-      var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔'));
-      if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+      var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔' || x.rank === '皇后'));
+      if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id);
       if(eligible.length === 0){showFeedback('无妃嫔可抚养');return;}
       var adopter = pick(eligible);
       kids.forEach(ch => { ch.adoptiveMotherId = adopter.id; ch.adoptiveMotherName = adopter.name; ch.isOrphan = true; ch.orphanMonth = 1; ch.monthlyCost = 200; });
@@ -4305,8 +4304,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         }},
         ...(queenOption ? [JSON.parse(queenOption.replace(/'/g, '"'))] : []),
         ...(canAssignConc ? [{text:' 指给高位妃嫔抚养', effect(){
-          var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔'));
-          if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+          var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔' || x.rank === '皇后'));
+          if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id);
           if(eligible.length === 0){showFeedback('无妃嫔可抚养');return;}
           var adopter = pick(eligible);
           kids.forEach(ch => { ch.adoptiveMotherId = adopter.id; ch.adoptiveMotherName = adopter.name; ch.isOrphan = true; ch.orphanMonth = 1; ch.monthlyCost = 200; });
@@ -4396,13 +4395,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._orphanData = {deceasedName:deceased.name, deceasedRank:deceased.rank, childIds:kids.map(ch=>ch.id)};
     var kidNames = kids.map(ch=>ch.name).join('、');
     // 边界判定：无其他妃子可抚养
-    const hasQueen = state.concubines.some(c => c.rank === '皇后');
+    const hasQueen = state.concubines.some(c => c.rank === '皇后' && c.name !== deceased.name);
     const queenInCold = state.coldPalaceList.some(c => c.rank === '皇后');
     const opts = [];
     // 选项1：指给高位妃嫔（仅当有其他妃子时显示）
     opts.push({text:' 指给高位妃嫔抚养',effect(){
-      var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔');
-      if(eligible.length===0){eligible=state.concubines.filter(c=>c.rank!=='皇后');}
+      var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔'||c.rank==='皇后');
+      if(eligible.length===0){eligible=state.concubines.filter(c=>c.id!==deceased.id);}
       if(eligible.length===0){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('无妃嫔可抚养孤儿');return;}
       var adopter=pick(eligible);
       state.children.forEach(ch=>{
@@ -4522,7 +4521,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function genPoisoning(con){
     if(con.length<2)return null;
     const a=pickWeighted(con,'暗中下毒','perpetrator');
-    const b=pick(con.filter(c=>c.id!==a.id&&c.rank!=='皇后'));
+    const b=pick(con.filter(c=>c.id!==a.id));
     if(!b)return null;
     return{title:'【暗中下毒】',desc:`${a.rank}${a.name}暗中在${b.rank}${b.name}的膳食中下毒，被管事嬷嬷察觉异样，${b.name}服后上吐下泻，太医诊断为中毒之症。`,options:[
       {text:'🔍 严查真凶（国库-1000）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;if(Math.random()<0.7){showPunishmentOptions(a.id,b.id,'暗中下毒','【暗中下毒】');}else{_showNoEvidence('【暗中下毒】','经查并未发现确凿证据，'+a.name+' 否认下毒，此事恐为谣传。');}}},
@@ -4535,7 +4534,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   // ===== 谋害皇嗣 =====
   function genHarmHeir(con){
     const preg=state.concubines.filter(c=>c.pregnant&&c.pregMonth>=3);
-    const mothers=state.concubines.filter(c=>c.rank!=='皇后');
+    const mothers=state.concubines;
     if(preg.length===0&&mothers.length<2)return null;
     const victim=preg.length>0?pick(preg):pick(mothers);
     const perp=pickWeighted(mothers.filter(c=>c.id!==victim.id),'谋害皇嗣','perpetrator');
@@ -4569,7 +4568,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   // ===== 私通败露 =====
   function genAdultery(con){
-    const eligible=con.filter(c=>c.rank!=='皇后');
+    const eligible=con;
     if(eligible.length<1)return null;
     const c=pickWeighted(eligible,'私通败露','perpetrator');
     // Generate a fake person name for the affair partner
@@ -4590,7 +4589,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const child=pick(young);
     const mother=state.concubines.find(c=>c.id===child.motherId);
     if(!mother)return null;
-    const suspects=con.filter(c=>c.id!==child.motherId&&c.rank!=='皇后');
+    const suspects=con.filter(c=>c.id!==child.motherId);
     if(suspects.length===0)return null;
     const perp=pickWeighted(suspects,'暗害子嗣','perpetrator');
     const scenarios=[
@@ -4607,7 +4606,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
         const pn=mother.personality?mother.personality.name:'';
         if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
-          const targets=state.concubines.filter(c=>c.id!==mother.id&&c.rank!=='皇后');
+          const targets=state.concubines.filter(c=>c.id!==mother.id);
           if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
         }
       }
@@ -4800,7 +4799,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     // ===== 第一优先级：危急病故事件（优先于其他事件）=====
     // health <= 0 的妃子 100% 触发
-    const zeroHealth=con.filter(c=>c.health<=0&&c.rank!=='皇后');
+    const zeroHealth=con.filter(c=>c.health<=0);
     if(zeroHealth.length>0){
       const c=zeroHealth.reduce((a,b)=>a.health<b.health?a:b);
       executeDeath(c);
