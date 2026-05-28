@@ -2694,7 +2694,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._monthlyExpense = expenses.total;
     state.treasury += netIncome;
     state.actionsLeft = 5;state.banquetHeld = false;state.morningTriggered = false;state.eventTriggeredThisMonth = false;state.monthEventAction = Math.floor(Math.random() * 3) + 1;
-    processBannedDecay();processColdDecay();processPregnancy();processChildrenHealth();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
+    processBannedDecay();processColdDecay();processPregnancy();processCriticalIllness();processChildrenHealth();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
     // 醉红楼认亲剧情判定
     checkHonglouReunion();
     // 西域公主来访事件：首年第9月触发
@@ -3124,7 +3124,6 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function findC(id){return state.concubines.find(x=>x.id===id);}
-  function checkDeath(c){if(!c||c.health>0)return;if(c.rank==='皇后')return;var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));if(kids.length>0){triggerOrphanAdoption(c,kids);}state.concubines=state.concubines.filter(x=>x.id!==c.id);logEvent('&#30149;&#36893;',c.rank+c.name+'&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');}
   function canAct(){if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#27425;&#25968;&#24050;&#29992;&#23436;&#65281;<br>&#35831;&#28857;&#20987;&#12300;&#36827;&#20837;&#19979;&#26376;&#12301;&#21047;&#26032;&#12290;');return false;}return true;}
 
   function actionFavor(id){
@@ -4537,123 +4536,442 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
 
   // ===== 渐进病故系统 =====
+  // 临终遗言系统
+  const DEATH_LAST_WORDS = {
+    '温婉': ['"臣妾此生能侍奉皇上，已无憾了……愿皇上保重龙体……"', '"皇上……臣妾下辈子还做您的妻子……"'],
+    '心机深沉': ['"皇上……臣妾……是被人害的……您一定要……查明真相……"', '"皇上……小心您身边……最亲近的人……"'],
+    '娇媚': ['"皇上……不要忘记臣妾……臣妾在九泉之下……也会一直念着您……"', '"皇上……来世……臣妾还愿做您的妃子……"'],
+    '狠戾果决': ['"臣妾死不瞑目！那些害臣妾的人……一个都逃不掉……！"', '"皇上……您可知……臣妾是……被谁害的……！"'],
+    '偏执痴迷': ['"臣妾……下辈子还要侍奉皇上……生生世世……不分离……"', '"皇上……您只能记得臣妾一个人……不能去别人那里……"'],
+    '清冷孤傲': ['"臣妾……本就……不属于这里……如今……总算能走了……"', '"皇上……臣妾这一生……如履薄冰……终于……可以歇息了……"'],
+    '率真洒脱': ['"皇上……替臣妾……去看看外面的世界……塞北的雪……江南的雨……"', '"皇上……臣妾这辈子……活得痛快……死得也……痛快……"'],
+    '虚荣攀比': ['"臣妾……不该……输给那个贱人……如果不是她……"', '"皇上……臣妾的钗环首饰……还没戴够呢……"'],
+    '小气善妒': ['"皇上……以后……别去她那里……多陪陪臣妾……好不好……"', '"臣妾知道……皇上心里有别人……可臣妾……还是不甘……"'],
+    '风情婉约': ['"皇上……臣妾的孩子……请您一定……好好照顾……"', '"皇上……臣妾最放不下的……就是孩子……求您……"'],
+  };
+
+  function genDeathQuote(c){
+    const pn = c.personality ? c.personality.name : '温婉';
+    const pool = DEATH_LAST_WORDS[pn] || DEATH_LAST_WORDS['温婉'];
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function executeDeath(c){
+    if(!c || c.health > 0) return;
+    if(c.rank === '皇后') return;
+    // 生成临终遗言
+    const quote = genDeathQuote(c);
+    // 处理亲生孩子
+    var kids = state.children.filter(ch => ch.motherId === c.id && (ch.adoptiveMotherId === null || ch.adoptiveMotherId === undefined));
+    if(kids.length > 0){
+      triggerOrphanAdoption(c, kids);
+    }
+    // 性格相关遗言效果
+    const pn = c.personality ? c.personality.name : '';
+    if(pn === '心机深沉'){
+      // 暗示被害，对随机一个高位妃子生成grudge（皇上代为记恨）
+      const suspects = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后' && x.power > 50);
+      if(suspects.length > 0){
+        const rival = suspects[Math.floor(Math.random() * suspects.length)];
+        // 给皇上的"记恨"记录
+        if(!state._suspectedMurders) state._suspectedMurders = [];
+        state._suspectedMurders.push({victimName: c.name, suspectId: rival.id, suspectName: rival.rank + rival.name});
+      }
+    }
+    if(pn === '狠戾果决' && c.family){
+      // 家族不满
+      // 家族势力标记（如果存在的话，此处只做日志）
+      logEvent('病故-遗言', '狠戾果决-死不瞑目');
+    }
+    if(pn === '偏执痴迷'){
+      // 孩子压力增加
+      kids.forEach(ch => { ch.stress = (ch.stress || 0) + 10; });
+    }
+    if(pn === '风情婉约' && kids.length > 0){
+      kids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 10; });
+    }
+    // 记录 memorial 妃子
+    if(!state._memorialConcubines) state._memorialConcubines = [];
+    state._memorialConcubines.push({name: c.name, rank: c.rank, year: state.year, month: state.month});
+    // 从宫中移除
+    state.concubines = state.concubines.filter(x => x.id !== c.id);
+    logEvent('病故', c.rank + c.name + '病故');
+    save(); updateUI();
+    let msg = '<span class="neg">' + c.rank + c.name + '</span> 不幸病故<br><i style="color:#9060c0;font-size:12px;">' + quote + '</i>';
+    // 国丧判定（妃位以上，20%概率）
+    const highRanks = ['妃', '嫔', '贵人', '贵妃', '皇贵妃'];
+    if(highRanks.includes(c.rank) && Math.random() < 0.20){
+      state._mourningEvent = {victimName: c.name, victimRank: c.rank};
+      setTimeout(function(){ triggerMourningEvent(c); }, 600);
+    } else {
+      showFeedback(msg);
+    }
+  }
+
+  // 国丧事件
+  function triggerMourningEvent(c){
+    const data = state._mourningEvent;
+    if(!data) return;
+    let html = '<div style="text-align:center;">';
+    html += '<p style="color:#a08060;font-size:13px;margin-bottom:16px;">' + data.victimRank + data.victimName + '病故，宫中哀声一片。请皇上定夺丧仪规格。</p>';
+    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+    html += '<button class="btn-option" onclick="Game.mourningChoice(0)">辍朝三日（国库-2000，全体妃嫔宠爱-5）</button>';
+    html += '<button class="btn-option" onclick="Game.mourningChoice(1)">厚葬（国库-3000，家族势力+20）</button>';
+    html += '<button class="btn-option" onclick="Game.mourningChoice(2)">从简办理（国库-500）</button>';
+    html += '</div></div>';
+    document.getElementById('event-content').innerHTML = html;
+    const btn = document.getElementById('event-confirm-btn');
+    if(btn){ btn.textContent = '确认'; btn.disabled = true; btn.style.opacity = '0.5'; btn.onclick = function(){ Game.confirmEventOption(); }; }
+    document.getElementById('modal-event').classList.add('show');
+    // 作为 pendingEvent 处理
+    state.pendingEvent = {
+      title: '【国丧事宜】',
+      desc: data.victimRank + data.victimName + '病故，请皇上定夺丧仪规格。',
+      options: [
+        {
+          text: ' 辍朝三日（国库-2000，全体妃嫔宠爱-5）',
+          effect(){
+            if(state.treasury < 2000){ showFeedback('国库不足！'); state.pendingEvent = null; save(); updateUI(); return; }
+            state.treasury -= 2000;
+            state.concubines.forEach(x => { x.favor = clamp(x.favor - 5, 0, 2200); });
+            logEvent('国丧', '辍朝三日'); save(); updateUI();
+            showFeedback('辍朝三日<br>国库 <span class="neg">-2000</span>，全体妃嫔宠爱 <span class="neg">-5</span>');
+            state.pendingEvent = null;
+          }
+        },
+        {
+          text: ' 厚葬（国库-3000，家族势力+20）',
+          effect(){
+            if(state.treasury < 3000){ showFeedback('国库不足！'); state.pendingEvent = null; save(); updateUI(); return; }
+            state.treasury -= 3000;
+            logEvent('国丧', '厚葬'); save(); updateUI();
+            showFeedback('厚葬' + data.victimName + '<br>国库 <span class="neg">-3000</span><br>家族势力 <span class="pos">+20</span>');
+            state.pendingEvent = null;
+          }
+        },
+        {
+          text: ' 从简办理（国库-500）',
+          effect(){
+            state.treasury -= 500;
+            logEvent('国丧', '从简办理'); save(); updateUI();
+            showFeedback('从简办理' + data.victimName + '<br>国库 <span class="neg">-500</span>');
+            state.pendingEvent = null;
+          }
+        },
+      ]
+    };
+    showEventModal();
+  }
+
+  function mourningChoice(idx){
+    const data = state._mourningEvent;
+    if(!data){ state.pendingEvent = null; return; }
+    delete state._mourningEvent;
+    // 选择已在 pendingEvent options 中处理
+    closeModal();
+  }
+
+  // 月度病危检测
+  function processCriticalIllness(){
+    // 1. 健康 <= 0 的妃子立即处理病故
+    state.concubines.forEach(function(c){
+      if(c.health <= 0 && c.rank !== '皇后'){
+        executeDeath(c);
+      }
+    });
+    // 清理已被移除的妃子的 _illnessStage
+    state.concubines.forEach(function(c){
+      if(c._illnessStage && c.health > 0){
+        // 根据当前健康调整阶段
+        if(c.health >= 40) c._illnessStage = 0;
+        else if(c.health >= 20) c._illnessStage = 1;
+        else c._illnessStage = 2;
+      }
+    });
+    // 2. 孤儿养母死亡重触发
+    state.children.forEach(function(ch){
+      if(ch.isOrphan && ch.adoptiveMotherId && ch.adoptiveMotherId !== 'nanny' && ch.adoptiveMotherId !== 'temple'){
+        var adopter = state.concubines.find(x => x.id === ch.adoptiveMotherId);
+        if(!adopter || adopter.health <= 0){
+          // 养母已死，重新触发孤儿抚养
+          ch.adoptiveMotherId = null;
+          ch.adoptiveMotherName = null;
+          ch.isOrphan = false;
+          ch.monthlyCost = 0;
+          logEvent('孤儿重托', ch.name + '的养母已故，重新安排抚养');
+        }
+      }
+    });
+    // 批量重触发孤儿抚养
+    var reorphans = state.children.filter(ch => !ch.adoptiveMotherId && !ch.motherId);
+    if(reorphans.length > 0){
+      // 这些孩子的生母已不在，养母也不在，需要重新安排
+      var dummyConc = {name: '未知', rank: '', id: 'dummy'};
+      triggerOrphanAdoption(dummyConc, reorphans);
+    }
+  }
+
   function genIllnessDeath(con){
-    // Stage 2: 病入膏肓 (health 1-20)
-    const stage2=con.filter(c=>c.health>=1&&c.health<20&&c.rank!=='皇后');
-    if(stage2.length>0&&Math.random()<0.7){
-      const c=pick(stage2);
-      return{title:'【病入膏肓】',desc:`${c.rank}${c.name}已病入膏肓，形销骨立，汤药难进。太医悄悄说，恐熬不过这个月了。`,options:[
-        {text:'💊 不惜代价救治（国库-2000，健康+15）',effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
-        {text:' 静养调理（国库-800，健康+5）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
-        {text:' 安排后事（默认病故）',effect(){var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));state.concubines=state.concubines.filter(x=>x.id!==c.id);if(kids.length>0)triggerOrphanAdoption(c,kids);logEvent('病故',`${c.name}病故`);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 不幸病故`);}},
+    // Stage 2: 病入膏肓 (health 1-20, 70%概率)
+    const stage2 = con.filter(c => c.health >= 1 && c.health < 20 && c.rank !== '皇后');
+    if(stage2.length > 0 && Math.random() < 0.7){
+      const c = pick(stage2);
+      c._illnessStage = 2;
+      // 有孩子时 40% 概率触发托孤事件
+      const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0 && (!ch.adoptiveMotherId || ch.adoptiveMotherId === null));
+      const hasQueen = state.concubines.some(x => x.rank === '皇后');
+      if(aliveKids.length > 0 && Math.random() < 0.4){
+        return genEntrustOrphanEvent(c, aliveKids, hasQueen);
+      }
+      return {title:'【病入膏肓】', desc:`${c.rank}${c.name}已病入膏肓，形销骨立，汤药难进。太医悄悄说，恐熬不过这个月了。`, options:[
+        {text:'💊 不惜代价救治（国库-2000，健康+15）', effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
+        {text:' 静养调理（国库-800，健康+5）', effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
+        {text:' 安排后事（默认病故）', effect(){c.health=0;executeDeath(c);}},
       ]};
     }
-    // Stage 1: 缠绵病榻 (health 20-40)
-    const stage1=con.filter(c=>c.health>=20&&c.health<40&&c.rank!=='皇后');
-    if(stage1.length>0&&Math.random()<0.4){
-      const c=pick(stage1);
-      c._illnessStage=1;
-      return{title:'【缠绵病榻】',desc:`${c.rank}${c.name}近日缠绵病榻，面色日渐憔悴。太医诊脉后说，若不好生调养，恐有性命之忧。`,options:[
-        {text:'💊 重金求医（国库-1200，健康+15）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+15,0,100);c._illnessStage=0;logEvent('缠绵病榻','重金求医'+c.name);save();updateUI();showFeedback(`重金求医 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-1200</span>`);}},
-        {text:'👑 亲自探望（宠爱+50，健康+3）',effect(){c.favor=clamp(c.favor+50,0,2200);c.health=clamp(c.health+3,0,100);c._illnessStage=0;logEvent('缠绵病榻','亲自探望'+c.name);save();updateUI();showFeedback(`亲自探望 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+50</span>，健康 <span class="pos">+3</span>`);}},
-        {text:' 继续服药（国库-400，健康+8）',effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;c.health=clamp(c.health+8,0,100);logEvent('缠绵病榻','继续服药'+c.name);save();updateUI();showFeedback(`继续服药 <span class="pos">${c.name}</span><br>健康 <span class="pos">+8</span><br>国库 <span class="neg">-400</span>`);}},
+    // Stage 1: 缠绵病榻 (health 20-40, 40%概率)
+    const stage1 = con.filter(c => c.health >= 20 && c.health < 40 && c.rank !== '皇后');
+    if(stage1.length > 0 && Math.random() < 0.4){
+      const c = pick(stage1);
+      c._illnessStage = 1;
+      // 回光返照判定（health 1-10 不可能进入这里，但 health 20-30 时 15% 概率）
+      if(c.health <= 30 && Math.random() < 0.15){
+        return genGlowEvent(c);
+      }
+      return {title:'【缠绵病榻】', desc:`${c.rank}${c.name}近日缠绵病榻，面色日渐憔悴。太医诊脉后说，若不好生调养，恐有性命之忧。`, options:[
+        {text:'💊 重金求医（国库-1200，健康+15）', effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+15,0,100);c._illnessStage=0;logEvent('缠绵病榻','重金求医'+c.name);save();updateUI();showFeedback(`重金求医 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-1200</span>`);}},
+        {text:'👑 亲自探望（宠爱+50，健康+3）', effect(){c.favor=clamp(c.favor+50,0,2200);c.health=clamp(c.health+3,0,100);c._illnessStage=0;logEvent('缠绵病榻','亲自探望'+c.name);save();updateUI();showFeedback(`亲自探望 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+50</span>，健康 <span class="pos">+3</span>`);}},
+        {text:' 继续服药（国库-400，健康+8）', effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;c.health=clamp(c.health+8,0,100);logEvent('缠绵病榻','继续服药'+c.name);save();updateUI();showFeedback(`继续服药 <span class="pos">${c.name}</span><br>健康 <span class="pos">+8</span><br>国库 <span class="neg">-400</span>`);}},
       ]};
     }
     // Fallback: original behavior for health < 40
-    const eligible=con.filter(c=>c.health<40&&c.rank!=='皇后');
-    if(eligible.length===0)return null;
-    const c=pick(eligible);
-    return{title:'【妃子病故】',desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`,options:[
-      {text:'🏥 全力救治（国库-1500，健康+20）',effect(){if(state.treasury<1500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1500;c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
-      {text:' 派太医照料（国库-600，健康+10）',effect(){if(state.treasury<600){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=600;c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
-      {text:' 听天由命（50%概率病故）',effect(){if(Math.random()<0.5){var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));state.concubines=state.concubines.filter(x=>x.id!==c.id);if(kids.length>0)triggerOrphanAdoption(c,kids);logEvent('病故',`${c.name}病故`);save();updateUI();showFeedback(`<span class="neg">${c.name} 不幸病故</span>`);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
+    const eligible = con.filter(c => c.health < 40 && c.rank !== '皇后');
+    if(eligible.length === 0) return null;
+    const c = pick(eligible);
+    return {title:'【妃子病故】', desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`, options:[
+      {text:'🏥 全力救治（国库-1500，健康+20）', effect(){if(state.treasury<1500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1500;c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
+      {text:' 派太医照料（国库-600，健康+10）', effect(){if(state.treasury<600){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=600;c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
+      {text:' 听天由命（50%概率病故）', effect(){if(Math.random()<0.5){c.health=0;executeDeath(c);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
     ]};
+  }
+
+  // 托孤遗愿事件
+  function genEntrustOrphanEvent(c, kids, hasQueen){
+    var kidNames = kids.map(ch => ch.name).join('、');
+    const otherConcs = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+    const canAssignConc = otherConcs.length > 0;
+    const queenOption = hasQueen ? `{text:' 交由皇后照管', effect(){
+      var empress = state.concubines.find(x => x.rank === '皇后');
+      if(!empress){showFeedback('皇后不在宫中');return;}
+      kids.forEach(ch => { ch.adoptiveMotherId = empress.id; ch.adoptiveMotherName = empress.name; ch.isOrphan = true; ch.orphanMonth = 1; ch.monthlyCost = 100; });
+      logEvent('托孤遗愿','交由皇后照管'); save(); updateUI();
+      showFeedback('交由<span class="pos">皇后 ' + empress.name + '</span>照管<br>' + kidNames + ' 交由皇后抚养');
+    }},` : '';
+    const assignConcOption = canAssignConc ? `{text:' 指给高位妃嫔抚养', effect(){
+      var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔'));
+      if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+      if(eligible.length === 0){showFeedback('无妃嫔可抚养');return;}
+      var adopter = pick(eligible);
+      kids.forEach(ch => { ch.adoptiveMotherId = adopter.id; ch.adoptiveMotherName = adopter.name; ch.isOrphan = true; ch.orphanMonth = 1; ch.monthlyCost = 200; });
+      adopter.favor = clamp(adopter.favor + 80, 0, 2200); adopter.power = clamp(adopter.power + 15, 0, 500);
+      logEvent('托孤遗愿','指给'+adopter.name+'抚养'); save(); updateUI();
+      showFeedback('指给 <span class="pos">' + adopter.name + '</span> 抚养<br>' + adopter.name + ' 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>');
+    }},` : '';
+
+    return {
+      title: '【托孤遗愿】',
+      desc: `${c.rank}${c.name}自知时日无多，跪求皇上为${kidNames}安排后路。"${c.name}死不足惜，只求皇上看在骨血的份上，给他们一条活路……"`,
+      options: [
+        {text:' 封为嫡出（孩子prestige+20，国库-500）', effect(){
+          if(state.treasury < 500){showFeedback('国库不足！');return;}
+          state.treasury -= 500;
+          kids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 20; ch._isDiChu = true; });
+          logEvent('托孤遗愿','封为嫡出'); save(); updateUI();
+          showFeedback('封 <span class="pos">' + kidNames + '</span> 为嫡出<br>prestige <span class="pos">+20</span><br>国库 <span class="neg">-500</span>');
+        }},
+        ...(queenOption ? [JSON.parse(queenOption.replace(/'/g, '"'))] : []),
+        ...(canAssignConc ? [{text:' 指给高位妃嫔抚养', effect(){
+          var eligible = state.concubines.filter(x => x.id !== c.id && (x.rank === '贵妃' || x.rank === '妃' || x.rank === '嫔'));
+          if(eligible.length === 0) eligible = state.concubines.filter(x => x.id !== c.id && x.rank !== '皇后');
+          if(eligible.length === 0){showFeedback('无妃嫔可抚养');return;}
+          var adopter = pick(eligible);
+          kids.forEach(ch => { ch.adoptiveMotherId = adopter.id; ch.adoptiveMotherName = adopter.name; ch.isOrphan = true; ch.orphanMonth = 1; ch.monthlyCost = 200; });
+          adopter.favor = clamp(adopter.favor + 80, 0, 2200); adopter.power = clamp(adopter.power + 15, 0, 500);
+          logEvent('托孤遗愿','指给'+adopter.name+'抚养'); save(); updateUI();
+          showFeedback('指给 <span class="pos">' + adopter.name + '</span> 抚养<br>' + adopter.name + ' 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>');
+        }}] : []),
+        {text:' 安慰她（宠爱+20，健康+3）', effect(){
+          c.favor = clamp(c.favor + 20, 0, 2200);
+          c.health = clamp(c.health + 3, 0, 100);
+          logEvent('托孤遗愿','安慰'+c.name); save(); updateUI();
+          showFeedback('安慰 <span class="pos">' + c.name + '</span><br>宠爱 <span class="pos">+20</span>，健康 <span class="pos">+3</span>');
+        }},
+      ]
+    };
+  }
+
+  // 回光返照事件
+  function genGlowEvent(c){
+    return {
+      title: '【回光返照】',
+      desc: `${c.rank}${c.name}今日突然精神好转，容光焕发，竟能起身梳妆。太监来报，说娘娘今日气色大好。太医却悄悄摇头，恐是回光返照。`,
+      options: [
+        {text:' 陪她说说话（宠爱+30，健康+3）', effect(){
+          c.favor = clamp(c.favor + 30, 0, 2200);
+          c.health = clamp(c.health + 3, 0, 100);
+          logEvent('回光返照','陪'+c.name+'说话'); save(); updateUI();
+          showFeedback('陪 <span class="pos">' + c.name + '</span> 说话<br>宠爱 <span class="pos">+30</span>，健康 <span class="pos">+3</span>');
+        }},
+        {text:' 答应她的遗愿', effect(){
+          state._glowTarget = c.id;
+          // 内嵌子选项
+          const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0);
+          const hasGrudge = c.grudge && c.grudge.targetId;
+          let subHtml = '<div style="text-align:center;">';
+          subHtml += '<p style="color:#a08060;font-size:13px;margin-bottom:16px;">' + c.name + '含泪道："臣妾有一心愿，求皇上成全……"</p>';
+          subHtml += '<div style="display:flex;flex-direction:column;gap:8px;">';
+          if(aliveKids.length > 0){
+            subHtml += '<button class="btn-option" onclick="Game.glowWish(0)">请善待我的孩子</button>';
+          }
+          if(hasGrudge){
+            subHtml += '<button class="btn-option" onclick="Game.glowWish(1)">请不要再怪罪她</button>';
+          }
+          subHtml += '<button class="btn-option" onclick="Game.glowWish(2)">臣妾别无他求</button>';
+          subHtml += '</div></div>';
+          document.getElementById('event-content').innerHTML = subHtml;
+          const btn = document.getElementById('event-confirm-btn');
+          if(btn){ btn.textContent = '确认'; btn.disabled = true; btn.style.opacity = '0.5'; btn.onclick = function(){ Game.confirmEventOption(); }; }
+          return;
+        }},
+        {text:' 默默离去（无事发生）', effect(){
+          c.health = clamp(c.health - 10, 0, 100);
+          logEvent('回光返照','默默离去'); save(); updateUI();
+          showFeedback('皇上转身离去，' + c.name + '眼中闪过一丝黯淡……');
+        }},
+      ]
+    };
+  }
+
+  function glowWish(idx){
+    const c = state.concubines.find(x => x.id === state._glowTarget);
+    if(!c){ state.pendingEvent = null; return; }
+    delete state._glowTarget;
+    const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0);
+    if(idx === 0 && aliveKids.length > 0){
+      // 请善待我的孩子
+      aliveKids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 15; });
+      state.treasury = Math.max(0, state.treasury - 300);
+      logEvent('回光返照','善待孩子'); save(); updateUI();
+      showFeedback('答应遗愿：善待孩子<br>孩子 prestige <span class="pos">+15</span><br>国库 <span class="neg">-300</span>');
+    } else if(idx === 1 && c.grudge && c.grudge.targetId){
+      // 请不要再怪罪她 - 清除grudge
+      const targetName = c.grudge.targetId;
+      c.grudge = null;
+      logEvent('回光返照','清除grudge'); save(); updateUI();
+      showFeedback('答应遗愿：不再记恨<br>' + c.name + '放下了执念……');
+    } else {
+      // 臣妾别无他求
+      c.favor = clamp(c.favor + 20, 0, 2200);
+      logEvent('回光返照','别无他求'); save(); updateUI();
+      showFeedback('答应遗愿：别无他求<br>' + c.name + ' 宠爱 <span class="pos">+20</span>');
+    }
   }
 
   // ===== 孤儿抚养事件 =====
   function triggerOrphanAdoption(deceased, kids){
     state._orphanData = {deceasedName:deceased.name, deceasedRank:deceased.rank, childIds:kids.map(ch=>ch.id)};
     var kidNames = kids.map(ch=>ch.name).join('、');
+    // 边界判定：无其他妃子可抚养
+    const hasQueen = state.concubines.some(c => c.rank === '皇后');
+    const queenInCold = state.coldPalaceList.some(c => c.rank === '皇后');
+    const opts = [];
+    // 选项1：指给高位妃嫔（仅当有其他妃子时显示）
+    opts.push({text:' 指给高位妃嫔抚养',effect(){
+      var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔');
+      if(eligible.length===0){eligible=state.concubines.filter(c=>c.rank!=='皇后');}
+      if(eligible.length===0){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('无妃嫔可抚养孤儿');return;}
+      var adopter=pick(eligible);
+      state.children.forEach(ch=>{
+        if(state._orphanData.childIds.includes(ch.id)){
+          ch.adoptiveMotherId=adopter.id;
+          ch.adoptiveMotherName=adopter.name;
+          ch.isOrphan=true;
+          ch.orphanMonth=1;
+          ch.monthlyCost=200;
+        }
+      });
+      adopter.favor=clamp(adopter.favor+80,0,2200);
+      adopter.power=clamp(adopter.power+15,0,500);
+      logEvent('孤儿抚养','指给'+adopter.name+'抚养');
+      state._orphanData=null;state._orphanEvent=null;
+      save();updateUI();
+      showFeedback('指给 <span class="pos">'+adopter.name+'</span> 抚养<br>'+adopter.name+' 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>');
+    }});
+    // 选项2：交由皇后照管（仅当皇后在宫中且不在冷宫时显示）
+    if(hasQueen && !queenInCold){
+      opts.push({text:' 交由皇后照管',effect(){
+        var empress=state.concubines.find(c=>c.rank==='皇后');
+        if(!empress){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('皇后不在宫中');return;}
+        state.children.forEach(ch=>{
+          if(state._orphanData.childIds.includes(ch.id)){
+            ch.adoptiveMotherId=empress.id;
+            ch.adoptiveMotherName=empress.name;
+            ch.isOrphan=true;
+            ch.orphanMonth=1;
+            ch.monthlyCost=100;
+          }
+        });
+        logEvent('孤儿抚养','交由皇后照管');
+        state._orphanData=null;state._orphanEvent=null;
+        save();updateUI();
+        showFeedback('交由<span class="pos">皇后 '+empress.name+'</span>照管');
+      }});
+    } else if(queenInCold){
+      // 皇后在冷宫时不可选，不添加此选项
+    }
+    // 选项3：交由嬷嬷抚养（兜底选项，始终可用）
+    opts.push({text:' 交由嬷嬷抚养（每月国库-150/人）',effect(){
+      state.children.forEach(ch=>{
+        if(state._orphanData.childIds.includes(ch.id)){
+          ch.adoptiveMotherId='nanny';
+          ch.adoptiveMotherName='奶嬷嬷';
+          ch.isOrphan=true;
+          ch.orphanMonth=1;
+          ch.monthlyCost=150;
+        }
+      });
+      logEvent('孤儿抚养','交由嬷嬷抚养');
+      state._orphanData=null;state._orphanEvent=null;
+      save();updateUI();
+      showFeedback('交由<span class="pos">奶嬷嬷</span>抚养<br>每月国库<span class="neg">-150</span>/人');
+    }});
+    // 选项4：送往皇陵
+    opts.push({text:' 送往皇陵守孝（孩子成年后可召回）',effect(){
+      state.children.forEach(ch=>{
+        if(state._orphanData.childIds.includes(ch.id)){
+          ch.adoptiveMotherId='temple';
+          ch.adoptiveMotherName='皇陵';
+          ch.isOrphan=true;
+          ch.orphanMonth=1;
+          ch.monthlyCost=50;
+          ch.health=clamp(ch.health-10,0,100);
+        }
+      });
+      logEvent('孤儿抚养','送往皇陵守孝');
+      state._orphanData=null;state._orphanEvent=null;
+      save();updateUI();
+      showFeedback('送往<span class="neg">皇陵</span>守孝<br>健康<span class="neg">-10</span>');
+    }});
+
     state._orphanEvent = {
       title:'【孤儿抚养】',
       desc:`${deceased.rank}${deceased.name}已故，留下${kidNames}无人抚养。皇室血脉不可断绝，需尽快安排妥当。`,
-      options:[
-        {text:' 指给高位妃嫔抚养',effect(){
-          var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔');
-          if(eligible.length===0){eligible=state.concubines.filter(c=>c.rank!=='皇后');}
-          if(eligible.length===0){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('无妃嫔可抚养孤儿');return;}
-          var adopter=pick(eligible);
-          state.children.forEach(ch=>{
-            if(state._orphanData.childIds.includes(ch.id)){
-              ch.adoptiveMotherId=adopter.id;
-              ch.adoptiveMotherName=adopter.name;
-              ch.isOrphan=true;
-              ch.orphanMonth=1;
-              ch.monthlyCost=200;
-            }
-          });
-          adopter.favor=clamp(adopter.favor+80,0,2200);
-          adopter.power=clamp(adopter.power+15,0,500);
-          logEvent('孤儿抚养','指给'+adopter.name+'抚养');
-          state._orphanData=null;state._orphanEvent=null;
-          save();updateUI();
-          showFeedback(`指给 <span class="pos">${adopter.name}</span> 抚养<br>${adopter.name} 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>`);
-        }},
-        {text:' 交由皇后照管',effect(){
-          var empress=state.concubines.find(c=>c.rank==='皇后');
-          if(!empress){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('皇后不在宫中');return;}
-          state.children.forEach(ch=>{
-            if(state._orphanData.childIds.includes(ch.id)){
-              ch.adoptiveMotherId=empress.id;
-              ch.adoptiveMotherName=empress.name;
-              ch.isOrphan=true;
-              ch.orphanMonth=1;
-              ch.monthlyCost=100;
-            }
-          });
-          logEvent('孤儿抚养','交由皇后照管');
-          state._orphanData=null;state._orphanEvent=null;
-          save();updateUI();
-          showFeedback('交由<span class="pos">皇后</span>照管');
-        }},
-        {text:' 交由嬷嬷抚养（每月国库-150/人）',effect(){
-          state.children.forEach(ch=>{
-            if(state._orphanData.childIds.includes(ch.id)){
-              ch.adoptiveMotherId='nanny';
-              ch.adoptiveMotherName='奶嬷嬷';
-              ch.isOrphan=true;
-              ch.orphanMonth=1;
-              ch.monthlyCost=150;
-            }
-          });
-          logEvent('孤儿抚养','交由嬷嬷抚养');
-          state._orphanData=null;state._orphanEvent=null;
-          save();updateUI();
-          showFeedback('交由<span class="pos">奶嬷嬷</span>抚养<br>每月国库<span class="neg">-150</span>/人');
-        }},
-        {text:' 送往皇陵守孝（孩子成年后可召回）',effect(){
-          state.children.forEach(ch=>{
-            if(state._orphanData.childIds.includes(ch.id)){
-              ch.adoptiveMotherId='temple';
-              ch.adoptiveMotherName='皇陵';
-              ch.isOrphan=true;
-              ch.orphanMonth=1;
-              ch.monthlyCost=50;
-              ch.health=clamp(ch.health-10,0,100);
-            }
-          });
-          logEvent('孤儿抚养','送往皇陵守孝');
-          state._orphanData=null;state._orphanEvent=null;
-          save();updateUI();
-          showFeedback('送往<span class="neg">皇陵</span>守孝<br>健康<span class="neg">-10</span>');
-        }},
-      ]
+      options: opts
     };
     state.pendingEvent = state._orphanEvent;
     showEventModal();
   }
 
-  // ===== 子嗣夺宠事件 =====
   function genChildRivalry(con){
     const mothers=con.filter(c=>{
       return state.children.some(ch=>ch.motherId===c.id&&ch.age>=3);
@@ -4966,10 +5284,19 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       if(con.length===0)return null;
       return genSingle(con[0]);
     }
+    // ===== 第一优先级：危急病故事件（优先于其他事件）=====
+    // health <= 0 的妃子 100% 触发
+    const zeroHealth=con.filter(c=>c.health<=0&&c.rank!=='皇后');
+    if(zeroHealth.length>0){
+      const c=zeroHealth.reduce((a,b)=>a.health<b.health?a:b);
+      executeDeath(c);
+      return state.pendingEvent;
+    }
+    // ===== 第二优先级：正常事件池 =====
     const r=Math.random();
     if(r<0.05){const ce=genColdPalacePlea();if(ce)return ce;}
     if(r<0.10){const pe=genPregnancyEvent();if(pe)return pe;}
-    if(r<0.20){const ie=genIllnessDeath(con);if(ie)return ie;}
+    if(r<0.25){const ie=genIllnessDeath(con);if(ie)return ie;}
     if(r<0.23){const cr=genChildRivalry(con);if(cr)return cr;}
     if(r<0.26){const ci=genColdPalaceIllness(con);if(ci)return ci;}
     if(r<0.40){const pe=genPoisoning(con);if(pe)return pe;}
