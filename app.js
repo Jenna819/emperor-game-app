@@ -4534,7 +4534,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   // ===== 谋害皇嗣 =====
   function genHarmHeir(con){
     const preg=state.concubines.filter(c=>c.pregnant&&c.pregMonth>=3);
-    const mothers=state.concubines;
+    // 非孕期受害者：必须有已出生的孩子
+    const mothers=state.concubines.filter(c=>state.children.some(ch=>ch.motherId===c.id));
     if(preg.length===0&&mothers.length<2)return null;
     const victim=preg.length>0?pick(preg):pick(mothers);
     const perp=pickWeighted(mothers.filter(c=>c.id!==victim.id),'谋害皇嗣','perpetrator');
