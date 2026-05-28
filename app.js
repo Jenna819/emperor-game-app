@@ -1376,7 +1376,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[]};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[]};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -2069,8 +2069,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._drafting=false;
     state._punishmentShown=false;
     state._lastTributeYear=0;state._monthlyIncome=0;state._monthlyExpense=0;
-    state._coronationCooldown=null;
-    state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;
+    state._coronationCooldown=null;state._coronationSelectId=null;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;
     state.honglouPregnancies=[];state.honglouOutsideFamily=[];state.honglouOldFlames=[];
     state.jiangnanYear=undefined;
     initJiangnan();
@@ -5133,7 +5132,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const el=document.getElementById('kunning-content');
     if(!queen){
       document.getElementById('page-kunning').classList.remove('kunning-bg');
-      el.innerHTML=`<div style="text-align:center;padding:60px 20px;"><div style="font-size:48px;margin-bottom:16px;">&#128081;</div><div style="font-size:18px;color:#a08060;margin-bottom:8px;">暂无皇后</div><div style="font-size:13px;color:#b0a090;">坤宁宫空置，等待新后入主。</div><div style="font-size:12px;color:#a09080;margin-top:16px;line-height:1.8;">提示：妃子势力达到一定值后会触发立后事件<br>或在详情中点击妃子头像进行册立。</div></div>`;
+      const canAct=state.actionsLeft>0&&state.concubines.length>0;
+      el.innerHTML=`<div style="text-align:center;padding:60px 20px;"><div style="font-size:48px;margin-bottom:16px;">&#128081;</div><div style="font-size:18px;color:#a08060;margin-bottom:8px;">暂无皇后</div><div style="font-size:13px;color:#b0a090;margin-bottom:24px;">坤宁宫空置，等待新后入主。</div><button onclick="Game.openCoronationSelect()" ${canAct?'':'disabled'} style="width:100%;max-width:280px;padding:16px;border:1px solid rgba(200,160,80,0.5);border-radius:12px;background:linear-gradient(180deg,rgba(210,180,100,0.5),rgba(190,160,80,0.5));color:#8a6020;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:3px;box-shadow:0 2px 6px rgba(180,140,60,0.15);">&#128220; 册立皇后</button><div style="font-size:11px;color:#a09080;margin-top:8px;">消耗 1 行动点 · 国库 3000 两</div></div>`;
       showPage('kunning');
       return;
     }
@@ -7005,7 +7005,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._coronationRival=null;
     state._coronationQueenId=null;
     state._coronationAct=0;
-    state._coronationCooldown=null;
+    state._coronationCooldown=null;state._coronationSelectId=null;
     closeModal();
     save();updateUI();
     // Show feedback
@@ -7019,7 +7019,75 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     closeModal();
   }
 
-  // ===== 治国理政 =====
+  // ===== 手动册立皇后 =====
+  function openCoronationSelect(){
+    if(state.concubines.length===0){showFeedback('后宫空无一人，无法册立皇后');return;}
+    if(state.actionsLeft<=0){showFeedback('本月行动已用完');return;}
+    if(state.treasury<3000){showFeedback('国库不足3000两，无法册立皇后');return;}
+    if(state.concubines.find(x=>x.rank==='皇后')){showFeedback('已有皇后，无需册立');return;}
+    state._coronationSelectId=null;
+    renderCoronationSelectModal();
+    document.getElementById('modal-coronation-select').classList.add('show');
+  }
+
+  function renderCoronationSelectModal(){
+    var sorted=state.concubines.slice().sort(function(a,b){return(b.power||0)-(a.power||0);});
+    var html='<div style="padding:12px 16px;">';
+    html+='<p style="color:#8a7060;font-size:13px;margin-bottom:12px;text-align:center;">请皇上挑选册立人选：</p>';
+    sorted.forEach(function(c){
+      var hp=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
+      var isSelected=state._coronationSelectId===c.id;
+      var needsBoost=(c.power||0)<321;
+      html+='<div class="concubine-card" onclick="Game.selectCoronationCandidate(\''+c.id+'\')" style="'+(isSelected?'border-color:#d49030;background:rgba(255,240,220,0.95);':'')+'">';
+      html+=portraitHTML(c.portraitIdx,60,75,c.princessPortrait);
+      html+='<div class="concubine-info">';
+      html+='<div class="concubine-name">'+c.rank+' '+c.name+(isSelected?' <span style="color:#d49030;font-size:11px;">&#10003;</span>':'')+'</div>';
+      html+='<div class="concubine-stats">';
+      html+='<span>&#21183;&#21147; <b style="color:#9060c0;">'+(c.power||0)+'</b></span>';
+      html+='<span>&#20581;&#24247; <b style="color:'+hp+'">'+c.health+'</b></span></div>';
+      if(needsBoost)html+='<div style="font-size:11px;color:#c04040;margin-top:4px;">&#9888;&#65039; &#21183;&#21147;&#19981;&#36275;&#30343;&#20301;&#65292;&#20876;&#31435;&#21518;&#23558;&#33258;&#21160;&#34917;&#36275;&#33267; 321</div>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+    html+='<div style="display:flex;gap:8px;padding:12px 16px 16px;">';
+    html+='<button onclick="Game.closeCoronationSelect()" style="flex:1;padding:12px;border:1px solid rgba(200,160,80,0.3);border-radius:10px;background:rgba(255,250,240,0.8);color:#a08060;font-size:14px;font-family:inherit;font-weight:bold;cursor:pointer;">&#21462;&#28040;</button>';
+    var dis=!state._coronationSelectId?'disabled':'';
+    html+='<button id="cor-confirm-btn" onclick="Game.confirmCoronationManual()" '+dis+' style="flex:1;padding:12px;border:1px solid rgba(200,160,80,0.5);border-radius:10px;background:linear-gradient(180deg,rgba(210,180,100,0.5),rgba(190,160,80,0.5));color:#8a6020;font-size:14px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:2px;">&#30830;&#35748;&#20876;&#31435;</button>';
+    html+='</div>';
+    document.getElementById('coronation-select-content').innerHTML=html;
+  }
+
+  function selectCoronationCandidate(id){
+    state._coronationSelectId=state._coronationSelectId===id?null:id;
+    renderCoronationSelectModal();
+    var btn=document.getElementById('cor-confirm-btn');
+    if(btn)btn.disabled=!state._coronationSelectId;
+  }
+
+  function confirmCoronationManual(){
+    var c=findC(state._coronationSelectId);
+    if(!c)return;
+    if(state.concubines.find(function(x){return x.rank==='皇后';})){
+      showFeedback('&#24050;&#26377;&#30343;&#21518;&#65292;&#26080;&#38656;&#20876;&#31435;');closeCoronationSelect();return;
+    }
+    if(state.treasury<3000){showFeedback('&#22269;&#24211;&#19981;&#36275;3000&#19976;&#65292;&#26080;&#27861;&#20876;&#31435;');closeCoronationSelect();return;}
+    if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#24050;&#29992;&#23436;');closeCoronationSelect();return;}
+    state.actionsLeft--;
+    state.treasury-=3000;
+    // &#21183;&#21147;&#34917;&#36275;
+    if((c.power||0)<321)c.power=321;
+    c.rank='皇后';c.power=clamp(c.power,321,500);
+    logEvent('册立皇后',c.name+'被皇上亲自册立为皇后');
+    save();updateUI();
+    closeCoronationSelect();
+    showCoronationCeremony(c);
+  }
+
+  function closeCoronationSelect(){
+    document.getElementById('modal-coronation-select').classList.remove('show');
+    closeModal();
+  }
+
   var GOV_QUESTIONS = [
     // === 历史人文 (92题) ===
     {q:'中国历史上第一个统一的封建王朝是？',opts:['夏朝','秦朝','汉朝','商朝'],ans:1,expl:'公元前221年，秦始皇统一六国，建立了中国历史上第一个统一的中央集权封建王朝——秦朝。'},
@@ -7864,7 +7932,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish};
 })();
 
 // ===== 启动 =====
