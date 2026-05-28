@@ -2514,6 +2514,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function initStart(){
     if(load()&&state.dynasty&&state.concubines){
+      // Clean up stale interaction state from previous session
+      delete state._bedTarget;delete state._bedPool;delete state._bedFlipping;
+      delete state._bedIntercept;delete state._bedInteractTarget;
+      delete state._morningTarget;delete state._morningState;
       processBannedDecay();
       save();
       showPage('main');
@@ -2667,8 +2671,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
   function doNextMonth(){
-    state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.draftTriggeredThisYear=false;}
-    state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});
+    state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}
     // 经济系统：基础税收
     const taxIncome = 4000;
     // 母家进贡（每年6月触发，避开选秀月1月）
@@ -2691,7 +2694,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._monthlyExpense = expenses.total;
     state.treasury += netIncome;
     state.actionsLeft = 5;state.banquetHeld = false;state.morningTriggered = false;state.eventTriggeredThisMonth = false;state.monthEventAction = Math.floor(Math.random() * 3) + 1;
-    processBannedDecay();processColdDecay();processPregnancy();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
+    processBannedDecay();processColdDecay();processPregnancy();processChildrenHealth();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
     // 醉红楼认亲剧情判定
     checkHonglouReunion();
     // 西域公主来访事件：首年第9月触发
@@ -2722,6 +2725,33 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           }
         });
       }
+    });
+  }
+
+  // ===== 子嗣幼年夭折判定 =====
+  function processChildrenHealth(){
+    state.children=state.children.filter(ch=>{
+      if(ch.age>=0&&ch.age<=5){
+        let rate=0.08;
+        if(ch.health<50)rate=0.15;
+        if(ch.isOrphan)rate=Math.max(rate,0.12);
+        if(Math.random()<rate){
+          const mother=state.concubines.find(c=>c.id===ch.motherId);
+          if(mother){
+            mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
+            mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
+            const pn=mother.personality?mother.personality.name:'';
+            if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
+              const targets=state.concubines.filter(c=>c.id!==mother.id&&c.rank!=='皇后');
+              if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
+            }
+          }
+          logEvent('幼子夭折',ch.name+'夭折');
+          setTimeout(()=>showFeedback('<span class="neg">'+ch.name+'</span> 不幸夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')),200);
+          return false;
+        }
+      }
+      return true;
     });
   }
 
@@ -2807,6 +2837,19 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.concubines.forEach(c=>{
       if(!c.pregnant)return;
       c.pregMonth++;
+      // 第3-9个月有自然滑胎风险
+      if(c.pregMonth>=3&&c.pregMonth<=9){
+        let rate=0.15;
+        if(c.health<50)rate=0.25;
+        if(c.power<20)rate=Math.max(rate,0.20);
+        if(Math.random()<rate){
+          c.pregnant=false;c.pregMonth=0;
+          c.health=clamp(c.health-15,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-5,0,500);
+          logEvent('自然滑胎',c.name+'不幸滑胎');triggerMiscarriageAftermath(c);
+          setTimeout(()=>showFeedback('<span class="neg">'+c.name+'</span> 不幸滑胎<br>健康<span class="neg">-15</span>，宠爱<span class="neg">-10</span>'),300);
+          return;
+        }
+      }
       // 怀孕每月增加宠爱和势力，但累计不超过生子奖励（皇子:宠爱100/权力20，公主:宠爱60/权力12）
       const favorInc=c.pregMonth>=9?0:rand(3,6);
       const powerInc=c.pregMonth>=9?0:rand(1,2);
@@ -2820,6 +2863,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       }
     });
     if(births.length>0){setTimeout(()=>showBirthResult(births),300);}
+  }
+
+  function triggerMiscarriageAftermath(c){
+    if(Math.random()<0.30){c._fertilityPenalty=3;logEvent('流产后遗症',c.name+'体虚难孕');}
   }
 
   function showPregnancyAlert(name,powerInc){
@@ -3056,6 +3103,23 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         <button class="btn-action" onclick="Game.showTitleModal('${c.id}')"> &#36176;&#23553;&#21495;<br><span class="btn-cost">&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;"&#23425;"&#8594;&#23425;&#31572;&#24212;</span></button>
         ${c._favored?'<button class="btn-action" onclick="Game.showBackground(\''+c.id+'\')" style="border-color:rgba(144,96,192,0.4);background:rgba(144,96,192,0.1);color:#9060c0;">&#128214; &#20102;&#35299;&#22973;<br><span class="btn-cost">&#26597;&#30475;&#32972;&#26223;&#25925;&#20107;</span></button>':''}
       </div>`;
+    // 子嗣信息
+    const kids=state.children.filter(ch=>(ch.motherId===c.id||ch.adoptiveMotherId===c.id)&&ch.health>0);
+    if(kids.length>0){
+      const boys=kids.filter(ch=>ch.gender==='&#30343;&#23376;');
+      const girls=kids.filter(ch=>ch.gender==='&#20844;&#20027;');
+      let childHtml='<div class="stats-card" style="margin-top:0;"><div class="stats-title">&#23376; &#20285;</div>';
+      childHtml+='<div class="stat-row"><span class="stat-label">&#23376;&#22899;&#24635;&#25968;</span><span class="stat-value">'+kids.length+' &#20154;</span></div>';
+      childHtml+='<div class="stat-row"><span class="stat-label">&#30343;&#23376;</span><span class="stat-value" style="color:#4a90d9;">'+boys.length+' &#20154;</span></div>';
+      childHtml+='<div class="stat-row"><span class="stat-label">&#20844;&#20027;</span><span class="stat-value" style="color:#e85d9a;">'+girls.length+' &#20154;</span></div>';
+      kids.forEach(ch=>{
+        const isAdopted=ch.adoptiveMotherId===c.id;
+        childHtml+='<div class="stat-row"><span class="stat-label">'+(ch.gender==='&#30343;&#23376;'?'&#128118;':'&#128119;')+' '+ch.name+(isAdopted?' <span style="color:#999;font-size:11px;">&#65288;&#20859;&#23376;&#65289;</span>':'')+'</span><span class="stat-value" style="color:#888;">'+ch.age+' &#23681;</span></div>';
+      });
+      childHtml+='</div>';
+      // Insert children section before action card
+      document.getElementById('detail-content').innerHTML+=childHtml;
+    }
     showPage('detail');
   }
 
@@ -3069,7 +3133,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     const rc=checkRankChange(c);
-    if(!c.pregnant&&c.rank!=='皇后'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
+    let pregChance=0.25;if(c._fertilityPenalty&&c._fertilityPenalty>0){pregChance=0.125;c._fertilityPenalty--;}
+    if(!c.pregnant&&c.rank!=='皇后'&&Math.random()<pregChance){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     consumeAction();save();updateUI();
     let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}
@@ -3461,6 +3526,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             if(vi.favorInc>0)updateStress(v,-10);
             else if(vi.favorInc<0)updateStress(v,15);
             if(v.favors)v.favors[id]=(v.favors[id]||0)+50;
+            if(v.pregnant&&vi.miscarriageRate&&Math.random()<vi.miscarriageRate){
+              v.pregnant=false;v.pregMonth=0;
+              v.health=clamp(v.health-20,0,100);v.power=clamp(v.power-10,0,500);v.favor=clamp(v.favor-15,0,2200);
+              logEvent('谋害皇嗣',v.name+'受惊滑胎');triggerMiscarriageAftermath(v);
+              vi._miscarried=true;
+            }
           }
         }
         save();
@@ -3469,6 +3540,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         if(consume)fb+='<br>行动 <span class="neg">-1</span>';
         if(vi&&vi.victimName){
           var parts=[];
+          if(vi._miscarried)parts.push('<span class="neg">不幸滑胎</span>');
           if(vi.favorInc)parts.push('宠爱 <span class="pos">+'+vi.favorInc+'</span>');
           if(vi.healthInc)parts.push('健康 <span class="pos">+'+vi.healthInc+'</span>');
           if(parts.length>0)fb+='<br>'+vi.victimName+' '+parts.join('，');
@@ -4630,7 +4702,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   // ===== 谋害皇嗣 =====
   function genHarmHeir(con){
-    const preg=state.concubines.filter(c=>c.pregnant);
+    const preg=state.concubines.filter(c=>c.pregnant&&c.pregMonth>=3);
     const mothers=state.concubines.filter(c=>c.rank!=='皇后');
     if(preg.length===0&&mothers.length<2)return null;
     const victim=preg.length>0?pick(preg):pick(mothers);
@@ -4641,10 +4713,25 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       ?`${perp.rank}${perp.name}暗中在安胎药中动手脚，${victim.rank}${victim.name}服后腹痛见红，太医诊断恐有滑胎之险。`
       :`${perp.rank}${perp.name}买通乳母，在${victim.rank}${victim.name}的孩子饮食中下毒，孩子上吐下泻，太医抢救后脱离危险。`;
     return{title:'【谋害皇嗣】',desc:desc,options:[
-      {text:'🔍 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){showPunishmentOptions(perp.id,victim.id,'谋害皇嗣','【谋害皇嗣】');}else{if(isPreg){victim.pregnant=false;victim.pregMonth=0;victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);_showNoEvidence('【谋害皇嗣】','查无实据，但 '+victim.name+' 受惊过度，不幸流产。<br>势力 <span class="neg">-10</span>');}else{victim.health=clamp(victim.health-15,0,100);_showNoEvidence('【谋害皇嗣】','查无实据，但 '+victim.name+' 的孩子受惊，健康受损。');}}}},
-      {text:`🔒 将${perp.name}打入冷宫`,effect(){logBehavior(perp,'谋害皇嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);if(isPreg){victim.health=clamp(victim.health+5,0,100);}logEvent('谋害皇嗣','打入冷宫');save();updateUI();showFeedback(`<span class="neg">${perp.name}</span> 打入冷宫<br>${victim.name} <span class="pos">安心</span>`);}},
-      {text:`☠ 将${perp.name}赐死`,effect(){var ec={eventType:'谋害皇嗣',vars:{perpName:perp.name,victimName:victim.name,year:state.year,month:state.month}};if(isPreg){state._executeVictimInfo={victimId:victim.id,victimName:victim.name,favorInc:10,healthInc:10};}showExecutionSelect(perp.id,false,false,ec);}},
-      {text:' 不予追究',effect(){if(isPreg){if(Math.random()<0.5){victim.pregnant=false;victim.pregMonth=0;victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);logEvent('谋害皇嗣','不幸流产');save();updateUI();showFeedback(`<span class="neg">${victim.name} 不幸流产</span><br>健康 <span class="neg">-20</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>`);}else{logEvent('谋害皇嗣','母子平安');save();updateUI();showFeedback(`${victim.name} 母子平安`);}}else{victim.health=clamp(victim.health-10,0,100);logEvent('谋害皇嗣','孩子受惊');save();updateUI();showFeedback(`孩子受惊<br>健康 <span class="neg">-10</span>`);}}},
+      {text:' 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){
+        if(isPreg){
+          if(Math.random()<0.60){
+            victim.pregnant=false;victim.pregMonth=0;
+            victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);victim.favor=clamp(victim.favor-15,0,2200);
+            logEvent('谋害皇嗣',victim.name+'不幸滑胎');triggerMiscarriageAftermath(victim);
+          }else{
+            victim.health=clamp(victim.health-10,0,100);
+            logEvent('谋害皇嗣',victim.name+'受惊但胎儿保住');
+          }
+        }
+        showPunishmentOptions(perp.id,victim.id,'谋害皇嗣','【谋害皇嗣】');
+      }else{if(isPreg){victim.pregnant=false;victim.pregMonth=0;victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);triggerMiscarriageAftermath(victim);_showNoEvidence('【谋害皇嗣】','查无实据，但 '+victim.name+' 受惊过度，不幸流产。<br>势力 <span class="neg">-10</span>');}else{victim.health=clamp(victim.health-15,0,100);_showNoEvidence('【谋害皇嗣】','查无实据，但 '+victim.name+' 的孩子受惊，健康受损。');}}}},
+      {text:'🔒 将'+perp.name+'打入冷宫',effect(){logBehavior(perp,'谋害皇嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);
+        if(isPreg&&Math.random()<0.50){victim.pregnant=false;victim.pregMonth=0;victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);logEvent('谋害皇嗣',victim.name+'在冷宫中滑胎');triggerMiscarriageAftermath(victim);}
+        else if(isPreg){victim.health=clamp(victim.health+5,0,100);}
+        logEvent('谋害皇嗣','打入冷宫');save();updateUI();showFeedback('<span class="neg">'+perp.name+'</span> 打入冷宫<br>'+victim.name+' <span class="pos">安心</span>');}},
+      {text:'☠ 将'+perp.name+'赐死',effect(){var ec={eventType:'谋害皇嗣',vars:{perpName:perp.name,victimName:victim.name,year:state.year,month:state.month}};if(isPreg){state._executeVictimInfo={victimId:victim.id,victimName:victim.name,favorInc:10,healthInc:10,miscarriageRate:0.30};}showExecutionSelect(perp.id,false,false,ec);}},
+      {text:' 不予追究',effect(){if(isPreg){if(Math.random()<0.50){victim.pregnant=false;victim.pregMonth=0;victim.health=clamp(victim.health-20,0,100);victim.power=clamp(victim.power-10,0,500);triggerMiscarriageAftermath(victim);logEvent('谋害皇嗣','不幸流产');save();updateUI();showFeedback('<span class="neg">'+victim.name+' 不幸流产</span><br>健康<span class="neg">-20</span>，势力<span class="neg">-10</span>');}else{logEvent('谋害皇嗣','母子平安');save();updateUI();showFeedback(victim.name+' 母子平安');}}else{victim.health=clamp(victim.health-10,0,100);logEvent('谋害皇嗣','孩子受惊');save();updateUI();showFeedback('孩子受惊<br>健康<span class="neg">-10</span>');}}},
     ]};
   }
 
@@ -4664,14 +4751,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     ]};
   }
 
-  // ===== 谋害皇嗣（针对已出生的子嗣） =====
+  // ===== 暗害子嗣（针对已出生的子嗣） =====
   function genHarmChild(con){
-    if(state.children.length===0)return null;
-    const child=pick(state.children);
-    // Find the mother
+    const young=state.children.filter(ch=>ch.age<=5);
+    if(young.length===0)return null;
+    const child=pick(young);
     const mother=state.concubines.find(c=>c.id===child.motherId);
     if(!mother)return null;
-    // Pick a perpetrator from other concubines
     const suspects=con.filter(c=>c.id!==child.motherId&&c.rank!=='皇后');
     if(suspects.length===0)return null;
     const perp=pickWeighted(suspects,'暗害子嗣','perpetrator');
@@ -4682,12 +4768,26 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       {method:'指使太监在孩子经过的廊下泼了冰水',result:'滑倒摔伤，加之受寒，病势沉重'},
     ];
     const scenario=pick(scenarios);
+    function childDeathFeedback(child,mother,extra){
+      state.children=state.children.filter(x=>x.id!==child.id);
+      if(mother){
+        mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
+        mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
+        const pn=mother.personality?mother.personality.name:'';
+        if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
+          const targets=state.concubines.filter(c=>c.id!==mother.id&&c.rank!=='皇后');
+          if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
+        }
+      }
+      logEvent('暗害子嗣',child.name+'夭折');save();updateUI();
+      showFeedback('<span class="neg">'+child.name+'</span> 不治夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')+(extra?extra:''));
+    }
     return{title:'【暗害子嗣】',desc:`${perp.rank}${perp.name}${scenario.method}，${child.name}${scenario.result}，太医全力救治仅能暂时稳住病情。`,perpetrator:perp,child:child,mother:mother,scenario:scenario,options:[
-      {text:'🔍 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人，恐是宫人疏忽所致。<br>'+child.name+' 仍在病中。');}}},
-      {text:`🔒 将${perp.name}打入冷宫`,effect(){logBehavior(perp,'暗害子嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','打入冷宫');save();updateUI();showFeedback(`<span class="neg">${perp.name}</span> 打入冷宫<br>${child.name} 仍在救治中`);}},
-      {text:`☠ 将${perp.name}赐死`,effect(){showExecutionSelect(perp.id,false,false,{eventType:'暗害子嗣',vars:{perpName:perp.name,victimName:child.name,year:state.year,month:state.month}});}},
-      {text:'🏥 全力救治孩子（国库-1000）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;if(Math.random()<0.6){logEvent('暗害子嗣','救治成功');save();updateUI();showFeedback(`全力救治 <span class="pos">${child.name}</span><br>孩子已脱离危险<br>国库 <span class="neg">-1000</span>`);}else{state.children=state.children.filter(x=>x.id!==child.id);logEvent('暗害子嗣','救治无效夭折');save();updateUI();showFeedback(`<span class="neg">${child.name}</span> 医治无效夭折<br>国库 <span class="neg">-1000</span>`);}}},
-      {text:' 不予追究（孩子健康-20）',effect(){if(Math.random()<0.4){state.children=state.children.filter(x=>x.id!==child.id);logEvent('暗害子嗣','不治夭折');save();updateUI();showFeedback(`<span class="neg">${child.name}</span> 不治夭折`);}else{logEvent('暗害子嗣','自行恢复');save();updateUI();showFeedback(`${child.name} 身体虚弱，慢慢调养`);}}},
+      {text:' 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人，恐是宫人疏忽所致。<br>'+child.name+' 仍在病中。');}}},
+      {text:'🔒 将'+perp.name+'打入冷宫',effect(){logBehavior(perp,'暗害子嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','打入冷宫');save();updateUI();showFeedback('<span class="neg">'+perp.name+'</span> 打入冷宫<br>'+child.name+' 仍在救治中');}},
+      {text:'☠ 将'+perp.name+'赐死',effect(){showExecutionSelect(perp.id,false,false,{eventType:'暗害子嗣',vars:{perpName:perp.name,victimName:child.name,year:state.year,month:state.month}});}},
+      {text:'🏥 全力救治孩子（国库-1000）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;if(Math.random()<0.50){logEvent('暗害子嗣','救治成功');save();updateUI();showFeedback('全力救治 <span class="pos">'+child.name+'</span><br>孩子已脱离危险<br>国库 <span class="neg">-1000</span>');}else{childDeathFeedback(child,mother,'<br>国库 <span class="neg">-1000</span>');}}},
+      {text:' 不予追究（孩子健康-20）',effect(){if(Math.random()<0.55){childDeathFeedback(child,mother);}else{logEvent('暗害子嗣','自行恢复');save();updateUI();showFeedback(child.name+' 身体虚弱，慢慢调养');}}},
     ]};
   }
 
