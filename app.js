@@ -2039,7 +2039,7 @@ const ZH_PORTRAIT_DATA = [
     state.eventLog=[];state.pendingEvent=null;
     state.eventTriggerRate=60;
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
-    state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;
+    state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;state._giftTarget=null;
     state._banquetSelected=null;state.banquetHeld=false;state.morningTriggered=false;
     state._drafting=false;
     state._punishmentShown=false;
@@ -2401,7 +2401,7 @@ const ZH_PORTRAIT_DATA = [
     state.eventLog=[];state.pendingEvent=null;state.children=[];
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
     state.draftTriggeredThisYear=false;state.princessEventTriggered=false;
-    state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;
+    state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;state._giftTarget=null;
     state._banquetSelected=null;closeModal();
     showPage('start');
     updateUI();
@@ -2450,7 +2450,7 @@ const ZH_PORTRAIT_DATA = [
         <button class="btn-action primary" onclick="Game.openBedFromDetail('${c.id}')" ${dis}>&#128149; &#23456;&#24184;&#22973;<br><span class="btn-cost">-200&#38134; +15&#23456;&#29233; +5&#20581;&#24247; -1&#34892;&#21160;</span></button>
         <button class="btn-action primary" onclick="Game.openRankPicker('${c.id}','promote')" ${dis}>&#10498; &#26187;&#21319;&#20301;&#20221;<br><span class="btn-cost">-500&#38134; +10&#23456;&#29233; -1&#34892;&#21160;</span></button>
         <button class="btn-action" onclick="Game.openRankPicker('${c.id}','demote')" ${dis}> &#38477;&#20302;&#20301;&#20221;<br><span class="btn-cost">-10&#23456;&#29233; -5&#20581;&#24247; -1&#34892;&#21160;</span></button>
-        <button class="btn-action primary" onclick="Game.actionGift('${c.id}')" ${dis}>&#127873; &#36192;&#36865;&#31036;&#29289;<br><span class="btn-cost">-1000&#38134; +30&#23456;&#29233; +5&#32654;&#35980; +3&#20581;&#24247; -1&#34892;&#21160;</span></button>
+        <button class="btn-action primary" onclick="Game.actionGift('${c.id}')" ${dis}>&#127873; &#36192;&#36865;&#31036;&#29289;<br><span class="btn-cost">&#36873;&#25321;&#31036;&#29289;&#65292;&#28040;&#32791;1&#34892;&#21160;</span></button>
         <button class="btn-action danger" onclick="Game.actionCold('${c.id}')" ${isBanned?'disabled':''}>&#129522; &#25171;&#20837;&#20919;&#23467;<br><span class="btn-cost">&#20581;&#24247;-30 -1&#34892;&#21160;</span></button>
         <button class="btn-action danger" onclick="Game.actionKill('${c.id}')" ${dis}>&#9760; &#36176;&#27515;<br><span class="btn-cost">&#31435;&#21363;&#22788;&#27515; -1&#34892;&#21160;</span></button>
         <button class="btn-action" onclick="Game.showTitleModal('${c.id}')"> &#36176;&#23553;&#21495;<br><span class="btn-cost">&#36755;&#20837;&#23553;&#21495;&#65292;&#22914;"&#23425;"&#8594;&#23425;&#31572;&#24212;</span></button>
@@ -2613,7 +2613,87 @@ const ZH_PORTRAIT_DATA = [
     delete state._bedInteractTarget;
   }
 
-  function actionGift(id){if(!canAct())return;const c=findC(id);if(!c)return;if(state.treasury<1000){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}state.treasury-=1000;c.favor=clamp(c.favor+30,0,2200);c.power=clamp(c.power+5,0,500);const rc=checkRankChange(c);consumeAction();save();updateUI();let msg='&#36192;&#36865;&#31036;&#29289;&#32473; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+30</span>&#65292;&#21183;&#21147; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-1000</span>&#20004;';if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}showFeedback(msg);showDetail(id);}
+  // ===== 礼物系统 =====
+  const GIFT_LIST = [
+    {name:'香囊',icon:'\u{1F390}',price:200,favor:10,power:0,health:0,talent:0,wisdom:0,desc:'小物件，聊表心意'},
+    {name:'绸缎',icon:'\u{1F9F5}',price:500,favor:15,power:2,health:0,talent:0,wisdom:0,desc:'实用好礼'},
+    {name:'珠宝首饰',icon:'\u{1F48E}',price:1000,favor:25,power:5,health:0,talent:0,wisdom:0,desc:'常规礼品'},
+    {name:'人参灵芝',icon:'\u{1F33F}',price:800,favor:0,power:0,health:15,talent:0,wisdom:0,desc:'养生佳品'},
+    {name:'佛珠手串',icon:'\u{1F4FF}',price:600,favor:5,power:0,health:5,talent:0,wisdom:8,desc:'静心养性'},
+    {name:'四书五经',icon:'\u{1F4DA}',price:1200,favor:10,power:0,health:0,talent:0,wisdom:10,desc:'经典礼学'},
+    {name:'书画名帖',icon:'\u{1F4DC}',price:1500,favor:20,power:2,health:0,talent:10,wisdom:0,desc:'才女偏好'},
+    {name:'孙子兵法',icon:'\u{1F4D6}',price:1800,favor:10,power:5,health:0,talent:0,wisdom:15,desc:'谋略之书'},
+    {name:'玉如意',icon:'\u{1F3EE}',price:2000,favor:40,power:10,health:0,talent:5,wisdom:0,desc:'贵重礼物'},
+    {name:'凤钗',icon:'\u{1F451}',price:3000,favor:60,power:15,health:0,talent:10,wisdom:0,desc:'顶级礼物'},
+    {name:'桂花糕',icon:'\u{1F358}',price:300,favor:8,health:3,talent:0,wisdom:0,desc:'江南名点'},
+    {name:'燕窝银耳',icon:'\u{1F95C}',price:700,favor:10,health:8,talent:0,wisdom:0,desc:'滋补甜品'},
+    {name:'御膳糕点',icon:'\u{1F96E}',price:400,favor:8,power:2,health:2,talent:0,wisdom:0,desc:'宫廷御制'},
+  ];
+
+  function actionGift(id){
+    if(!canAct())return;
+    const c=findC(id);if(!c)return;
+    state._giftTarget=id;
+    let html='<div style="text-align:center;margin-bottom:12px;">';
+    html+=portraitHTML(c.portraitIdx,60,80,c.princessPortrait);
+    html+='<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:6px;">选择赠送给 '+c.name+' 的礼物</div>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;padding:4px;">';
+    GIFT_LIST.forEach(function(g,i){
+      var canBuy=state.treasury>=g.price;
+      var parts=[];
+      if(g.favor>0)parts.push('宠爱+'+g.favor);
+      if(g.power>0)parts.push('势力+'+g.power);
+      if(g.health>0)parts.push('健康+'+g.health);
+      if(g.talent>0)parts.push('才华+'+g.talent);
+      if(g.wisdom>0)parts.push('智力+'+g.wisdom);
+      html+='<button class="gift-item'+(canBuy?'':' gift-disabled')+'" onclick="'+(canBuy?'Game.confirmGift('+i+')':'')+'" '+(canBuy?'':'disabled')+'>';
+      html+='<div class="gift-left"><span class="gift-icon">'+g.icon+'</span><span class="gift-name">'+g.name+'</span></div>';
+      html+='<div class="gift-right"><span class="gift-price">'+g.price+'两</span><span class="gift-desc">'+parts.join('，')+'</span></div>';
+      html+='</button>';
+    });
+    html+='</div>';
+    html+='<button class="btn-secondary" style="margin-top:12px;width:100%;" onclick="Game.cancelGift()">取消</button>';
+    document.getElementById('gift-select-content').innerHTML=html;
+    tryOpenModal(function(){document.getElementById('modal-gift-select').classList.add('show');});
+  }
+
+  function confirmGift(idx){
+    const g=GIFT_LIST[idx];if(!g)return;
+    const c=findC(state._giftTarget);if(!c)return;
+    if(state.treasury<g.price){showFeedback('国库不足！');return;}
+    state.treasury-=g.price;
+    c.favor=clamp(c.favor+g.favor,0,2200);
+    c.power=clamp(c.power+g.power,0,500);
+    c.health=clamp(c.health+g.health,0,100);
+    if(c.talent===undefined)c.talent=50;
+    c.talent=clamp(c.talent+g.talent,0,100);
+    if(c.wisdom===undefined)c.wisdom=50;
+    c.wisdom=clamp(c.wisdom+g.wisdom,0,100);
+    const rc=checkRankChange(c);
+    consumeAction();save();updateUI();
+    let msg='赠送 <span class="pos">'+g.name+'</span> 给 '+c.name+'<br>';
+    var changes=[];
+    if(g.favor>0)changes.push('宠爱 <span class="pos">+'+g.favor+'</span>');
+    if(g.power>0)changes.push('势力 <span class="pos">+'+g.power+'</span>');
+    if(g.health>0)changes.push('健康 <span class="pos">+'+g.health+'</span>');
+    if(g.talent>0)changes.push('才华 <span class="pos">+'+g.talent+'</span>');
+    if(g.wisdom>0)changes.push('智力 <span class="pos">+'+g.wisdom+'</span>');
+    msg+=changes.join('，')+'<br>国库 <span class="neg">-'+g.price+'</span>两<br>行动 <span class="neg">-1</span>';
+    if(rc){msg+='<br>势力满足条件，<span class="pos">'+c.name+' 晋升为 '+rc.rank+'</span>';}
+    showFeedback(msg);
+    document.getElementById('modal-gift-select').classList.remove('show');
+    closeModal();
+    delete state._giftTarget;
+    showDetail(c.id);
+  }
+
+  function cancelGift(){
+    document.getElementById('modal-gift-select').classList.remove('show');
+    closeModal();
+    delete state._giftTarget;
+  }
+
 
   function actionCold(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#23558; '+c.name+' &#25171;&#20837;&#20919;&#23467;&#65281;'))return;c.health=clamp(c.health-30,0,100);c.power=clamp(c.power-30,0,500);state.concubines=state.concubines.filter(x=>x.id!==id);state.coldPalaceList.push(c);consumeAction();delete state.banned[id];save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#25171;&#20837;&#20919;&#23467;<br>&#20581;&#24247; <span class="neg">-30</span>&#65292;&#21183;&#21147; <span class="neg">-30</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
 
