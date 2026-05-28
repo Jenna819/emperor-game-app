@@ -2272,11 +2272,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.concubines.forEach(c=>{
       if(!c.pregnant)return;
       c.pregMonth++;
-      // 第3-9个月有自然滑胎风险
+      // 第3-9个月有自然滑胎风险（阶梯概率：健康/势力越高越安全）
       if(c.pregMonth>=3&&c.pregMonth<=9){
-        let rate=0.15;
-        if(c.health<50)rate=0.25;
-        if(c.power<20)rate=Math.max(rate,0.20);
+        let rate=0.04;
+        if(c.health<50)rate=0.12;
+        if(c.health>=70&&c.power>=50)rate=0.02;
+        if(c.health>=50&&c.power<20)rate=0.08;
+        if(c.health<50&&c.power<20)rate=0.18;
         if(Math.random()<rate){
           c.pregnant=false;c.pregMonth=0;
           c.health=clamp(c.health-15,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-5,0,500);
@@ -2569,8 +2571,21 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const rc=checkRankChange(c);
     let pregChance=0.25;if(c._fertilityPenalty&&c._fertilityPenalty>0){pregChance=0.125;c._fertilityPenalty--;}
     if(!c.pregnant&&c.rank!=='皇后'&&Math.random()<pregChance){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
+    // 怀孕妃子宠幸有阶段性流产风险
+    let miscarriage=false;
+    if(c.pregnant&&c.rank!=='皇后'){
+      let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
+      if(Math.random()<miscRate){
+        miscarriage=true;c.pregnant=false;c.pregMonth=0;
+        c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
+      }
+    }
     consumeAction();save();updateUI();
     let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
+    if(miscarriage){
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+    }
     if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}
     showFeedback(msg);
     showDetail(id);
@@ -2670,24 +2685,25 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-bed-interact').classList.remove('show');
     closeModal();
     // 消耗行动和银两，更新数值（同actionFavor逻辑）
-    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.health=clamp(c.health+5,0,100);c.power=clamp(c.power+2,0,500);
+    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     const rc=checkRankChange(c);
-    // 怀孕宠幸有概率流产
+    // 怀孕宠幸有阶段性流产风险
     let miscarriage=false;
-    if(c.pregnant&&Math.random()<0.15){
-      miscarriage=true;
-      c.pregnant=false;c.pregMonth=0;
-      c.health=clamp(c.health-20,0,100);
-      c.favor=clamp(c.favor-10,0,2200);
-      c.power=clamp(c.power-10,0,500);
+    if(c.pregnant&&c.rank!=='皇后'){
+      let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
+      if(Math.random()<miscRate){
+        miscarriage=true;c.pregnant=false;c.pregMonth=0;
+        c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
+      }
     }
     if(!c.pregnant&&!miscarriage&&c.rank!=='皇后'&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     consumeAction();save();updateUI();
-    let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span>&#65292;&#20581;&#24247; <span class="pos">+5</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
+    let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(miscarriage){
-      msg+='<br><span class="neg">'+c.name+' &#23403;&#36523;&#32780;&#21160;&#65292;&#19981;&#24184;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
-      logEvent('&#27969;&#20135;',c.rank+c.name+'&#23403;&#36523;&#21160;&#33118;&#27969;&#20135;');
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+      logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');
     }
     if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}
     showFeedback(msg);
@@ -5154,11 +5170,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function favorQueen(id){
     if(!canAct())return;const c=findC(id);if(!c||c.rank!=='皇后')return;
     if(state.banned[id]){showFeedback('皇后被禁足，无法宠幸！');return;}
-    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.health=clamp(c.health+5,0,100);c.power=clamp(c.power+2,0,500);
+    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
+    // 皇后宠幸有阶段性流产风险
+    if(c.pregnant&&Math.random()<0.06){c.pregnant=false;c.pregMonth=0;c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);logEvent('流产',c.name+'不幸流产');}
     if(!c.pregnant&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     consumeAction();save();updateUI();
-    let msg='宠幸了皇后 <span class="pos">'+c.name+'</span><br>宠爱 <span class="pos">+15</span>，势力 <span class="pos">+2</span>，健康 <span class="pos">+5</span><br>国库 <span class="neg">-200</span>两<br>行动 <span class="neg">-1</span>';
+    let msg='宠幸了皇后 <span class="pos">'+c.name+'</span><br>宠爱 <span class="pos">+15</span>，势力 <span class="pos">+2</span><br>国库 <span class="neg">-200</span>两<br>行动 <span class="neg">-1</span>';
     showFeedback(msg);
     showKunning();
   }
