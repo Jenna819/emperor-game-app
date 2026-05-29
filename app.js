@@ -4091,7 +4091,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function executeDeath(c){
+  function executeIllnessDeath(c){
     if(!c || c.health > 0) return;
     // 生成临终遗言
     const quote = genDeathQuote(c);
@@ -4210,7 +4210,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     // 1. 健康 <= 0 的妃子立即处理病故
     state.concubines.forEach(function(c){
       if(c.health <= 0){
-        executeDeath(c);
+        executeIllnessDeath(c);
       }
     });
     // 清理已被移除的妃子的 _illnessStage
@@ -4260,7 +4260,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       return {title:'【病入膏肓】', desc:`${c.rank}${c.name}已病入膏肓，形销骨立，汤药难进。太医悄悄说，恐熬不过这个月了。`, options:[
         {text:'💊 不惜代价救治（国库-2000，健康+15）', effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
         {text:' 静养调理（国库-800，健康+5）', effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
-        {text:' 安排后事（默认病故）', effect(){c.health=0;executeDeath(c);}},
+        {text:' 安排后事（默认病故）', effect(){c.health=0;executeIllnessDeath(c);}},
       ]};
     }
     // Stage 1: 缠绵病榻 (health 20-40, 40%概率)
@@ -4285,7 +4285,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     return {title:'【妃子病故】', desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`, options:[
       {text:'🏥 全力救治（国库-1500，健康+20）', effect(){if(state.treasury<1500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1500;c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
       {text:' 派太医照料（国库-600，健康+10）', effect(){if(state.treasury<600){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=600;c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
-      {text:' 听天由命（50%概率病故）', effect(){if(Math.random()<0.5){c.health=0;executeDeath(c);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
+      {text:' 听天由命（50%概率病故）', effect(){if(Math.random()<0.5){c.health=0;executeIllnessDeath(c);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
     ]};
   }
 
@@ -4824,7 +4824,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const zeroHealth=con.filter(c=>c.health<=0);
     if(zeroHealth.length>0){
       const c=zeroHealth.reduce((a,b)=>a.health<b.health?a:b);
-      executeDeath(c);
+      executeIllnessDeath(c);
       return state.pendingEvent;
     }
     // ===== 第二优先级：正常事件池 =====
@@ -7938,7 +7938,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish};
 })();
 
 // ===== 启动 =====
