@@ -2666,7 +2666,14 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var page = document.getElementById('page-gameover');
     if(page) page.scrollTop = 0;
     var btn = document.getElementById('gameover-restart-btn');
-    if(btn) btn.onclick = restartAfterDemise;
+    if(btn){
+      btn.addEventListener('click', function(){
+        console.log('RESTART BUTTON CLICKED');
+        restartAfterDemise();
+      }, false);
+    } else {
+      console.error('gameover-restart-btn NOT FOUND');
+    }
   }
 
   function restartAfterDemise(){
