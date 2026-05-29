@@ -2566,6 +2566,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function showGameOver(fates, childFates){
     try{ localStorage.removeItem('emperor_game'); }catch(e){}
+    document.body.style.overflow = 'auto';
 
     showPage('gameover');
 
@@ -2655,11 +2656,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
 
     content.innerHTML = html;
-    var scrollContainer = content.parentElement;
-    if(scrollContainer) scrollContainer.scrollTop = 0;
+    var page = document.getElementById('page-gameover');
+    if(page) page.scrollTop = 0;
   }
 
   function restartAfterDemise(){
+    document.body.style.overflow = 'hidden';
     state._treasuryWarning = false;
     state._demiseTriggered = false;
     state._emperorChoice = null;
