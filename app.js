@@ -2668,11 +2668,15 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function restartAfterDemise(){
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
     document.body.style.overflow = 'hidden';
+    document.body.style.height = '100%';
     state._treasuryWarning = false;
     state._demiseTriggered = false;
     state._emperorChoice = null;
     clearCache();
+    showPage('start');
   }
 
   function processPregnancy(){
