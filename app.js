@@ -2686,6 +2686,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._demiseTriggered = false;
     state._emperorChoice = null;
     clearCache();
+    var goPage = document.getElementById('page-gameover');
+    if(goPage) goPage.classList.remove('active');
     showPage('start');
   }
 
