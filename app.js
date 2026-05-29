@@ -1763,10 +1763,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     "zuihonglou/FE159C33-CF2A-498D-AAD3-7C129C96F792.jpg"
   ];
   const PRINCESS_PORTRAIT_DATA = [
-    "visit/0B34BF97-F898-4972-8939-E029A8E87989.PNG",
-    "visit/68044B7B-0699-4FA9-8B49-4B1EF300D0E6.PNG",
-    "visit/7490E9EF-2771-46A8-B81C-328DB5B812B6.PNG",
-    "visit/86ABCC91-FC84-4DA8-8FB5-D341A6D87FAD.PNG",
+    "visit/0B34BF97-F898-4972-8939-E029A8E87989.jpg",
+    "visit/68044B7B-0699-4FA9-8B49-4B1EF300D0E6.jpg",
+    "visit/7490E9EF-2771-46A8-B81C-328DB5B812B6.jpg",
+    "visit/86ABCC91-FC84-4DA8-8FB5-D341A6D87FAD.jpg",
   ];
   function portraitHTML(idx, w, h, src) {
     const r = w<100?8:12;
@@ -1781,7 +1781,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       : (typeof idx === 'string'
         ? ` onclick="Game.showPortraitZoomUrl('${idx}')"`
         : (typeof idx === 'number' ? ` onclick="Game.showPortraitZoom(${idx})"` : ''));
-    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:none;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
+    return `<div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);position:relative;flex-shrink:0;overflow:hidden;">\
+<img src="${url}"${onclick} style="width:100%;height:100%;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);cursor:zoom-in;opacity:0;transition:opacity .3s;" loading="lazy" alt="" onload="this.style.opacity='1'" onerror="this.style.display='none';this.parentElement.querySelector('.portrait-fallback').style.display='flex';"><div class="portrait-fallback" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#a08060;font-size:11px;">加载中</div></div>`;
   }
 
   function updateUI() {
@@ -4727,7 +4728,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const el = document.getElementById('princess-content');
     let html = '<div style="text-align:center;padding:20px 16px 12px;">';
     html += '<div style="font-size:12px;color:#a060c0;margin-bottom:8px;letter-spacing:2px;">'+p.country+'&#183;&#36951;&#20336;</div>';
-    html += '<div class="princess-portrait-wrap"><img src="'+PRINCESS_PORTRAIT_DATA[p.portraitIdx]+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy" alt=""></div>';
+    html += '<div class="princess-portrait-wrap"><img src="'+PRINCESS_PORTRAIT_DATA[p.portraitIdx]+'" style="width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s;" loading="lazy" alt="" onload="this.style.opacity=\'1\'"></div>';
     html += '<div style="font-size:20px;font-weight:bold;color:#a060c0;margin-top:10px;letter-spacing:2px;">'+p.name+'</div>';
     html += '<div style="font-size:12px;color:#a08060;margin-top:2px;">'+p.age+'&#23681; &#183; &#24615;&#26684; <b style="color:#9060c0;">'+p.personality.name+'</b></div>';
     html += '</div>';
