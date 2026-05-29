@@ -2162,28 +2162,33 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     });
   }
 
-  // ===== 子嗣幼年夭折判定 =====
+  // ===== 子嗣幼年夭折判定（月度健康阶梯概率） =====
   function processChildrenHealth(){
     state.children=state.children.filter(ch=>{
-      if(ch.age>=0&&ch.age<=5){
-        let rate=0.08;
-        if(ch.health<50)rate=0.15;
-        if(ch.isOrphan)rate=Math.max(rate,0.12);
-        if(Math.random()<rate){
-          const mother=state.concubines.find(c=>c.id===ch.motherId);
-          if(mother){
-            mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
-            mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
-            const pn=mother.personality?mother.personality.name:'';
-            if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
-              const targets=state.concubines.filter(c=>c.id!==mother.id);
-              if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
-            }
+      // 月度健康衰减（支持浮点数）
+      ch.health=clamp(ch.health-(ch.isOrphan?0.3:0.15),0,100);
+      // 所有子嗣都有月度死亡风险（基于健康的阶梯概率）
+      let rate;
+      const h=ch.health;
+      if(h>=80)rate=0.003;
+      else if(h>=60)rate=0.005;
+      else if(h>=40)rate=0.012;
+      else if(h>=20)rate=0.025;
+      else rate=0.045;
+      if(Math.random()<rate){
+        const mother=state.concubines.find(c=>c.id===ch.motherId);
+        if(mother){
+          mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
+          mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
+          const pn=mother.personality?mother.personality.name:'';
+          if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
+            const targets=state.concubines.filter(c=>c.id!==mother.id);
+            if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
           }
-          logEvent('幼子夭折',ch.name+'夭折');
-          setTimeout(()=>showFeedback('<span class="neg">'+ch.name+'</span> 不幸夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')),200);
-          return false;
         }
+        logEvent('子嗣夭折',ch.name+'夭折');
+        setTimeout(()=>showFeedback('<span class="neg">'+ch.name+'</span> 不幸夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')),200);
+        return false;
       }
       return true;
     });
@@ -2414,7 +2419,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         </div>
         <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
           <div style="font-size:11px;color:#a08060;">健康</div>
-          <div style="font-size:18px;font-weight:bold;color:#c49030;">${ch.health||0}</div>
+          <div style="font-size:18px;font-weight:bold;color:#c49030;">${Math.round(ch.health)||0}</div>
         </div>
       </div>
       <div style="font-size:13px;color:#8a7060;line-height:1.8;text-align:left;background:rgba(255,248,240,0.5);border-radius:8px;padding:12px 14px;">
