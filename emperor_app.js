@@ -4410,7 +4410,7 @@ const ZH_PORTRAIT_DATA = [
   function showHonglou(){
     if(state.treasury<200){showFeedback('国库空虚，无法前往醉红楼！');return;}
     var curKey=state.year*12+state.month;
-    if(state.honglouLastVisitMonth && state.honglouLastVisitMonth >= curKey){showFeedback('本月已经去过醉红楼了。');return;}
+    if(state.honglouLastVisitMonth === curKey){showFeedback('本月已经去过醉红楼了。');return;}
     state._honglou={active:true,beauties:[],currentBeauty:null,contest:null,listenCount:0,hongCount:0,selectedForAdopt:[],oldFlames:[]};
     var hl=state._honglou;
     // 生成 3-5 位女子
