@@ -444,8 +444,8 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </head>
 <body>
 <div id="intro-overlay">
-  <video id="intro-video" src="media/intro-video.mp4" playsinline muted></video>
-  <div id="intro-hint">&#36828;&#36814;&#26032;&#26391;</div>
+  <video id="intro-video" src="media/intro-video.mp4" playsinline muted preload="auto"></video>
+  <div id="intro-hint" class="hide">远迎新朗</div>
   <button id="intro-skip" onclick="Game.skipIntro()">跳过动画</button>
 </div>
 <div class="scroll-container">

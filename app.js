@@ -1971,11 +1971,22 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(video){
       video.currentTime=0;
       video.muted=true;
+      // 超时保护：8秒未播放则自动跳过（网络慢时避免长时间黑屏）
+      var introTimeout=setTimeout(function(){
+        if(hint)hint.classList.remove('hide');
+        hint.textContent='视频加载缓慢，请点击跳过动画';
+      }, 8000);
       video.play().then(function(){
+        clearTimeout(introTimeout);
         if(hint)hint.classList.add('hide');
       }).catch(function(){
-        if(hint)hint.classList.remove('hide');
+        clearTimeout(introTimeout);
+        if(hint){hint.classList.remove('hide');hint.textContent='视频加载失败，请点击跳过动画';}
       });
+      video.onerror=function(){
+        clearTimeout(introTimeout);
+        if(hint){hint.classList.remove('hide');hint.textContent='视频加载失败，请点击跳过动画';}
+      };
       // 点击任意处取消静音（手机端自动播放必为静音，需手动解除）
       overlay.onclick=function(e){
         if(e.target===overlay||e.target===video){
@@ -1985,7 +1996,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           overlay.onclick=null;
         }
       };
-      video.onended=function(){hideIntro();};
+      video.onended=function(){clearTimeout(introTimeout);hideIntro();};
     }
   }
 
@@ -2023,9 +2034,15 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       video.currentTime=0;
       // 用户已点击按钮，浏览器已授权，直接带声音播放
       video.muted=false;
+      var introTimeout=setTimeout(function(){
+        if(hint)hint.classList.remove('hide');
+        hint.textContent='视频加载缓慢，请点击跳过动画';
+      }, 8000);
       video.play().then(function(){
+        clearTimeout(introTimeout);
         if(hint)hint.classList.add('hide');
       }).catch(function(){
+        clearTimeout(introTimeout);
         // 兜底：若仍被拦截，则静音播放，点击屏幕取消静音
         video.muted=true;
         video.play();
@@ -2039,7 +2056,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           }
         };
       });
+      video.onerror=function(){
+        clearTimeout(introTimeout);
+        if(hint){hint.classList.remove('hide');hint.textContent='视频加载失败，请点击跳过动画';}
+      };
       video.onended=function(){
+        clearTimeout(introTimeout);
         if(video){video.pause();video.currentTime=0;}
         if(overlay){overlay.classList.remove('show');overlay.onclick=null;video.onended=null;}
         if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
