@@ -2566,7 +2566,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function showGameOver(fates, childFates){
     try{ localStorage.removeItem('emperor_game'); }catch(e){}
+    document.documentElement.style.overflow = 'auto';
+    document.documentElement.style.height = 'auto';
     document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    var goPage = document.getElementById('page-gameover');
+    if(goPage){ goPage.style.overflowY = 'auto'; goPage.style.top = '0'; goPage.style.left = '0'; goPage.style.right = '0'; goPage.style.bottom = '0'; goPage.scrollTop = 0; }
 
     showPage('gameover');
 

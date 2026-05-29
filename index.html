@@ -463,9 +463,11 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .invasion-choice-btn:active{transform:scale(0.97);background:rgba(80,15,15,0.6);}
 
 /* ===== 亡国结局页 ===== */
-#page-gameover{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:250;background:linear-gradient(180deg,#1a0505 0%,#0d0202 100%);color:#d4b896;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:120px;}
+#page-gameover{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:250;background:linear-gradient(180deg,#1a0505 0%,#0d0202 100%);color:#d4b896;}
 #page-gameover.active{display:block;}
-#page-gameover .scroll-container{overflow:visible;height:auto;}
+#gameover-scroll{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;height:100vh;padding-bottom:120px;}
+#gameover-scroll::-webkit-scrollbar{width:2px;}
+#gameover-scroll::-webkit-scrollbar-thumb{background:rgba(200,160,80,0.4);border-radius:2px;}
 .gameover-restart-fixed{position:fixed;bottom:0;left:0;right:0;z-index:252;padding:16px 20px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#0d0202 60%,rgba(13,2,2,0.8));text-align:center;pointer-events:none;}
 .gameover-restart-fixed button{pointer-events:auto;padding:14px 40px;border:2px solid #c04040;border-radius:12px;background:rgba(200,60,60,0.15);color:#e06060;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:4px;box-shadow:0 0 20px rgba(200,60,60,0.2);}
 .fate-card{transition:transform 0.2s;}
@@ -637,18 +639,18 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     </div>
   </div>
 </div>
+</div>
 
 <!-- 亡国结局页 -->
 <div id="page-gameover">
-  <div class="scroll-container">
+  <div class="scroll-container" id="gameover-scroll">
     <div id="gameover-content"></div>
   </div>
   <div class="gameover-restart-fixed">
-    <button onclick="Game.restartAfterDemise()">&#37325;&#26032;&#24320;&#23616;</button>
+    <button onclick="Game.restartAfterDemise()">重新开始</button>
   </div>
 </div>
 
-</div>
 <audio id="bgm" loop preload="auto"><source src="media/bgm.mp3" type="audio/mpeg"></audio>
 <script src="app.js"></script>
 </body>
