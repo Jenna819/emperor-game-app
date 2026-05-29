@@ -2677,6 +2677,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function restartAfterDemise(){
+    console.log('restartAfterDemise CALLED');
     document.documentElement.style.overflow = 'hidden';
     document.documentElement.style.height = '100%';
     document.body.style.overflow = 'hidden';
@@ -2687,6 +2688,14 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     clearCache();
     showPage('start');
   }
+
+  // Global event delegation for gameover restart button
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id === 'gameover-restart-btn'){
+      console.log('DELEGATION: restart button clicked');
+      restartAfterDemise();
+    }
+  }, false);
 
   function processPregnancy(){
     const births=[];
