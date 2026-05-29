@@ -2654,11 +2654,6 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       html += '</div>';
     }
 
-    html += '<div style="text-align:center;padding:30px 0;">';
-    html += '<button onclick="Game.restartAfterDemise()" style="padding:14px 40px;border:2px solid #c04040;border-radius:12px;background:rgba(200,60,60,0.1);color:#c04040;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:4px;">&#37325;&#26032;&#24320;&#22987;</button>';
-    html += '</div>';
-    html += '</div>';
-
     content.innerHTML = html;
     var scrollContainer = content.parentElement;
     if(scrollContainer) scrollContainer.scrollTop = 0;
