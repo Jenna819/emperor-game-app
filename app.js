@@ -2570,6 +2570,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.documentElement.style.height = 'auto';
     document.body.style.overflow = 'auto';
     document.body.style.height = 'auto';
+    var invOverlay = document.getElementById('invasion-overlay');
+    if(invOverlay) invOverlay.style.display = 'none';
     var goPage = document.getElementById('page-gameover');
     if(goPage){ goPage.style.overflowY = 'auto'; goPage.style.top = '0'; goPage.style.left = '0'; goPage.style.right = '0'; goPage.style.bottom = '0'; goPage.scrollTop = 0; }
 
