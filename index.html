@@ -440,6 +440,35 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .gift-right{text-align:right;flex-shrink:0;}
 .gift-price{display:block;font-size:13px;font-weight:bold;color:#c49030;}
 .gift-desc{display:block;font-size:11px;color:#8a7060;margin-top:2px;}
+
+/* ===== 国库危险 ===== */
+@keyframes treasuryFlash{0%,100%{color:#e55555;text-shadow:0 0 6px rgba(229,85,85,0.3);}50%{color:#ff4040;text-shadow:0 0 12px rgba(255,64,64,0.5);}}
+.treasury-danger-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(180,20,20,0.15);z-index:150;pointer-events:none;animation:treasuryDangerPulse 1s ease-in-out 3;}
+.treasury-danger-overlay.show{display:block;}
+@keyframes treasuryDangerPulse{0%,100%{background:rgba(180,20,20,0);}50%{background:rgba(180,20,20,0.25);}}
+
+/* ===== 外敌入侵覆层 ===== */
+#invasion-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity 0.8s ease-in-out;}
+#invasion-overlay.show{opacity:1;}
+#invasion-overlay .invasion-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,#1a0505 0%,#2a0808 30%,#0d0202 100%);overflow:hidden;}
+#invasion-overlay .invasion-bg::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,60,20,0.15) 0%,transparent 70%);animation:invasionFire 3s ease-in-out infinite;}
+@keyframes invasionFire{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.1);}}
+.invasion-content{position:relative;z-index:1;text-align:center;padding:40px;max-width:500px;}
+.invasion-title{font-size:36px;color:#ff4040;font-weight:bold;letter-spacing:8px;margin-bottom:20px;text-shadow:0 0 20px rgba(255,64,64,0.5);}
+.invasion-fire-text{font-size:16px;color:#e0a060;line-height:2;margin:20px 0;animation:fireText 1.5s ease-in-out infinite;}
+@keyframes fireText{0%,100%{color:#e0a060;}50%{color:#ff6030;}}
+.invasion-choice-text{font-size:18px;color:#d4b896;line-height:2;margin:20px 0;}
+.invasion-choice-btns{display:flex;flex-direction:column;gap:12px;margin-top:24px;}
+.invasion-choice-btn{padding:16px 24px;border:1px solid rgba(200,160,80,0.3);border-radius:10px;background:rgba(60,10,10,0.5);color:#ffd700;font-size:15px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:3px;transition:all 0.2s;}
+.invasion-choice-btn:active{transform:scale(0.97);background:rgba(80,15,15,0.6);}
+
+/* ===== 亡国结局页 ===== */
+#page-gameover{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:250;background:linear-gradient(180deg,#1a0505 0%,#0d0202 100%);color:#d4b896;overflow:hidden;}
+#page-gameover.active{display:block;}
+#page-gameover .scroll-container{padding-bottom:40px;}
+.fate-card{transition:transform 0.2s;}
+.fate-card:active{transform:scale(0.98);}
+
 </style>
 </head>
 <body>
@@ -576,6 +605,44 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 <div id="modal-death-scene" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeDeathScene()"><div class="modal" style="max-width:500px;max-height:85vh;display:flex;flex-direction:column;" onclick="event.stopPropagation();"><div class="modal-header" id="death-scene-header">&#36176;&#27515;</div><div class="modal-body" id="death-scene-content" style="flex:1;overflow-y:auto;padding:14px 18px 20px;"></div><div style="padding:8px 18px 14px;"><button class="btn-primary" onclick="Game.closeDeathScene()">&#30693;&#36947;&#20102;</button></div></div></div>
 <div id="modal-coronation" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeCoronation()"><div class="modal" style="max-width:480px;max-height:85vh;display:flex;flex-direction:column;" onclick="event.stopPropagation();"><div class="modal-header" id="coronation-header">&#20998;&#21300;&#20043;&#20105;</div><div class="modal-body" id="coronation-content" style="flex:1;overflow-y:auto;padding:14px 18px 20px;"></div><div style="padding:8px 18px 14px;" id="coronation-actions"></div></div></div>
 <div id="modal-coronation-select" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeCoronationSelect()"><div class="modal" style="max-width:460px;max-height:85vh;display:flex;flex-direction:column;" onclick="event.stopPropagation();"><div class="modal-header">&#21215;&#21215;&#30343;&#21518;</div><div class="modal-body" id="coronation-select-content" style="flex:1;overflow-y:auto;padding:0;"></div></div></div>
+<div id="modal-coronation-select" class="modal-overlay modal-center" onclick="if(event.target===this)Game.closeCoronationSelect()"><div class="modal" style="max-width:460px;max-height:85vh;display:flex;flex-direction:column;" onclick="event.stopPropagation();"><div class="modal-header">&#21215;&#21215;&#30343;&#21518;</div><div class="modal-body" id="coronation-select-content" style="flex:1;overflow-y:auto;padding:0;"></div></div></div>
+
+<!-- 国库危险覆层 -->
+<div id="treasury-warning-overlay" class="treasury-danger-overlay">
+  <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:151;pointer-events:none;">
+    <div style="font-size:48px;margin-bottom:10px;">&#9888;</div>
+    <div style="font-size:24px;color:#ff4040;font-weight:bold;letter-spacing:6px;text-shadow:0 0 20px rgba(255,64,64,0.5);">&#20893;&#38281;&#26029;&#32477;</div>
+    <div style="font-size:14px;color:#e0a060;margin-top:8px;">&#22269;&#24211;&#36215;&#36712;&#65292;&#20893;&#21032;&#20002;&#21457;</div>
+  </div>
+</div>
+
+<!-- 外敌入侵覆层 -->
+<div id="invasion-overlay">
+  <div class="invasion-bg"></div>
+  <div class="invasion-content">
+    <div id="invasion-step1">
+      <div class="invasion-title">&#22806;&#25932;&#20837;&#20405;</div>
+      <div class="invasion-fire-text" id="invasion-fire-text">&#36793;&#20851;&#24613;&#25253;&#65281;&#21271;&#26041;&#34581;&#26063;&#38081;&#39569;&#31361;&#30772;&#38271;&#22478;&#38450;&#32447;&#65292;&#36830;&#30772;&#19977;&#24030;&#65281;</div>
+    </div>
+    <div id="invasion-step2" style="display:none;">
+      <div class="invasion-title">&#20129;&#22269;&#20043;&#38469;</div>
+      <div class="invasion-choice-text" id="invasion-choice-text">&#22269;&#24211;&#34394;&#31354;&#65292;&#26080;&#21147;&#22238;&#22825;&#12290;<br>&#33227;&#65292;&#24403;&#22914;&#20309;&#65311;</div>
+      <div class="invasion-choice-btns">
+        <button class="invasion-choice-btn" onclick="Game.makeEmperorChoice('suicide')">&#33258;&#32455;&#27531;&#22269;</button>
+        <button class="invasion-choice-btn" onclick="Game.makeEmperorChoice('escape')">&#31361;&#22260;&#36887;&#20129;</button>
+        <button class="invasion-choice-btn" onclick="Game.makeEmperorChoice('surrender')">&#24320;&#22478;&#25237;&#38477;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 亡国结局页 -->
+<div id="page-gameover">
+  <div class="scroll-container">
+    <div id="gameover-content"></div>
+  </div>
+</div>
+
 </div>
 <audio id="bgm" loop preload="auto"><source src="media/bgm.mp3" type="audio/mpeg"></audio>
 <script src="app.js"></script>

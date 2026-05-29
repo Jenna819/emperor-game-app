@@ -1330,7 +1330,7 @@ const Game = (function() {
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[]};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -1535,7 +1535,7 @@ const Game = (function() {
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state.year===undefined)state.year=1;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._honglou)state._honglou=null;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._honglou)state._honglou=null;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -1735,6 +1735,15 @@ const ZH_PORTRAIT_DATA = [
     document.getElementById('main-year').textContent = state.dynasty+state.year+'年';
     document.getElementById('main-month').textContent = '第'+state.month+'月';
     document.getElementById('main-treasury').textContent = state.treasury;
+    // 国库危险状态指示
+    var treasuryEl = document.getElementById('main-treasury');
+    if(treasuryEl && state._treasuryWarning && !state._demiseTriggered){
+      treasuryEl.style.color = '#e55555';
+      treasuryEl.style.animation = 'treasuryFlash 1.5s ease-in-out infinite';
+    } else if(treasuryEl){
+      treasuryEl.style.color = '';
+      treasuryEl.style.animation = '';
+    }
     // 收支变化指示
     var changeEl = document.getElementById('main-treasury-change');
     if(changeEl){
@@ -2066,6 +2075,8 @@ const ZH_PORTRAIT_DATA = [
     state._monthlyIncome = taxIncome + tributeIncome;
     state._monthlyExpense = expenses.total;
     state.treasury += netIncome;
+    // 国库崩溃判定
+    checkTreasuryCollapse();
     state.actionsLeft = 5;state.banquetHeld = false;state.morningTriggered = false;state.eventTriggeredThisMonth = false;state.monthEventAction = Math.floor(Math.random() * 3) + 1;
     processBannedDecay();processColdDecay();processPregnancy();save();updateUI();
     // 醉红楼认亲剧情判定
@@ -2116,6 +2127,442 @@ const ZH_PORTRAIT_DATA = [
       total += inc;
     });
     return total;
+  }
+
+  // ===== 国库崩溃系统 =====
+  function checkTreasuryCollapse(){
+    if(state._demiseTriggered) return;
+    if(state.treasury <= 0){
+      if(!state._treasuryWarning){
+        // 第一次触发：警告
+        state._treasuryWarning = true;
+        setTimeout(()=>showTreasuryWarning(), 500);
+      } else {
+        // 已经警告过，再次赤字：亡国
+        state._demiseTriggered = true;
+        save();
+        setTimeout(()=>triggerInvasion(), 500);
+      }
+    } else {
+      // 恢复正值，清除警告
+      state._treasuryWarning = false;
+    }
+  }
+
+  function showTreasuryWarning(){
+    var overlay = document.getElementById('treasury-warning-overlay');
+    if(!overlay) return;
+    overlay.style.display = 'flex';
+    setTimeout(()=>{ overlay.classList.add('show'); }, 50);
+    setTimeout(()=>{
+      overlay.classList.remove('show');
+      setTimeout(()=>{ overlay.style.display = 'none'; }, 600);
+    }, 4000);
+  }
+
+  // 外敌入侵 - 亡国触发
+  function triggerInvasion(){
+    var overlay = document.getElementById('invasion-overlay');
+    if(!overlay) return;
+    overlay.style.display = 'flex';
+    setTimeout(()=>{ overlay.classList.add('show'); }, 50);
+
+    // Act 1: 烽火连天
+    var step1 = document.getElementById('invasion-step1');
+    var step2 = document.getElementById('invasion-step2');
+    var step3 = document.getElementById('invasion-step3');
+    if(step1) step1.style.display = 'block';
+    if(step2) step2.style.display = 'none';
+    if(step3) step3.style.display = 'none';
+
+    var texts1 = [
+      '边关急报！北方蛮族铁骑突破长城防线，连破三州！',
+      '军饷断绝，边军士气低落，将士无心作战，防线节节败退！',
+      '烽火连天，京城已能望见远方硝烟，百姓惶恐出逃！'
+    ];
+    var ti = 0;
+    var fireEl = document.getElementById('invasion-fire-text');
+    var fireInterval = setInterval(()=>{
+      ti = (ti + 1) % texts1.length;
+      if(fireEl) fireEl.textContent = texts1[ti];
+    }, 1500);
+
+    setTimeout(()=>{
+      clearInterval(fireInterval);
+      if(step1) step1.style.display = 'none';
+      // Act 2: 皇帝最终抉择
+      if(step2) step2.style.display = 'block';
+      var choiceText = document.getElementById('invasion-choice-text');
+      if(choiceText){
+        choiceText.innerHTML = '国库空虚，无力回天。<br>朕，当如何？';
+      }
+    }, 5000);
+  }
+
+  function makeEmperorChoice(type){
+    var overlay = document.getElementById('invasion-overlay');
+    if(overlay){ overlay.classList.remove('show'); }
+    state._emperorChoice = type;
+    save();
+    // 生成所有妃子和孩子的命运
+    setTimeout(()=>{
+      var fates = generateConcubineFates();
+      var childFates = generateChildFates(fates);
+      showGameOver(fates, childFates);
+    }, 800);
+  }
+
+  // 生成妃子命运
+  function generateConcubineFates(){
+    var fates = [];
+    var allConcubines = state.concubines.concat(state.coldPalaceList);
+
+    var FATE_SUICIDE = '&#33411;&#22269;&#33258;&#23613;';
+    var FATE_MARRIAGE = '&#34987;&#36843;&#21644;&#20146;';
+    var FATE_CAPTURED = '&#34987;&#20474;&#21463;&#36720;';
+    var FATE_ESCAPE = '&#38543;&#39539;&#36887;&#20129;';
+    var FATE_DISAPPEAR = '&#38544;&#27809;&#27665;&#38388;';
+    var FATE_ENSLAVED = '&#27880;&#20026;&#22900;&#37240;';
+
+    var personalityReactions = {
+      '温婉': {suicide: '她望着远方硝烟，泪眼婆娑，轻声吟出"国破家亡，妾身何存"，随后饮下毒酒，面容安详如睡。', escape: '她紧紧抓住皇帝的衣袖，低声说"陛下去哪，妾便去哪"，一路上默默无言，只在夜里偷偷落泪。', captured: '她被蛮兵掳走时没有哭喊，只是最后望了一眼宫墙的方向，眼神中满是绝望。', disappear: '她趁乱换上粗布衣裳，混在难民中悄然离去，没有人知道她去了哪里。'},
+      '刚烈': {suicide: '她拔下发间金簪，毅然刺向咽喉。血染凤袍，却挺直脊背："我乃天朝妃嫔，岂受蛮夷之辱！"满宫震动，无人敢拦。', captured: '她破口大骂贼寇，被蛮将一掌击倒。醒来后咬舌自尽，血溅营帐。', disappear: '她剪断长发，换作男儿装扮，混入溃军之中，誓死不落入敌手。'},
+      '心机': {suicide: '她冷笑一声，将毒药一饮而尽。临终前喃喃道："妾算尽一切，却算不到这天崩地裂。"', escape: '她暗中打探了多条逃亡路线，在混乱中为皇帝指明了一条鲜为人知的密道。', captured: '她被俘后并未激烈反抗，反而对蛮将嫣然一笑。那笑容中藏着的算计，连见多识广的蛮将也心中一凛。', disappear: '她早有准备，在宫外的暗格中藏了金银和便装。城破那夜，她从容消失在街巷中。'},
+      '柔弱': {suicide: '她哭了一整夜，天亮后写下绝笔信，悬梁自尽。信中只有一个字——"痛"。', captured: '她吓得浑身发抖，被掳途中数次昏厥。醒来也只是哭，连求饶的话都说不完整。', escape: '她脚步踉跄地跟着逃亡的队伍，几次跌倒都被身边人扶起，眼神中满是恐惧。', disappear: '她抱着孩子在难民中迷失了方向，从此再无人见过她。'},
+      '清冷': {suicide: '她端坐镜前，从容梳妆，一如往昔每一个清晨。然后饮下鸩酒，面色如常，仿佛只是小憩。', captured: '她被押解时神色淡漠，目光越过蛮兵的刀锋，望向远处的云天。那份从容让押解者也不敢直视。', escape: '她不言不语地跟在队伍后面，步伐 steady，仿佛这一切都在预料之中。', disappear: '她消失在晨雾中，像她一直以来那样，安静地来，安静地走。'},
+      '娇媚': {suicide: '她对镜最后一次描眉涂唇，换上最美的衣裳，然后含笑饮下毒酒。"这一生够美了，不能脏了。"', captured: '蛮将见她容貌，惊为天人。她以笑相待，却在夜间偷偷咬破手指，在帐壁上写下"国耻"二字。', disappear: '她卸下珠翠，换上素衣，那张倾国倾城的脸被尘土遮掩，再也无人认出。'},
+      '端庄': {suicide: '她整理凤冠霞帔，面朝北方跪拜三叩。"臣妾不负皇恩。"然后从容自尽。', escape: '她一路上照顾受伤的宫人，分发文房用品换取食物。那份从容不迫，让随行众人敬服。', captured: '她被俘后拒不屈膝，绝食七日而死。临终前对看守说："你告诉你们的主子，天朝女子不跪异族。"'},
+      '野心': {suicide: '她狂笑不止："妾经营半生，竟落得如此下场！"然后撞柱而死。', captured: '她试图说服蛮将收编她为内应，却被看穿意图，反被囚禁。', escape: '她暗中联络了一批 loyal 的旧部，试图在南方另立朝廷，但最终未能成功。', disappear: '她带着宫中秘藏的金银远走西域，有人说她在沙漠边缘建了一座小城，自立为王。'},
+      '慈悲': {suicide: '她先为受伤的宫女包扎伤口，然后悄悄离开，在佛堂中自尽。身旁放着一串念珠。', escape: '她一路上救助了不少难民，分发自己的首饰换取粮食。逃亡路上人人都称她"菩萨娘娘"。', captured: '她被俘后为同样被掳的宫女求情，被蛮将鞭打也不退缩。', disappear: '她在一座破庙中收留了几个孤儿，从此以乞讨为生，却再没有回到宫廷。'},
+    };
+
+    var specialConditions = [];
+    // 检查特殊条件
+    var pregnantConcubines = allConcubines.filter(c => c.pregnant);
+    var coldPalaceIds = state.coldPalaceList.map(c => c.id);
+    var highestFavor = null;
+    var maxFavor = -1;
+    allConcubines.forEach(c => {
+      if(c.favor > maxFavor){ maxFavor = c.favor; highestFavor = c; }
+    });
+
+    allConcubines.forEach(c => {
+      var fate = determineFate(c, personalityReactions, coldPalaceIds, highestFavor, pregnantConcubines);
+      fates.push({
+        concubine: c,
+        fate: fate.fate,
+        fateText: fate.text,
+        isInColdPalace: coldPalaceIds.indexOf(c.id) >= 0
+      });
+    });
+
+    return fates;
+  }
+
+  function determineFate(c, reactions, coldPalaceIds, highestFavor, pregnantConcubines){
+    var pname = c.personality ? c.personality.name : '温婉';
+    var beauty = c.beauty || 50;
+    var health = c.health || 50;
+    var rank = c.rank || '官女子';
+    var isPregnant = c.pregnant;
+    var isInCold = coldPalaceIds.indexOf(c.id) >= 0;
+    var isHighestFavor = highestFavor && highestFavor.id === c.id;
+
+    // 决策树：性格 → 位份 → 颜值 → 特殊条件
+    var r = reactions[pname] || reactions['温婉'];
+
+    // 冷宫妃子：更容易消失或自尽
+    if(isInCold){
+      if(Math.random() < 0.5){
+        return {fate: 'disappear', text: r.disappear || '她趁乱逃出冷宫，从此不知所踪。'};
+      } else {
+        return {fate: 'suicide', text: r.suicide || '她在冷宫中自尽，结束了这凄苦的一生。'};
+      }
+    }
+
+    // 怀孕妃子：更容易被俘或逃亡
+    if(isPregnant){
+      if(Math.random() < 0.4){
+        return {fate: 'escape', text: r.escape || '她怀着龙裔，在混乱中跟随皇帝逃亡。'};
+      } else if(Math.random() < 0.5){
+        return {fate: 'captured', text: r.captured || '她因行动不便被蛮兵俘获。'};
+      } else {
+        return {fate: 'suicide', text: r.suicide || '她不愿腹中龙种受辱，毅然自尽。'};
+      }
+    }
+
+    // 最高宠妃：优先随驾逃亡
+    if(isHighestFavor && Math.random() < 0.6){
+      return {fate: 'escape', text: r.escape || '她誓死追随陛下，踏上了漫漫逃亡路。'};
+    }
+
+    // 高颜值妃子：更容易被俘虏
+    if(beauty >= 85 && Math.random() < 0.5){
+      return {fate: 'captured', text: r.captured || '她因貌美被蛮将看中，掳入营中。'};
+    }
+
+    // 刚烈性格：大概率自尽
+    if(pname === '刚烈' && Math.random() < 0.7){
+      return {fate: 'suicide', text: r.suicide || '她宁死不屈，以最决绝的方式结束了生命。'};
+    }
+
+    // 位份高的妃子：更可能被要求和亲或俘虏
+    var highRanks = ['皇后','皇贵妃','贵妃','妃','嫔'];
+    if(highRanks.indexOf(rank) >= 0 && Math.random() < 0.4){
+      var fateOptions = ['captured', 'marriage', 'enslaved'];
+      var chosenFate = fateOptions[Math.floor(Math.random() * fateOptions.length)];
+      if(chosenFate === 'captured') return {fate: 'captured', text: r.captured || '她身为高位妃嫔，被蛮族点名索要，沦为战利品。'};
+      if(chosenFate === 'marriage') return {fate: 'marriage', text: r.disappear || '为求和议，她被送往蛮族大营和亲。临行前回望故土，泪如雨下。'};
+      return {fate: 'enslaved', text: r.captured || '她从云端跌落泥潭，沦为蛮族贵族的侍女。'};
+    }
+
+    // 低颜值妃子：更容易消失民间
+    if(beauty < 50 && Math.random() < 0.6){
+      return {fate: 'disappear', text: r.disappear || '趁着京城大乱，她混在难民中逃离了这是非之地。'};
+    }
+
+    // 默认随机分配
+    var defaultFates = [
+      {fate: 'suicide', weight: 20},
+      {fate: 'captured', weight: 25},
+      {fate: 'escape', weight: 15},
+      {fate: 'disappear', weight: 25},
+      {fate: 'enslaved', weight: 15},
+    ];
+    var totalWeight = defaultFates.reduce((s,f) => s + f.weight, 0);
+    var roll = Math.random() * totalWeight;
+    var cumulative = 0;
+    for(var df of defaultFates){
+      cumulative += df.weight;
+      if(roll <= cumulative){
+        var fateKey = df.fate;
+        var fallbackText = '';
+        if(fateKey === 'suicide') fallbackText = '她在国破家亡之际选择了自尽。';
+        else if(fateKey === 'captured') fallbackText = '她被蛮兵俘虏，遭受了难以想象的苦难。';
+        else if(fateKey === 'escape') fallbackText = '她跟随皇帝踏上了逃亡之路。';
+        else if(fateKey === 'disappear') fallbackText = '她消失在了战乱之中，再无音讯。';
+        else if(fateKey === 'enslaved') fallbackText = '她沦为奴隶，被蛮族驱使。';
+        return {fate: fateKey, text: r[fateKey] || fallbackText};
+      }
+    }
+    return {fate: 'disappear', text: r.disappear || '她消失在了战乱之中。'};
+  }
+
+  // 生成子嗣命运
+  function generateChildFates(concubineFates){
+    var childFates = [];
+    var fateMap = {};
+    concubineFates.forEach(f => { fateMap[f.concubine.id] = f; });
+
+    state.children.forEach(ch => {
+      var motherFate = fateMap[ch.motherId] || null;
+      var motherFateType = motherFate ? motherFate.fate : 'unknown';
+      var childAge = ch.age || 0;
+      var childGender = ch.gender || '皇子';
+
+      var fateText = '';
+      var fateType = '';
+
+      if(childAge < 3){
+        // 婴幼儿：跟随母亲命运
+        fateType = 'follow_mother';
+        if(motherFateType === 'escape'){
+          fateText = childGender === '皇子' ? '年幼的皇子在母亲怀中跟随逃亡，一路啼哭不止。' : '年幼的公主在母亲怀中跟随逃亡，不谙世事。';
+        } else if(motherFateType === 'captured'){
+          fateText = childGender === '皇子' ? '幼小的皇子随母被俘，蛮将见其年幼，未加伤害。' : '幼小的公主随母被俘，在蛮营中啼哭不止。';
+        } else if(motherFateType === 'suicide'){
+          fateText = childGender === '皇子' ? '皇子失去了母亲，被宫中老仆偷偷藏匿保护。' : '公主失去了母亲，被一位好心的宫女收养。';
+        } else if(motherFateType === 'disappear'){
+          fateText = childGender === '皇子' ? '皇子随母亲混入难民之中，从此流落民间。' : '公主随母亲流落民间，改姓埋名。';
+        } else {
+          fateText = '幼小的孩子在混乱中不知所踪。';
+        }
+      } else if(childAge < 10){
+        // 儿童
+        if(childGender === '皇子'){
+          fateType = 'young_prince';
+          var princeFates = [
+            '年幼的皇子被忠臣偷偷救出，隐姓埋名送往南方。',
+            '皇子在混乱中与父皇失散，被一群太监保护着逃出京城。',
+            '皇子被蛮兵掳走，在异域长大，终生未能回归故土。',
+            '皇子随母亲逃亡，一路颠沛流离，小小年纪便尝尽人间疾苦。',
+          ];
+          fateText = pick(princeFates);
+        } else {
+          fateType = 'young_princess';
+          var princessFates = [
+            '年幼的公主被一位老嬷嬷带走，藏在乡间抚养。',
+            '公主在战火中失踪，从此再无音讯。',
+            '公主被蛮族贵族收养，在异国他乡长大。',
+            '公主随宫女逃亡，在一座偏远山村落脚，改作农家女。',
+          ];
+          fateText = pick(princessFates);
+        }
+      } else if(childAge < 16){
+        // 少年
+        if(childGender === '皇子'){
+          fateType = 'teen_prince';
+          var teenPrinceFates = [
+            '少年皇子挺身而出，试图保护母妃，被蛮兵所伤后掳走。',
+            '皇子跟随父皇逃亡，一路学习兵法韬略，暗中积蓄力量。',
+            '皇子被忠臣护送出京，隐姓埋名流落民间。',
+            '少年皇子不甘受辱，组织了一批 loyal 旧部试图抵抗，最终寡不敌众。',
+          ];
+          fateText = pick(teenPrinceFates);
+        } else {
+          fateType = 'teen_princess';
+          var teenPrincessFates = [
+            '少女公主被蛮族王子看中，被迫和亲。',
+            '公主在战乱中与父皇失散，被一位将军收为义女。',
+            '公主随母亲逃亡，一路上照顾受伤的宫人，展现了非凡的勇气。',
+            '公主被藏匿在一座古寺中，以尼姑身份度过余生。',
+          ];
+          fateText = pick(teenPrincessFates);
+        }
+      } else {
+        // 成年子嗣
+        if(childGender === '皇子'){
+          fateType = 'adult_prince';
+          var adultPrinceFates = [
+            '成年皇子被蛮族俘虏，受尽屈辱后不屈而死。',
+            '皇子逃往南方，试图召集旧部复国，但势单力薄。',
+            '皇子留在京城，被蛮族软禁，终日郁郁寡欢。',
+            '皇子远走西域，在丝路上开始了新的生活。',
+          ];
+          fateText = pick(adultPrinceFates);
+        } else {
+          fateType = 'adult_princess';
+          var adultPrincessFates = [
+            '成年公主被迫和亲，嫁给了蛮族将领。',
+            '公主隐姓埋名流落民间，嫁给了一个普通书生。',
+            '公主在国破后出家为尼，青灯古佛了此残生。',
+            '公主被蛮族俘虏，在异国他乡度过了余生。',
+          ];
+          fateText = pick(adultPrincessFates);
+        }
+      }
+
+      childFates.push({child: ch, fate: fateType, fateText: fateText});
+    });
+
+    return childFates;
+  }
+
+  // 显示亡国结局
+  function showGameOver(fates, childFates){
+    // 清除存档
+    try{ localStorage.removeItem('emperor_game'); }catch(e){}
+
+    showPage('gameover');
+
+    var emperorChoice = state._emperorChoice || 'escape';
+    var emperorTexts = {
+      'suicide': [
+        '朕，天子也。国破家亡，何颜面苟活？',
+        '他登上煤山，望着火光冲天的京城，解下腰带悬于老树之上。',
+        '一代帝王，以身殉国。大王朝此覆灭。',
+      ],
+      'escape': [
+        '朕，天子也。留得青山在，不怕没柴烧！',
+        '他带领少数亲信从密道逃出京城，回望火光中的皇城，泪流满面。',
+        '亡命天涯的皇帝，从此开始了颠沛流离的后半生。',
+      ],
+      'surrender': [
+        '朕，天子也。一人之死，可换万民之生。',
+        '他打开城门，率领文武百官出降。蛮族入城，王朝终结。',
+        '投降的皇帝被蛮族首领封为一个虚职，在屈辱中度过了余生。',
+      ],
+    };
+
+    var content = document.getElementById('gameover-content');
+    if(!content) return;
+
+    var html = '<div style="padding:20px;">';
+    // 标题
+    html += '<div style="text-align:center;padding:30px 0 20px;">';
+    html += '<div style="font-size:36px;margin-bottom:10px;">&#128683;</div>';
+    html += '<div style="font-size:28px;color:#c04040;font-weight:bold;letter-spacing:6px;">亡 国</div>';
+    html += '<div style="font-size:14px;color:#8a7060;margin-top:6px;">'+state.dynasty+' &#183; &#31532;'+state.year+'&#24180;&#31532;'+state.month+'&#26376;</div>';
+    html += '</div>';
+
+    // 皇帝结局
+    html += '<div style="margin:20px 0;padding:16px;background:rgba(200,60,60,0.08);border-radius:12px;border:1px solid rgba(200,60,60,0.2);">';
+    html += '<div style="font-size:16px;color:#c04040;font-weight:bold;margin-bottom:10px;text-align:center;">&#128081; &#30343;&#24093;&#32467;&#23616;</div>';
+    var eTexts = emperorTexts[emperorChoice] || emperorTexts['escape'];
+    eTexts.forEach(t => {
+      html += '<p style="font-size:13px;color:#5a3e28;line-height:1.9;text-indent:2em;margin:6px 0;">'+t+'</p>';
+    });
+    html += '</div>';
+
+    // 妃子命运统计
+    html += '<div style="margin:20px 0;padding:16px;background:rgba(200,160,80,0.08);border-radius:12px;border:1px solid rgba(200,160,80,0.2);">';
+    html += '<div style="font-size:16px;color:#c49030;font-weight:bold;margin-bottom:10px;text-align:center;">&#128114; &#22915;&#23376;&#21629;&#36816;</div>';
+
+    var fateStats = {};
+    var fateNames = {
+      'suicide': '&#33411;&#22269;&#33258;&#23613;',
+      'captured': '&#34987;&#20474;&#21463;&#36720;',
+      'escape': '&#38543;&#39539;&#36887;&#20129;',
+      'disappear': '&#38544;&#27809;&#27665;&#38388;',
+      'enslaved': '&#27880;&#20026;&#22900;&#37240;',
+      'marriage': '&#34987;&#36843;&#21644;&#20146;',
+    };
+    fates.forEach(f => {
+      fateStats[f.fate] = (fateStats[f.fate] || 0) + 1;
+    });
+    var fateOrder = ['suicide','captured','enslaved','marriage','escape','disappear'];
+    fateOrder.forEach(ft => {
+      if(fateStats[ft]){
+        html += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;"><span style="color:#8a7060;">'+fateNames[ft]+'</span><span style="color:#c49030;">'+fateStats[ft]+'&#20154;</span></div>';
+      }
+    });
+    html += '</div>';
+
+    // 每个妃子的详细命运
+    html += '<div style="margin:20px 0;">';
+    html += '<div style="font-size:16px;color:#c49030;font-weight:bold;margin-bottom:12px;text-align:center;">&#21205;&#20154;&#30340;&#21629;&#36816;</div>';
+    fates.forEach(f => {
+      var c = f.concubine;
+      html += '<div class="fate-card" style="margin:10px 0;padding:14px;background:rgba(255,248,235,0.9);border-radius:10px;border-left:3px solid '+(f.fate==='suicide'?'#c04040':f.fate==='captured'?'#a060c0':f.fate==='escape'?'#40a060':f.fate==='enslaved'?'#a08040':'#8a8a8a')+';">';
+      html += '<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:6px;">'+c.name+' &#183; '+c.rank+'</div>';
+      html += '<div style="font-size:11px;color:#a08060;margin-bottom:8px;">&#38453;&#23380; '+c.personality.name+' &#183; &#32654;&#35980; '+c.beauty+'</div>';
+      html += '<div style="font-size:12px;color:#5a3e28;line-height:1.8;">'+f.fateText+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // 子嗣命运
+    if(childFates.length > 0){
+      html += '<div style="margin:20px 0;">';
+      html += '<div style="font-size:16px;color:#c49030;font-weight:bold;margin-bottom:12px;text-align:center;">&#23376;&#34932;&#21629;&#36816;</div>';
+      childFates.forEach(cf => {
+        var ch = cf.child;
+        html += '<div class="fate-card" style="margin:10px 0;padding:14px;background:rgba(255,248,235,0.9);border-radius:10px;border-left:3px solid #6090d0;">';
+        html += '<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:6px;">'+(ch.name||ch.gender)+' &#183; '+ch.age+'&#23681;</div>';
+        html += '<div style="font-size:12px;color:#5a3e28;line-height:1.8;">'+cf.fateText+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // 重新开始按钮
+    html += '<div style="text-align:center;padding:30px 0;">';
+    html += '<button onclick="Game.restartAfterDemise()" style="padding:14px 40px;border:2px solid #c04040;border-radius:12px;background:rgba(200,60,60,0.1);color:#c04040;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;letter-spacing:4px;">&#37325;&#26032;&#24320;&#22987;</button>';
+    html += '</div>';
+    html += '</div>';
+
+    content.innerHTML = html;
+
+    // 滚动到顶部
+    var scrollContainer = content.parentElement;
+    if(scrollContainer) scrollContainer.scrollTop = 0;
+  }
+
+  function restartAfterDemise(){
+    state._treasuryWarning = false;
+    state._demiseTriggered = false;
+    state._emperorChoice = null;
+    clearCache();
   }
 
   function processPregnancy(){
@@ -2315,7 +2762,7 @@ const ZH_PORTRAIT_DATA = [
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
     state.draftTriggeredThisYear=false;state.princessEventTriggered=false;
     state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;
-    state._banquetSelected=null;closeModal();
+    state._banquetSelected=null;state._treasuryWarning=false;state._demiseTriggered=false;state._emperorChoice=null;closeModal();
     showPage('start');
     updateUI();
     save();
@@ -6075,7 +6522,7 @@ const ZH_PORTRAIT_DATA = [
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,makeEmperorChoice,restartAfterDemise};
 })();
 
 // ===== 启动 =====

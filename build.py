@@ -6,7 +6,7 @@
 import base64, os, sys, re
 
 PHOTO_DIR = '/Users/dm-jenna/Desktop/claude code/Photo'
-SRC_HTML  = '/Users/dm-jenna/Desktop/claude code/emperor.html'
+SRC_HTML  = '/Users/dm-jenna/Desktop/claude code/index.html'
 DST_HTML  = '/tmp/emperor-web/index.html'
 MAX_PNG_SIZE = 400  # Resize max dimension
 
