@@ -2665,6 +2665,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     content.innerHTML = html;
     var page = document.getElementById('page-gameover');
     if(page) page.scrollTop = 0;
+    var btn = document.getElementById('gameover-restart-btn');
+    if(btn) btn.onclick = restartAfterDemise;
   }
 
   function restartAfterDemise(){
