@@ -239,12 +239,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 /* 开局动画 */
 #intro-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;cursor:pointer}
 #intro-overlay.show{display:flex}
-#intro-video{display:none}
-#intro-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:32px;letter-spacing:8px;pointer-events:none;opacity:0;transition:opacity 1.5s ease}
-#intro-text.show{opacity:1}
-#intro-text.fade{opacity:0}
-#intro-sub{position:absolute;top:calc(50% + 60px);left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.6);font-size:16px;letter-spacing:4px;pointer-events:none;opacity:0;transition:opacity 1.5s ease}
-#intro-sub.show{opacity:1}
+#intro-overlay video{width:100vw;height:100vh;object-fit:cover}
 #intro-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.7);font-size:18px;letter-spacing:4px;pointer-events:none;transition:opacity 0.3s;text-align:center}
 #intro-hint.hide{opacity:0}
 #intro-skip{position:absolute;bottom:30px;right:30px;background:rgba(0,0,0,0.6);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 20px;border-radius:20px;font-size:14px;cursor:pointer;font-family:inherit;transition:background 0.2s}
@@ -449,10 +444,8 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </head>
 <body>
 <div id="intro-overlay">
-  <video id="intro-video" src="media/intro-video.mp4" playsinline muted preload="auto"></video>
-  <div id="intro-text">远迎新朗</div>
-  <div id="intro-sub">恭迎圣上登基</div>
-  <div id="intro-hint" class="hide"></div>
+  <video id="intro-video" src="media/intro-video.mp4" playsinline muted></video>
+  <div id="intro-hint">&#36828;&#36814;&#26032;&#26391;</div>
   <button id="intro-skip" onclick="Game.skipIntro()">跳过动画</button>
 </div>
 <div class="scroll-container">

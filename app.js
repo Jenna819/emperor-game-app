@@ -1965,20 +1965,36 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function showIntro(){
     const overlay=document.getElementById('intro-overlay');
-    const text=document.getElementById('intro-text');
-    const sub=document.getElementById('intro-sub');
+    const video=document.getElementById('intro-video');
+    const hint=document.getElementById('intro-hint');
     if(overlay){overlay.classList.add('show');}
-    // CSS 动画流程：先显示主标题，再显示副标题，然后渐隐
-    setTimeout(function(){if(text)text.classList.add('show');}, 500);
-    setTimeout(function(){if(sub)sub.classList.add('show');}, 2000);
-    setTimeout(function(){if(text)text.classList.add('fade');if(sub)sub.classList.add('fade');}, 4500);
-    setTimeout(function(){hideIntro();}, 6000);
+    if(video){
+      video.currentTime=0;
+      video.muted=true;
+      video.play().then(function(){
+        if(hint)hint.classList.add('hide');
+      }).catch(function(){
+        if(hint)hint.classList.remove('hide');
+      });
+      // 点击任意处取消静音（手机端自动播放必为静音，需手动解除）
+      overlay.onclick=function(e){
+        if(e.target===overlay||e.target===video){
+          video.muted=false;
+          video.play();
+          if(hint)hint.classList.add('hide');
+          overlay.onclick=null;
+        }
+      };
+      video.onended=function(){hideIntro();};
+    }
   }
 
   function skipIntro(){
     // 判断当前是新游戏流程还是旧流程
     const overlay=document.getElementById('intro-overlay');
-    if(overlay){overlay.classList.remove('show');}
+    const video=document.getElementById('intro-video');
+    if(video){video.pause();video.currentTime=0;video.onended=null;}
+    if(overlay){overlay.classList.remove('show');overlay.onclick=null;}
     // 如果国库弹窗已关闭（新游戏流程），直接进入游戏
     const treasuryModal=document.getElementById('modal-treasury');
     if(treasuryModal&&!treasuryModal.classList.contains('show')){
@@ -1992,25 +2008,45 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function hideIntro(){
     const overlay=document.getElementById('intro-overlay');
-    if(overlay){overlay.classList.remove('show');}
+    const video=document.getElementById('intro-video');
+    if(video){video.pause();video.currentTime=0;}
+    if(overlay){overlay.classList.remove('show');overlay.onclick=null;}
     showPage('start');
   }
 
   function playIntroForNewGame(){
     const overlay=document.getElementById('intro-overlay');
-    const text=document.getElementById('intro-text');
-    const sub=document.getElementById('intro-sub');
+    const video=document.getElementById('intro-video');
+    const hint=document.getElementById('intro-hint');
     if(overlay){overlay.classList.add('show');}
-    // 用户已点击按钮，直接开始 CSS 动画
-    setTimeout(function(){if(text)text.classList.add('show');}, 500);
-    setTimeout(function(){if(sub)sub.classList.add('show');}, 2000);
-    setTimeout(function(){if(text)text.classList.add('fade');if(sub)sub.classList.add('fade');}, 4500);
-    setTimeout(function(){
-      if(overlay){overlay.classList.remove('show');}
-      if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
-      showPage('main');updateUI();
-      setTimeout(()=>triggerDraft(),800);
-    }, 6000);
+    if(video){
+      video.currentTime=0;
+      // 用户已点击按钮，浏览器已授权，直接带声音播放
+      video.muted=false;
+      video.play().then(function(){
+        if(hint)hint.classList.add('hide');
+      }).catch(function(){
+        // 兜底：若仍被拦截，则静音播放，点击屏幕取消静音
+        video.muted=true;
+        video.play();
+        if(hint)hint.classList.remove('hide');
+        overlay.onclick=function(e){
+          if(e.target===overlay||e.target===video){
+            video.muted=false;
+            video.play();
+            if(hint)hint.classList.add('hide');
+            overlay.onclick=null;
+          }
+        };
+      });
+      video.onended=function(){
+        if(video){video.pause();video.currentTime=0;}
+        if(overlay){overlay.classList.remove('show');overlay.onclick=null;video.onended=null;}
+        if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
+        showPage('main');updateUI();
+        setTimeout(()=>triggerDraft(),800);
+      };
+    }
   }
   function startNewGame(){
     const v=document.getElementById('dynasty-input').value.trim();
