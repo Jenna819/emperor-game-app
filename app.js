@@ -55,6 +55,33 @@ const Game = (function() {
   const RC = {'皇后':'rank-queen','皇贵妃':'rank-imperial','贵妃':'rank-imperial','妃':'rank-noble','嫔':'rank-noble','贵人':'rank-low','常在':'rank-low','答应':'rank-low','官女子':'rank-low'};
   const SURS = ['苏','沈','顾','陆','温','许','宋','江','程','季','阮','晏','戚','岑','傅','甄','虞','萧','贺','裴','俞','郁','时','慕','楚','洛','舒','蔺','栾','姒','嬴','姜','姚','任','风','花','云','柳','颜','夏','孟','邢','卫','霍','吕','施','陶','鲍','费','廉','伍','余','卜','狄','平','荆','闻','池','邴','郜','郗','郦','淳于','钟离','上官','慕容','南宫','东方','西陵'];
   const CHARS = ['宁','舒','婉','娴','柔','恬','攸','冉','伊','汐','清','泠','笙','禾','茉','柠','沅','溪','沫','杳','辞','砚','知','允','书','言','亦','叙','晏','初','瑾','瑜','瑶','玥','琳','琪','琛','珞','珂','璎','吟','晚','昭','沐','晴','霏','檐','疏','染','绾','芷','萱','苓','蒹','棠','芙','芮','芃','荞','尘','殊','烬','澈','屿','妄','卿','衿','姝','妧','嫣','祯','祺','安','睦'];
+  // ===== 御赐命名字辈与第二字池 =====
+  const PRINCE_GEN_CHARS = [
+    {char:'承',meaning:'继承大统'},{char:'景',meaning:'景星庆云'},{char:'绍',meaning:'绍述先德'},
+    {char:'永',meaning:'永续江山'},{char:'天',meaning:'天授皇权'},{char:'昭',meaning:'昭明天下'}
+  ];
+  const PRINCESS_GEN_CHARS = [
+    {char:'婉',meaning:'婉顺端庄'},{char:'昭',meaning:'昭华明媚'},{char:'永',meaning:'长乐未央'},
+    {char:'宁',meaning:'宁静致远'},{char:'文',meaning:'文采风华'},{char:'安',meaning:'平安顺遂'}
+  ];
+  // 皇子第二字池（120字）
+  const PRINCE_SECOND_CHARS = [
+    '乾','炎','熙','昌','佑','泽','翰','宸','睿','恒','钧','轩','霖','昊','祺','煜','磊','博','浩','然',
+    '铭','锋','锐','凯','骏','逸','翔','腾','晖','曜','弘','毅','峻','岳','崇','巍','岩','峰','彪','炜',
+    '烨','灿','焕','熠','朗','明','昕','旭','晟','昀','晗','昆','昱','翌','彦','儒','哲','贤','良',
+    '修','远','卓','伟','达','通','康','泰','平','和','顺','祥','瑞','丰','登','茂','盛','兴',
+    '隆','荣','华','显','耀','光','辉','煌','钦','钧','鹏','麒','麟','龙','麒','鸿','儒','谦',
+    '谨','笃','恪','恪','秉','衡','枢','维','纲','纶','经','纬','韬','略','谟','谋','策','勋'
+  ];
+  // 公主第二字池（120字）
+  const PRINCESS_SECOND_CHARS = [
+    '娴','颖','琳','瑶','萱','悦','柔','慧','芷','若','兰','蕙','芳','芬','芸','芙','蓉','荷','莲','菊',
+    '梅','竹','柳','桃','杏','梨','樱','薇','蕾','蕊','馨','馥','香','绮','绣','锦','纨','绫','罗','纱',
+    '璇','玑','珠','玉','珊','瑚','瑾','瑜','瑰','珂','珑','玲','琬','琰','琦','琪','璐','璧','环','佩',
+    '玟','玥','彤','霞','雯','霏','露','霜','雪','冰','洁','清','漪','澜','澄','涵','淑','淳','雅',
+    '静','恬','宜','嘉','美','善','秀','丽','娇','娜','婷','娉','嫣','妍','妩','媛','婵','娥','娟',
+    '蔓','茵','苹','苹','茉','莉','芙','蓉','芷','萱','蓝','蓓','蕾','蕊','花','英','苹','苹','菁','蓉'
+  ];
   const TRAITS = ['琴棋书画','诗词歌赋','舞蹈','刺绣','厨艺','医术','香道','茶道','书法','绘画','音律','女红','插花','围棋','古筝','琵琶','笛箫','古琴'];
   const PERSONALITIES = [
     // 温柔善良系
@@ -1350,7 +1377,7 @@ const Game = (function() {
   }
 
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
-  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+  function clamp(v,a,b){v=(typeof v==='number'&&!isNaN(v))?v:0;return Math.max(a,Math.min(b,v));}
   function ri(r){return RANKS.indexOf(r);}
   function ru(r){const i=ri(r);return i>0?RANKS[i-1]:r;}
   function rd(r){const i=ri(r);return i<RANKS.length-1?RANKS[i+1]:r;}
@@ -1358,9 +1385,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function calcPowerDelta(c){let d=0;d+=c.personality.favInc-1;if(c.title)d+=3;d+=Math.floor(c.favor/300);return d;}
   function applyPower(c,amount){c.power=clamp(c.power+amount,0,500);}
   function getRankByPower(p){for(const rank of RANKS){const min=RANK_POWER_MIN[rank];if(p>=min)return rank;}return '官女子';}
-  function clampPowerToRank(power,rank){const min=RANK_POWER_MIN[rank];const max=RANK_POWER_MAX[rank];return Math.max(min,Math.min(max,power));}
+  function clampPowerToRank(power,rank){const min=RANK_POWER_MIN[rank]??0;const max=RANK_POWER_MAX[rank]??500;return Math.max(min,Math.min(max,power));}
   function checkRankChange(c){
     if(c.rank==='皇后')return null;
+    if(c.power===undefined||isNaN(c.power))c.power=0;
     const newRank=getRankByPower(c.power);
     const newIdx=ri(newRank);const oldIdx=ri(c.rank);
     // Intercept queen promotion: trigger coronation event instead of auto-promote
@@ -1376,7 +1404,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{},banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,_lastPrincessYear:0,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -1581,7 +1609,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.power=Math.round(c.favor/8);const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state._investigationShown===undefined)state._investigationShown=false;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state._investigationShown===undefined)state._investigationShown=false;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2091,7 +2119,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state._drafting=false;
     state._punishmentShown=false;
     state._lastTributeYear=0;state._lastTributeMonth=0;state._monthlyIncome=0;state._monthlyExpense=0;
-    state._coronationCooldown=null;state._coronationSelectId=null;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;state._firstPrinceBorn=false;
+    state._coronationCooldown=null;state._coronationSelectId=null;state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;state._firstPrinceBorn=false;
     state.honglouPregnancies=[];state.honglouOutsideFamily=[];state.honglouOldFlames=[];
     state.jiangnanYear=undefined;
     initJiangnan();
@@ -2101,7 +2129,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     playIntroForNewGame();
   }
   function processBannedDecay(){for(const id in state.banned){state.banned[id]--;if(state.banned[id]<=0)delete state.banned[id];}}
-  function processColdDecay(){state.coldPalaceList=state.coldPalaceList.filter(c=>{c.health=clamp(c.health-10,0,100);c.power=clamp(c.power-5,0,500);if(c.health<=0){logEvent('&#30149;&#36893;&#33268;&#27515;',c.rank+c.name+'&#22312;&#20919;&#23467;&#20013;&#30149;&#36893;');showFeedback('<span class="neg">'+c.name+'</span> &#22312;&#20919;&#23467;&#20013;&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');return false;}return true;});}
+  function processColdDecay(){state.coldPalaceList=state.coldPalaceList.filter(c=>{if(c.power===undefined||isNaN(c.power))c.power=0;c.health=clamp(c.health-10,0,100);c.power=clamp(c.power-5,0,500);if(c.health<=0){logEvent('&#30149;&#36893;&#33268;&#27515;',c.rank+c.name+'&#22312;&#20919;&#23467;&#20013;&#30149;&#36893;');showFeedback('<span class="neg">'+c.name+'</span> &#22312;&#20919;&#23467;&#20013;&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');return false;}return true;});}
 
   function consumeAction(){state.actionsLeft--;const used=5-state.actionsLeft;if(state.actionsLeft<=0){setTimeout(()=>{if(!state.pendingEvent){showFeedback('&#26412;&#26376;&#34892;&#21160;&#24050;&#29992;&#23436;&#65292;&#33258;&#21160;&#36827;&#20837;&#19979;&#26376;&#65281;');setTimeout(()=>nextMonth(),1500);}},500);}else{setTimeout(()=>{if(state.concubines.length>=2&&!state.pendingEvent&&!state.eventTriggeredThisMonth){const targetAction=state.monthEventAction;if(used>=targetAction){triggerPalaceEvent();state.eventTriggeredThisMonth=true;}}if(!state.pendingEvent){tryTriggerMorning();}},500);}}
 
@@ -2127,7 +2155,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
   function doNextMonth(){
-    state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}
+    state.month++;if(state.month>12){state.month=1;state.year++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}processChildTraining();
     // 经济系统：基础税收
     const taxIncome = 4000;
     // 母家进贡（每年6月触发，避开选秀月1月）
@@ -2155,9 +2183,11 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     processBannedDecay();processColdDecay();processPregnancy();processCriticalIllness();processChildrenHealth();processStressDecay();processGrudge();save();updateUI();checkStressBreakdownEvent();
     // 醉红楼认亲剧情判定
     checkHonglouReunion();
-    // 西域公主来访事件：首年第9月触发
-    if(state.year===1&&state.month===9&&!state.princessEventTriggered){
+    // 西域公主来访事件：首年第9月触发，之后每3年触发一次
+    const yearsSinceLastPrincess=state.year-state._lastPrincessYear;
+    if(state.month===9&&!state.princessEventTriggered&&(state.year===1||yearsSinceLastPrincess>=3)){
       state.princessEventTriggered=true;
+      state._lastPrincessYear=state.year;
       setTimeout(()=>triggerPrincessEvent(),400);
       return;
     }
@@ -2779,38 +2809,316 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-birth').classList.add('show');
   }
   function showBirthResult(births){
-    const el=document.getElementById('birth-content');
-    let html='<div class="birth-result">';
+    // 先处理妃子属性加成，子嗣待命名
+    state._namingQueue=[];
     births.forEach(({concubine:c,childType,isFirstPrince})=>{
-      const isPrince=childType==='&#30343;&#23376;';
+      const isPrince=childType==='皇子'||childType==='&#30343;&#23376;';
       const favorInc=isPrince?(isFirstPrince?150:100):60;
       const powerInc=isPrince?(isFirstPrince?35:20):12;
       c.favor=clamp(c.favor+favorInc,0,2200);
       c.power=clamp(c.power+powerInc,0,500);
       c.health=clamp(c.health+10,0,100);
-      const icon=isPrince?'&#128118;':'&#128117;';
-      const childName=genChildName(childType);
-      state.children.push({id:'child_'+Date.now()+'_'+Math.random().toString(36).substr(2,4),name:childName,gender:isPrince?'皇子':'公主',birthYear:state.year,birthMonth:state.month,motherId:c.id,motherName:c.name,motherRank:c.rank,age:0,talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0});
-      const starHtml=isFirstPrince?'<div style="font-size:14px;color:#c49030;font-weight:bold;margin-bottom:6px;"> 贵子降生 </div>':'';
-      html+=`<div class="birth-icon">${icon}</div>${starHtml}<div class="baby-type">${c.name} &#35806;&#19979;${childType}&#65281;</div><div class="baby-info">${c.rank} ${c.name}&#65292;&#21313;&#26376;&#24576;&#32974;&#65292;&#19968;&#26397;&#20998;&#23081;<br>&#27597;&#23376;&#24179;&#23433;</div><div class="baby-promote">&#22240;&#35806;&#19979;${isFirstPrince?'贵子':childType}&#65292;${c.name} &#23456;&#29233;+${favorInc}&#65292;&#21183;&#21147;+${powerInc}</div>`;
+      const childTalent=clamp(Math.round(50*0.2+c.talent*0.2+c.wisdom*0.1+rand(10,50)),0,100);
+      const childAppearance=clamp(Math.round(c.beauty*0.4+rand(10,50)),0,100);
+      const childPersonality=genChildPersonality(c.personality);
+      const childData={
+        id:'child_'+Date.now()+'_'+Math.random().toString(36).substr(2,4),
+        name:'',
+        gender:isPrince?'皇子':'公主',
+        birthYear:state.year,birthMonth:state.month,
+        motherId:c.id,motherName:c.name,motherRank:c.rank,
+        age:0,talent:childTalent,talentTier:genTalentTier(childTalent),
+        appearance:childAppearance,personality:childPersonality,
+        martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),
+        adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0,
+        _favorInc:favorInc,_powerInc:powerInc,_isFirstPrince:isFirstPrince
+      };
+      state._namingQueue.push({childData,mother:c,childType,isPrince,isFirstPrince});
     });
-    html+='<button class="btn-primary" onclick="Game.closeBirth()">&#22823;&#21916;&#65292;&#21516;&#24198;&#65281;</button></div>';
-    el.innerHTML=html;
-    document.getElementById('modal-birth').classList.add('show');
-    logEvent('&#20998;&#23064;',births.map(({concubine:c,childType:t})=>c.name+'&#35806;&#19979;'+t).join('&#12289;'));
+    logEvent('分产',births.map(({concubine:c,childType:t})=>c.name+'诞下'+t).join('、'));
     save();updateUI();
+    showNextNaming();
   }
+  // ===== 子嗣天赋资质判定 =====
+  function genTalentTier(talent){
+    if(talent>=85) return '天赋异禀';
+    if(talent>=70) return '聪慧过人';
+    if(talent>=50) return '资质中等';
+    if(talent>=30) return '资质平庸';
+    return '资质较差';
+  }
+  // ===== 子嗣性格生成（受生母影响） =====
+  function genChildPersonality(motherPersonality){
+    const r=Math.random();
+    if(r<0.7){
+      // 70% 继承生母性格
+      return motherPersonality;
+    } else if(r<0.9){
+      // 20% 同系内随机
+      const motherName=motherPersonality.name;
+      const sameSystem=PERSONALITIES.filter(p=>p.fallback===motherPersonality.fallback&&p.name!==motherName);
+      if(sameSystem.length>0) return pick(sameSystem);
+      return motherPersonality;
+    } else {
+      // 10% 完全随机
+      return pick(PERSONALITIES);
+    }
+  }
+  // ===== 妃子培养子嗣（月度自动执行） =====
+  function processChildTraining(){
+    if(!state.trainingRecords) state.trainingRecords={};
+    const monthStr=state.year+'年'+state.month+'月';
+    // 收集所有妃子（包括冷宫）中有≥3岁子嗣的
+    const allConcs=[...state.concubines,...state.coldPalaceList];
+    const mothersWithKids=new Map();
+    allConcs.forEach(c=>{
+      if(c.health<=0) return;
+      const kids=state.children.filter(ch=>(ch.motherId===c.id||ch.adoptiveMotherId===c.id)&&ch.age>=3&&ch.health>0);
+      if(kids.length>0) mothersWithKids.set(c.id,{concubine:c,children:kids});
+    });
+    // 处理每位妃子的培养行为
+    mothersWithKids.forEach(({concubine:mom,children:kids})=>{
+      // 确保该妃子的培养记录存在
+      if(!state.trainingRecords[mom.id]){
+        state.trainingRecords[mom.id]={concubineId:mom.id,concubineName:mom.rank+' '+mom.name,children:{},styleSummary:genStyleSummary(mom.personality.name)};
+      }
+      const rec=state.trainingRecords[mom.id];
+      rec.concubineName=mom.rank+' '+mom.name;
+      // 确定培养频率（基于性格）
+      const trainChance=getTrainingChance(mom.personality.name);
+      const shouldTrain=Math.random()*100<trainChance;
+      // 选择培养动作
+      let action=shouldTrain?selectTrainingAction(mom):null;
+      if(!shouldTrain||!action||action.key==='不管不问') action=null;
+      // 确定偏爱和对象
+      const favoredChild=action?determineFavoredChild(mom,kids):null;
+      let targetChild=null;
+      if(action){
+        if(action.key==='偏爱教导'&&favoredChild){
+          targetChild=favoredChild;
+        } else if(kids.length===1){
+          targetChild=kids[0];
+        } else {
+          targetChild=pick(kids);
+        }
+      }
+      // 为每个子嗣生成当月记录
+      kids.forEach(ch=>{
+        // 确保子嗣记录存在
+        if(!rec.children[ch.id]){
+          rec.children[ch.id]={trainingLog:[],favored:false,totalBoost:{talent:0,martial:0,virtue:0},monthlyRecords:[]};
+        }
+        const childRec=rec.children[ch.id];
+        // 生成当月记录
+        let monthlyEntry=null;
+        if(action&&targetChild&&ch.id===targetChild.id){
+          // 本月有培养
+          const talentBoost=action.statBoost.talent||0;
+          const martialBoost=action.statBoost.martial||0;
+          const virtueBoost=action.statBoost.virtue||0;
+          const healthBoost=action.statBoost.health||0;
+          ch.talent=clamp(ch.talent+talentBoost,0,100);
+          ch.martial=clamp(ch.martial+martialBoost,0,100);
+          ch.virtue=clamp(ch.virtue+virtueBoost,0,100);
+          ch.health=clamp(ch.health+healthBoost,0,100);
+          if(action.cost>0&&state.treasury>=action.cost){
+            state.treasury-=action.cost;
+          }
+          const note=genTrainingNote(mom,ch,action);
+          childRec.favored=(favoredChild&&favoredChild.id===ch.id);
+          childRec.totalBoost.talent+=talentBoost;
+          childRec.totalBoost.martial+=martialBoost;
+          childRec.totalBoost.virtue+=virtueBoost;
+          // 记录到trainingLog（兼容旧代码）
+          childRec.trainingLog.push({month:monthStr,action:action.name,statBoost:action.statBoost,note:note});
+          if(childRec.trainingLog.length>24) childRec.trainingLog.shift();
+          monthlyEntry={month:monthStr,monthNum:state.month,trained:true,action:action.name,statBoost:action.statBoost,note:note};
+        } else {
+          // 本月未培养
+          const unfavoredNote=genUnfavoredNote(mom,ch);
+          childRec.favored=false;
+          monthlyEntry={month:monthStr,monthNum:state.month,trained:false,note:unfavoredNote};
+        }
+        // 添加到月度记录
+        childRec.monthlyRecords=childRec.monthlyRecords||[];
+        childRec.monthlyRecords.push(monthlyEntry);
+        if(childRec.monthlyRecords.length>24) childRec.monthlyRecords.shift();
+      });
+    });
+  }
+  // 培养频率表
+  function getTrainingChance(personalityName){
+    const map={
+      '贤淑':90,'端庄':90,'端庄大气':90,'严谨守礼':90,
+      '温婉':80,'温柔体恤':80,'娴静恬淡':80,
+      '文雅诗意':80,'精通乐艺':80,'聪慧博闻':80,
+      '沉稳睿智':70,'贵气凛然':70,
+      '心机':60,'城府深沉':60,'野心勃勃':60,
+      '狠戾果决':60,'刚烈执拗':60,'桀骜不羁':60,
+      '娇媚':40,'明艳魅惑':40,'风情婉约':40,
+      '活泼':35,'娇俏灵动':35,'直率爽朗':35,'爱吃贪趣':35,
+      '小气善妒':30,'虚荣攀比':30,
+      '黏人依赖':25,'偏执痴迷':25,'多疑敏感':25,
+      '清冷':20,'冷清疏离':20,'傲骨清高':20,'淡薄无欲':20,'冷艳寡言':20,
+      '阴郁寡欢':10,
+      'default':50
+    };
+    return map[personalityName]||map['default'];
+  }
+  // 偏爱判定
+  function determineFavoredChild(mom,kids){
+    if(kids.length<=1) return kids[0]||null;
+    const pname=mom.personality.name;
+    if(pname==='慈悲良善'||pname==='温柔体恤'||pname==='娴静恬淡'){
+      return null; // 不偏爱
+    }
+    if(pname==='小气善妒'){
+      return kids.reduce((a,b)=>(a.talent||0)>(b.talent||0)?a:b); // 偏爱最有出息的
+    }
+    if(pname==='心机'||pname==='野心勃勃'){
+      return kids.reduce((a,b)=>(a.talent||0)>(b.talent||0)?a:b); // 偏爱才学高的
+    }
+    if(pname==='狠戾果决'||pname==='刚烈执拗'){
+      return kids.reduce((a,b)=>(a.martial||0)>(b.martial||0)?a:b); // 偏爱武力高的
+    }
+    if(pname==='黏人依赖'){
+      return kids.reduce((a,b)=>(a.age||0)<(b.age||0)?a:b); // 偏爱最年幼的
+    }
+    if(pname==='偏执痴迷'){
+      return kids[0]; // 偏爱第一个
+    }
+    // 默认 70% 偏爱长子/长女
+    return Math.random()<0.7?kids[0]:null;
+  }
+  // 培养动作选择
+  function selectTrainingAction(mom){
+    const pname=mom.personality.name;
+    const actions=[];
+    // 通用动作池
+    const common=[
+      {key:'亲自教导诗书',name:'亲自教导诗书',statBoost:{talent:rand(1,3),martial:0,virtue:1},cost:0,weight:30},
+      {key:'陪孩子玩耍',name:'陪孩子玩耍',statBoost:{talent:0,martial:0,virtue:1,health:2},cost:0,weight:20},
+    ];
+    // 才学系额外动作
+    if(['文雅诗意','精通乐艺','聪慧博闻','温婉','温柔体恤','贤淑','端庄','端庄大气','严谨守礼','沉稳睿智'].includes(pname)){
+      actions.push({key:'请名师授课',name:'请名师授课',statBoost:{talent:rand(2,4),martial:0,virtue:0},cost:10,weight:25});
+      actions.push({key:'亲自教导诗书',name:'亲自教导诗书',statBoost:{talent:rand(1,3),martial:0,virtue:1},cost:0,weight:30});
+    }
+    // 武力系额外动作
+    if(['狠戾果决','刚烈执拗','桀骜不羁'].includes(pname)){
+      actions.push({key:'习武练剑',name:'习武练剑',statBoost:{talent:0,martial:rand(2,3),virtue:0},cost:0,weight:35});
+      actions.push({key:'亲自教导诗书',name:'亲自教导诗书',statBoost:{talent:rand(1,2),martial:0,virtue:1},cost:0,weight:15});
+    }
+    // 礼仪系额外动作
+    if(['贤淑','端庄','端庄大气','严谨守礼','贵气凛然'].includes(pname)){
+      actions.push({key:'教导礼仪',name:'教导礼仪',statBoost:{talent:0,martial:0,virtue:rand(2,3)},cost:0,weight:30});
+    }
+    // 心机/野心偏爱教导
+    if(['心机','城府深沉','野心勃勃','小气善妒','虚荣攀比'].includes(pname)){
+      actions.push({key:'偏爱教导',name:'偏爱教导',statBoost:{talent:rand(3,5),martial:0,virtue:0},cost:0,weight:20});
+    }
+    // 温柔系玩耍权重高
+    if(['活泼','娇俏灵动','直率爽朗','爱吃贪趣','黏人依赖'].includes(pname)){
+      actions.push({key:'陪孩子玩耍',name:'陪孩子玩耍',statBoost:{talent:0,martial:0,virtue:1,health:2},cost:0,weight:50});
+      actions.push({key:'亲自教导诗书',name:'亲自教导诗书',statBoost:{talent:rand(1,2),martial:0,virtue:0},cost:0,weight:15});
+    }
+    // 清冷系动作少
+    if(['清冷','冷清疏离','傲骨清高','淡薄无欲','冷艳寡言','阴郁寡欢'].includes(pname)){
+      actions.push({key:'亲自教导诗书',name:'亲自教导诗书',statBoost:{talent:rand(1,2),martial:0,virtue:0},cost:0,weight:40});
+      actions.push({key:'陪孩子玩耍',name:'陪孩子玩耍',statBoost:{talent:0,martial:0,virtue:0,health:1},cost:0,weight:10});
+    }
+    if(actions.length===0) actions.push(...common);
+    // 按权重选择
+    const totalWeight=actions.reduce((s,a)=>s+a.weight,0);
+    let r=Math.random()*totalWeight;
+    for(const a of actions){r-=a.weight;if(r<=0) return a;}
+    return actions[actions.length-1];
+  }
+  // 培养风格总结
+  function genStyleSummary(pname){
+    const map={
+      '贤淑':'悉心教导，注重品德','端庄':'严格管教，注重礼仪','端庄大气':'悉心教导，注重品德',
+      '严谨守礼':'严格管教，注重礼仪','温婉':'温和教导，全面发展','温柔体恤':'悉心照料，温和教导',
+      '娴静恬淡':'温和教导，顺其自然','文雅诗意':'注重才学，亲自教导','精通乐艺':'注重才学，亲自教导',
+      '聪慧博闻':'注重才学，亲自教导','沉稳睿智':'悉心教导，注重才德','贵气凛然':'严格管教，注重礼仪',
+      '心机':'功利培养，偏爱投资','城府深沉':'功利培养，偏爱投资','野心勃勃':'功利培养，偏爱投资',
+      '狠戾果决':'严格培养，侧重武力','刚烈执拗':'严格培养，侧重武力','桀骜不羁':'严格培养，侧重武力',
+      '娇媚':'偶尔管教，疏于培养','明艳魅惑':'偶尔管教，疏于培养','风情婉约':'偶尔管教，疏于培养',
+      '活泼':'偶尔管教，以玩代教','娇俏灵动':'偶尔管教，以玩代教','直率爽朗':'偶尔管教，以玩代教',
+      '爱吃贪趣':'偶尔管教，以玩代教','小气善妒':'选择性培养','虚荣攀比':'选择性培养',
+      '黏人依赖':'心思不在孩子身上','偏执痴迷':'心思不在孩子身上','多疑敏感':'心思不在孩子身上',
+      '清冷':'放任不管，顺其自然','冷清疏离':'放任不管，顺其自然','傲骨清高':'放任不管，顺其自然',
+      '淡薄无欲':'放任不管，顺其自然','冷艳寡言':'放任不管，顺其自然','阴郁寡欢':'几乎不管',
+      '慈悲良善':'一视同仁，悉心照料',
+      'default':'正常培养'
+    };
+    return map[pname]||map['default'];
+  }
+  // 培养日志文字
+  function genTrainingNote(mom,child,action){
+    const notes={
+      '请名师授课':[
+        `${mom.name}今日请了翰林院学士教导${child.name}读书`,
+        `${mom.name}特意请来名师为${child.name}授课`,
+        `${mom.name}不惜重金请名师教导${child.name}`
+      ],
+      '亲自教导诗书':[
+        `${mom.name}今日亲自教导${child.name}读《论语》`,
+        `${mom.name}耐心教导${child.name}读书识字`,
+        `${mom.name}与${child.name}一起诵读诗文`
+      ],
+      '习武练剑':[
+        `${mom.name}带${child.name}在院中练剑`,
+        `${mom.name}亲自督促${child.name}习武`,
+        `${mom.name}让武师教导${child.name}拳脚功夫`
+      ],
+      '教导礼仪':[
+        `${mom.name}教导${child.name}宫廷礼仪`,
+        `${mom.name}严格要求${child.name}注意言行举止`,
+        `${mom.name}教${child.name}学习待人接物之礼`
+      ],
+      '陪孩子玩耍':[
+        `${mom.name}带${child.name}在御花园玩耍`,
+        `${mom.name}陪${child.name}放风筝`,
+        `${mom.name}和${child.name}一起逗趣玩乐`
+      ],
+      '偏爱教导':[
+        `${mom.name}偏心${child.name}，单独请了名师开小灶`,
+        `${mom.name}格外用心教导${child.name}`,
+        `${mom.name}对${child.name}格外上心，亲自为其规划学业`
+      ]
+    };
+    const pool=notes[action.key]||['${mom.name}教导${child.name}'];
+    return pick(pool);
+  }
+  // 未培养时的描述
+  function genUnfavoredNote(mom,child){
+    const notes=[
+      `${mom.name}本月忙于宫中事务，无暇教导${child.name}`,
+      `${mom.name}本月让${child.name}自行玩耍，未加管教`,
+      `${mom.name}本月对${child.name}疏于关注`,
+      `${child.name}本月无人管教，自己在院中玩耍`,
+      `${mom.name}本月未安排${child.name}的学习`,
+      `${child.name}本月过得清闲，无人督促学业`
+    ];
+    return pick(notes);
+  }
+  // 随机生成子嗣名字（仅作兜底使用，正常流程走命名弹窗）
   function genChildName(gender){
     const surname=state.dynasty;
     if(gender==='皇子'){
-      return surname+['承','景','绍','永','天','文','景','开','明','睿','昭','弘','宸','景'][Math.floor(Math.random()*14)]+['乾','炎','熙','昌','佑','昭','泰','元','翰','泽','轩','恒'][Math.floor(Math.random()*12)];
+      const genChar=pick(PRINCE_GEN_CHARS).char;
+      const secondChar=pick(PRINCE_SECOND_CHARS);
+      return surname+genChar+secondChar;
     } else {
-      return surname+makeName(2);
+      const genChar=pick(PRINCESS_GEN_CHARS).char;
+      const secondChar=pick(PRINCESS_SECOND_CHARS);
+      return surname+genChar+secondChar;
     }
   }
   function showHeirs(){
     if(state.children.length===0){
-      document.getElementById('heirs-content').innerHTML='<div class="empty-state"><div class="empty-icon">\u{1F476}</div><div class="empty-text">暂无子嗣</div><div class="empty-hint">妃嫔诞育皇子/公主后会在此显示</div></div>';
+      document.getElementById('heirs-content').innerHTML='<div class="empty-state"><div class="empty-icon">👶</div><div class="empty-text">暂无子嗣</div><div class="empty-hint">妃嫔诞育皇子/公主后会在此显示</div></div>';
     } else {
       let html='<div style="padding:8px;">';
       // 皇子
@@ -2821,11 +3129,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         html+='<div style="text-align:center;color:#b0a090;font-size:12px;padding:12px 0;">暂无皇子</div>';
       } else {
         sons.forEach(ch=>{
+          const tierLabel=ch.talentTier||genTalentTier(ch.talent||50);
+          const tierColor=tierLabel==='天赋异禀'?'#ffd700':tierLabel==='聪慧过人'?'#40a060':tierLabel==='资质中等'?'#a08060':'#b0a090';
           html+=`<div style="display:flex;align-items:center;padding:10px 12px;margin-bottom:8px;background:linear-gradient(135deg,rgba(255,250,240,0.95),rgba(255,240,225,0.95));border:1px solid rgba(200,160,80,0.3);border-radius:10px;cursor:pointer;" onclick="Game.showChildDetail('${ch.id}')">
-            <div style="font-size:28px;margin-right:12px;">\u{1F476}</div>
+            <div style="font-size:28px;margin-right:12px;">👶</div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#c49030;margin-bottom:2px;">${ch.name}</div>
-              <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 武力${ch.martial||0}</div>
+              <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 武力${ch.martial||0} <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;background:${tierColor}22;color:${tierColor};">${tierLabel}</span></div>
               <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
             </div>
           </div>`;
@@ -2837,11 +3147,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         html+='<div style="text-align:center;color:#b0a090;font-size:12px;padding:12px 0;">暂无公主</div>';
       } else {
         daughters.forEach(ch=>{
+          const tierLabel=ch.talentTier||genTalentTier(ch.talent||50);
+          const tierColor=tierLabel==='天赋异禀'?'#ffd700':tierLabel==='聪慧过人'?'#40a060':tierLabel==='资质中等'?'#a08060':'#b0a090';
           html+=`<div style="display:flex;align-items:center;padding:10px 12px;margin-bottom:8px;background:linear-gradient(135deg,rgba(255,240,245,0.95),rgba(255,230,240,0.95));border:1px solid rgba(255,120,150,0.3);border-radius:10px;cursor:pointer;" onclick="Game.showChildDetail('${ch.id}')">
-            <div style="font-size:28px;margin-right:12px;">\u{1F467}</div>
+            <div style="font-size:28px;margin-right:12px;">👧</div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#d07090;margin-bottom:2px;">${ch.name}</div>
-              <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 品德${ch.virtue||0}</div>
+              <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 品德${ch.virtue||0} <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;background:${tierColor}22;color:${tierColor};">${tierLabel}</span></div>
               <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
             </div>
           </div>`;
@@ -2858,13 +3170,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
   function showChildDetail(id){
     const ch=state.children.find(x=>x.id===id);if(!ch)return;
-    const icon=ch.gender==='皇子'?'\\u{1F476}':'\\u{1F467}';
+    const icon=ch.gender==='皇子'?'👶':'👧';
+    const tierLabel=ch.talentTier||genTalentTier(ch.talent||50);
+    const tierColor=tierLabel==='天赋异禀'?'#ffd700':tierLabel==='聪慧过人'?'#40a060':tierLabel==='资质中等'?'#a08060':'#b0a090';
+    const personalityName=ch.personality?ch.personality.name:'未知';
+    const personalityColor=ch.personality?ch.personality.color:'#8a7060';
     const el=document.getElementById('child-detail-content');
     el.innerHTML=`<div style="text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">${icon}</div>
       <div style="font-size:20px;font-weight:bold;color:#c49030;margin-bottom:4px;">${ch.name}</div>
       <div style="font-size:13px;color:#a08060;margin-bottom:20px;">${ch.gender} | ${ch.age||0}岁</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:left;margin-bottom:20px;">
         <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
           <div style="font-size:11px;color:#a08060;">才学</div>
           <div style="font-size:18px;font-weight:bold;color:#c49030;">${ch.talent||0}</div>
@@ -2885,6 +3201,18 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           <div style="font-size:11px;color:#a08060;">健康</div>
           <div style="font-size:18px;font-weight:bold;color:#c49030;">${Math.round(ch.health)||0}</div>
         </div>
+        <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
+          <div style="font-size:11px;color:#a08060;">颜值</div>
+          <div style="font-size:18px;font-weight:bold;color:#c49030;">${ch.appearance||0}</div>
+        </div>
+        <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
+          <div style="font-size:11px;color:#a08060;">天赋</div>
+          <div style="font-size:18px;font-weight:bold;color:${tierColor};">${tierLabel}</div>
+        </div>
+        <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
+          <div style="font-size:11px;color:#a08060;">性格</div>
+          <div style="font-size:18px;font-weight:bold;color:${personalityColor};">${personalityName}</div>
+        </div>
       </div>
       <div style="font-size:13px;color:#8a7060;line-height:1.8;text-align:left;background:rgba(255,248,240,0.5);border-radius:8px;padding:12px 14px;">
         生母：${ch.motherRank} ${ch.motherName}<br>
@@ -2892,9 +3220,93 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         ${ch.isOrphan?`<br><span style="color:#c06060;">孤儿 - 由`+(ch.adoptiveMotherName||'未知')+`抚养</span>`:''}
         ${ch.adoptiveMotherId&&!ch.isOrphan?`<br>养母：`+ch.adoptiveMotherName:''}
         ${ch.monthlyCost>0?`<br>月费：国库-`+ch.monthlyCost+`/月`:''}
-      </div>
-    </div>`;
+      </div>`;
+    // 培养记录按钮
+    const hasTrainingRecords=state.trainingRecords&&Object.keys(state.trainingRecords).some(concId=>{const rec=state.trainingRecords[concId];return rec.children&&rec.children[ch.id]&&rec.children[ch.id].monthlyRecords&&rec.children[ch.id].monthlyRecords.length>0;});
+    el.innerHTML+=`<div style="margin-top:14px;text-align:center;">`;
+    el.innerHTML+=`<button style="padding:8px 24px;border-radius:8px;border:1px solid rgba(200,160,80,0.3);background:rgba(255,245,230,0.8);color:#a08060;font-size:13px;cursor:pointer;" onclick="Game.showChildTraining('${ch.id}')">${hasTrainingRecords?'📜 查看培养记录':' 培养记录'}</button>`;
+    el.innerHTML+=`</div>`;
+    el.innerHTML+=`</div>`;
     document.getElementById('modal-child-detail').classList.add('show');
+  }
+  // 查看子嗣培养记录（月度完整列表）
+  function showChildTraining(childId){
+    const ch=state.children.find(x=>x.id===childId);if(!ch)return;
+    // 收集该子嗣的所有培养记录
+    const allRecords=[];
+    if(state.trainingRecords){
+      Object.keys(state.trainingRecords).forEach(concId=>{
+        const rec=state.trainingRecords[concId];
+        if(rec.children&&rec.children[childId]){
+          const childRec=rec.children[childId];
+          const mom=state.concubines.find(c=>c.id===concId)||state.coldPalaceList.find(c=>c.id===concId);
+          const momName=mom?mom.rank+' '+mom.name:rec.concubineName;
+          const momStyle=rec.styleSummary||'';
+          (childRec.monthlyRecords||[]).forEach(mr=>{
+            allRecords.push({...mr,concubineName:momName,styleSummary:momStyle,favored:childRec.favored,childName:ch.name});
+          });
+        }
+      });
+    }
+    // 按月份排序（最新的在前）
+    allRecords.sort((a,b)=>(b.monthNum||0)-(a.monthNum||0)||((b.month||'').localeCompare(a.month||'')));
+    const el=document.getElementById('child-training-content');
+    if(allRecords.length===0){
+      el.innerHTML='<div style="text-align:center;color:#b0a090;padding:30px 0;">暂无培养记录<br><span style="font-size:12px;">子嗣满3岁后开始记录</span></div>';
+    } else {
+      let html='';
+      allRecords.forEach(r=>{
+        if(r.trained){
+          html+=`<div style="background:rgba(255,248,235,0.8);border:1px solid rgba(200,160,80,0.25);border-radius:10px;padding:12px;margin-bottom:8px;">`;
+          html+=`<div style="display:flex;align-items:center;margin-bottom:6px;">`;
+          html+=`<span style="font-size:12px;color:#b0a090;margin-right:8px;">${r.month}</span>`;
+          html+=`<span style="font-size:13px;font-weight:bold;color:#a08060;">${r.concubineName}</span>`;
+          if(r.favored) html+=`<span style="font-size:12px;color:#e55555;margin-left:6px;">❤ 偏爱</span>`;
+          html+=`</div>`;
+          html+=`<div style="font-size:13px;color:#5a3e28;margin-bottom:4px;"><span style="color:#c49030;">${r.action}</span></div>`;
+          const boosts=[];
+          if(r.statBoost&&r.statBoost.talent) boosts.push('才学+'+r.statBoost.talent);
+          if(r.statBoost&&r.statBoost.martial) boosts.push('武力+'+r.statBoost.martial);
+          if(r.statBoost&&r.statBoost.virtue) boosts.push('品德+'+r.statBoost.virtue);
+          if(r.statBoost&&r.statBoost.health) boosts.push('健康+'+r.statBoost.health);
+          if(boosts.length) html+=`<div style="font-size:11px;color:#8a7060;margin-bottom:4px;">${boosts.join(' ')}</div>`;
+          html+=`<div style="font-size:11px;color:#8a7060;">${r.note}</div>`;
+          html+=`</div>`;
+        } else {
+          html+=`<div style="background:rgba(245,245,245,0.5);border:1px solid rgba(200,200,200,0.15);border-radius:10px;padding:10px 12px;margin-bottom:8px;opacity:0.7;">`;
+          html+=`<div style="display:flex;align-items:center;">`;
+          html+=`<span style="font-size:12px;color:#b0a090;margin-right:8px;">${r.month}</span>`;
+          html+=`<span style="font-size:12px;color:#a0a0a0;">${r.concubineName}</span>`;
+          html+=`</div>`;
+          html+=`<div style="font-size:11px;color:#b0a090;margin-top:4px;">${r.note}</div>`;
+          html+=`</div>`;
+        }
+      });
+      el.innerHTML=html;
+    }
+    document.getElementById('modal-child-training').classList.add('show');
+  }
+  function closeChildTraining(){document.getElementById('modal-child-training').classList.remove('show');}
+  // 获取子嗣的培养记录（从所有妃子中查找）
+  function getChildTraining(childId){
+    if(!state.trainingRecords) return [];
+    const records=[];
+    Object.keys(state.trainingRecords).forEach(concId=>{
+      const rec=state.trainingRecords[concId];
+      if(rec.children&&rec.children[childId]){
+        const childRec=rec.children[childId];
+        const mom=state.concubines.find(c=>c.id===concId)||state.coldPalaceList.find(c=>c.id===concId);
+        records.push({
+          concubineRank: mom?mom.rank:'',
+          concubineName: mom?mom.name:rec.concubineName,
+          styleSummary: rec.styleSummary||'',
+          favored: childRec.favored||false,
+          totalBoost: childRec.totalBoost||{talent:0,martial:0,virtue:0},
+          logs: (childRec.trainingLog||[]).slice(-6).reverse()
+        });
+      }
+    });
+    return records;
   }
   function closeChildDetail(e){
     if(e&&e.target!==e.currentTarget)return;
@@ -2950,9 +3362,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-settings').classList.remove('show');
     state.dynasty='';state.treasury=0;state.year=1;state.month=1;state.actionsLeft=5;
     state.concubines=[];state.coldPalaceList=[];state.banned={};
-    state.eventLog=[];state.pendingEvent=null;state.children=[];
+    state.eventLog=[];state.pendingEvent=null;state.children=[];state.trainingRecords={};
     state._draftPool=[];state._draftSelected=[];state._draftIdx=0;
-    state.draftTriggeredThisYear=false;state.princessEventTriggered=false;
+    state.draftTriggeredThisYear=false;state.princessEventTriggered=false;state._lastPrincessYear=0;
     state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;state._giftTarget=null;
     state._banquetSelected=null;state._treasuryWarning=false;state._demiseTriggered=false;state._emperorChoice=null;closeModal();
     showPage('start');
@@ -2975,6 +3387,162 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-portrait-zoom').classList.remove('show');
   }
   function closeBirth(){document.getElementById('modal-birth').classList.remove('show');}
+
+  // ===== 御赐命名系统 =====
+  function showNextNaming(){
+    if(!state._namingQueue||state._namingQueue.length===0){
+      // 全部命名完成，显示 birth result
+      showBirthResultModal();
+      return;
+    }
+    const item=state._namingQueue.shift();
+    state._currentNaming=item;
+    showNamingUI(item);
+  }
+
+  function showNamingUI(item){
+    const {childData,mother,childType,isPrince,isFirstPrince}=item;
+    const genderText=isPrince?'皇子':'公主';
+    const icon=isPrince?'👶':'👧';
+    let html='<div style="padding:20px;text-align:center;">';
+    html+=`<div style="font-size:40px;margin-bottom:12px;">${icon}</div>`;
+    html+=`<div style="font-size:16px;color:#c49030;font-weight:bold;margin-bottom:6px;">${mother.name} 诞下${genderText}</div>`;
+
+    const genCharPool=isPrince?PRINCE_GEN_CHARS:PRINCESS_GEN_CHARS;
+    const secondCharPool=isPrince?PRINCE_SECOND_CHARS:PRINCESS_SECOND_CHARS;
+    const storedGenChar=isPrince?state._princeGenChar:state._princessGenChar;
+
+    if(!storedGenChar){
+      // 第一次，需要选字辈
+      html+=`<div style="font-size:14px;color:#8a7060;margin:16px 0 8px;">请皇上钦定${genderText}辈字：</div>`;
+      html+='<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">';
+      genCharPool.forEach(gc=>{
+        html+=`<button class="btn-primary" style="flex:0 0 auto;width:72px;padding:10px 8px;font-size:16px;margin:0;" onclick="Game.selectGenChar('${gc.char}')">${gc.char}</button>`;
+      });
+      html+='</div>';
+      // Store selected gen char temporarily
+      state._namingStep='selectGen';
+    } else {
+      // 字辈已定，选第二字
+      html+=`<div style="font-size:14px;color:#8a7060;margin:16px 0 4px;">${genderText}辈字：${storedGenChar}</div>`;
+      // 从池中随机选4个第二字
+      const usedSecondChars=new Set();
+      state.children.forEach(ch=>{
+        if(ch.gender===childData.gender&&ch.name.length===3){
+          usedSecondChars.add(ch.name.charAt(state.dynasty.length+1));
+        }
+      });
+      const available=secondCharPool.filter(c=>!usedSecondChars.has(c));
+      const poolToUse=available.length>=4?available:secondCharPool;
+      const selected=[];
+      const poolCopy=[...poolToUse];
+      for(let i=0;i<4&&poolCopy.length>0;i++){
+        const idx=Math.floor(Math.random()*poolCopy.length);
+        selected.push(poolCopy.splice(idx,1)[0]);
+      }
+      html+=`<div style="font-size:14px;color:#8a7060;margin:12px 0 8px;">请皇上择第二字：</div>`;
+      html+='<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">';
+      selected.forEach(sc=>{
+        const fullName=state.dynasty+storedGenChar+sc;
+        html+=`<button class="btn-primary" style="flex:0 0 auto;width:72px;padding:10px 8px;font-size:16px;margin:0;" onclick="Game.selectSecondChar('${sc}','${fullName}')">${sc}</button>`;
+      });
+      html+='</div>';
+      state._namingStep='selectSecond';
+    }
+    html+='</div>';
+
+    document.getElementById('naming-header').textContent='御 赐 命 名';
+    document.getElementById('naming-content').innerHTML=html;
+    document.getElementById('modal-naming').classList.add('show');
+  }
+
+  function selectGenChar(char){
+    state._selectedGenChar=char;
+    const item=state._currentNaming;
+    const isPrince=item.isPrince;
+    if(isPrince){
+      state._princeGenChar=char;
+    } else {
+      state._princessGenChar=char;
+    }
+    // 直接跳到选第二字
+    showNamingUI(item);
+  }
+
+  function selectSecondChar(char,fullName){
+    const item=state._currentNaming;
+    const {childData,mother,childType,isPrince,isFirstPrince}=item;
+    childData.name=fullName;
+    // 添加到子嗣列表
+    state.children.push(childData);
+    // 显示命名确认
+    let html='<div style="padding:20px;text-align:center;">';
+    html+=`<div style="font-size:40px;margin-bottom:12px;">✨</div>`;
+    html+=`<div style="font-size:18px;color:#c49030;font-weight:bold;margin-bottom:8px;">皇上赐名：${fullName}</div>`;
+    if(isFirstPrince){
+      html+=`<div style="font-size:13px;color:#d49030;margin-bottom:6px;">贵子降生</div>`;
+    }
+    html+=`<div style="font-size:13px;color:#8a7060;margin-bottom:16px;">母子平安，大喜！</div>`;
+    html+=`<button class="btn-primary" onclick="Game.confirmNaming()">确 认</button>`;
+    html+='</div>';
+    document.getElementById('naming-header').textContent='御 赐 命 名';
+    document.getElementById('naming-content').innerHTML=html;
+  }
+
+  function closeNamingModal(){
+    document.getElementById('modal-naming').classList.remove('show');
+    // 如果关闭了命名弹窗，检查是否还有待命名的子嗣
+    setTimeout(()=>showNextNaming(),200);
+  }
+
+  function confirmNaming(){
+    const item=state._currentNaming;
+    // 处理醉红楼认亲特殊情况：需要把母亲也接入宫
+    if(item&&item.childData&&item.childData._honglouReunion){
+      const cd=item.childData;
+      state.children.push(cd);
+      // 母亲入宫
+      if(cd._beautyData){
+        var initRank='答应';
+        var pObj=cd._beautyData.personality||PERSONALITIES[0];
+        var concubine={id:genId(),name:cd._beautyName,age:rand(17,25),beauty:rand(70,90),talent:rand(40,80),wisdom:rand(30,70),health:rand(80,100),favor:50,power:rand(5,15),rank:initRank,personality:pObj,trait:cd._beautyData.trait||'温柔贤淑',family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:cd._beautyData.portraitIdx||1,title:'',fromHonglou:true,honglouSkill:cd._beautyData.type||'sing',portraitSeed:cd._beautyData.portraitSeed||'',stress:0,stressCap:getStressCap(pObj.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:true};
+        state.concubines.push(concubine);
+      }
+      state.treasury-=200;
+      logEvent('红楼认亲',cd._beautyName+'带'+cd.name+'入宫');
+      showFeedback('<span class="pos">'+cd.name+'</span> 已接入宫中<br>封为<span class="pos">'+(cd._genderText||cd.gender)+'</span>');
+      // 清理标记
+      delete cd._honglouReunion;delete cd._beautyData;delete cd._beautyName;delete cd._genderText;
+    }
+    document.getElementById('modal-naming').classList.remove('show');
+    setTimeout(()=>showNextNaming(),200);
+  }
+
+  // 全部命名完成后显示出生结果弹窗
+  function showBirthResultModal(){
+    const el=document.getElementById('birth-content');
+    let html='<div class="birth-result">';
+    state.children.forEach((ch,i)=>{
+      // 只处理本次刚诞生的子嗣（通过favorInc等标记判断）
+      if(!ch._favorInc&&!ch._powerInc) return;
+      const isPrince=ch.gender==='皇子';
+      const favorInc=ch._favorInc||100;
+      const powerInc=ch._powerInc||20;
+      const isFirstPrince=ch._isFirstPrince||false;
+      const icon=isPrince?'👶':'👧';
+      const childType=isPrince?'皇子':'公主';
+      const starHtml=isFirstPrince?'<div style="font-size:14px;color:#c49030;font-weight:bold;margin-bottom:6px;"> 贵子降生 </div>':'';
+      html+=`<div class="birth-icon">${icon}</div>${starHtml}<div class="baby-type">${ch.motherName} 诞下${childType}！</div><div class="baby-info">${ch.motherRank} ${ch.motherName}，十月怀胎，一朝分娩<br>母子平安</div><div class="baby-promote">因诞下${isFirstPrince?'贵子':childType}，${ch.motherName} 宠爱+${favorInc}，势力+${powerInc}</div>`;
+      // 清理标记
+      delete ch._favorInc;
+      delete ch._powerInc;
+      delete ch._isFirstPrince;
+    });
+    html+='<button class="btn-primary" onclick="Game.closeBirth()">大喜，同喜！</button></div>';
+    el.innerHTML=html;
+    document.getElementById('modal-birth').classList.add('show');
+    save();
+  }
 
   function showDetail(id){
     const c=state.concubines.find(x=>x.id===id);if(!c)return;
@@ -3151,9 +3719,57 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function bedEnd(){
     const c=findC(state._bedInteractTarget);if(!c)return;
     document.getElementById('modal-bed-interact').classList.remove('show');
+    // 判断是否为初夜/非处女震怒
+    const bedCount=c.bedCount||0;
+    let virginType='normal';
+    if(bedCount===0){
+      if(c.bedHonglou){
+        virginType='normal';
+      } else if(c._notVirgin===true){
+        virginType='anger';
+      } else {
+        virginType='virgin';
+      }
+    }
+    // 显示初夜或震怒对话
+    if(virginType==='virgin'){
+      state._bedVirginType='virgin';
+      state._bedTarget=c.id;
+      const cat=getBedPersonalityCategory(c.personality.name);
+      const pool=FIRST_BED_DIALOGUES[cat]||FIRST_BED_DIALOGUES.gentle;
+      const dlg=pool[Math.floor(Math.random()*pool.length)];
+      let html=`<div style="text-align:center;margin-bottom:16px;">`;
+      html+=portraitHTML(c.portraitIdx,80,100,c.princessPortrait);
+      html+=`<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:8px;">${c.title?c.title+c.rank:c.name}</div>`;
+      html+=`</div>`;
+      html+='<div class="bed-dialogue" style="border-color:rgba(220,100,120,0.3);background:rgba(255,240,240,0.6);">';
+      html+=`<div class="bed-dialogue-line bed-dialogue-emp">${dlg.emp}</div>`;
+      html+=`<div class="bed-dialogue-line bed-dialogue-con">${dlg.con}</div>`;
+      if(dlg.blood)html+=`<div style="font-size:12px;color:#c06070;font-style:italic;margin-top:10px;text-align:center;line-height:1.6;">${dlg.blood}</div>`;
+      html+='</div>';
+      html+='<button class="btn-primary" style="background:linear-gradient(180deg,rgba(180,60,60,0.5),rgba(160,40,40,0.5));border-color:rgba(200,80,80,0.3);" onclick="Game._finishBedInteract()">歇息</button>';
+      document.getElementById('bed-dialogue-content').innerHTML=html;
+      document.getElementById('modal-bed-dialogue').classList.add('show');
+      return;
+    } else if(virginType==='anger'){
+      state._bedVirginType='anger';
+      state._bedTarget=c.id;
+      let html=`<div style="text-align:center;margin-bottom:16px;">`;
+      html+=portraitHTML(c.portraitIdx,80,100,c.princessPortrait);
+      html+=`<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:8px;">${c.title?c.title+c.rank:c.name}</div>`;
+      html+=`</div>`;
+      html=renderAngerDialogue(c,html);
+      html+='</div>';
+      document.getElementById('bed-dialogue-content').innerHTML=html;
+      document.getElementById('modal-bed-dialogue').classList.add('show');
+      return;
+    }
+    // 普通侍寝：直接结算
+    document.getElementById('modal-bed-interact').classList.remove('show');
     closeModal();
     // 消耗行动和银两，更新数值（同actionFavor逻辑）
     state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
+    c.bedCount=(c.bedCount||0)+1;
     triggerFavorBackground(c);
     const rc=checkRankChange(c);
     // 怀孕宠幸有阶段性流产风险
@@ -3177,6 +3793,38 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     showFeedback(msg);
     showDetail(c.id);
     delete state._bedInteractTarget;
+  }
+
+  // 完成床戏互动后的结算（从初夜/震怒对话框调用）
+  function _finishBedInteract(){
+    const c=findC(state._bedInteractTarget);if(!c)return;
+    document.getElementById('modal-bed-dialogue').classList.remove('show');
+    c.bedCount=(c.bedCount||0)+1;
+    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
+    triggerFavorBackground(c);
+    const rc=checkRankChange(c);
+    let miscarriage=false;
+    if(c.pregnant){
+      let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
+      if(Math.random()<miscRate){
+        miscarriage=true;c.pregnant=false;c.pregMonth=0;
+        c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
+      }
+    }
+    if(!c.pregnant&&!miscarriage&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
+    consumeAction();save();updateUI();
+    let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
+    if(state._bedVirginType==='virgin'){msg+='<br><span style="color:#e06080;font-size:12px;">（今夜是'+c.name+'的初夜）</span>';}
+    if(miscarriage){
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+    }
+    if(rc){msg+='<br>&#21183;&#21147;&#28287;&#36275;&#65292;<span class="pos">'+c.name+' &#26187;&#21319;&#20026; '+rc.rank+'</span>';}
+    showFeedback(msg);
+    showDetail(c.id);
+    delete state._bedInteractTarget;
+    delete state._bedTarget;
+    delete state._bedVirginType;
   }
 
   // ===== 礼物系统 =====
@@ -3839,12 +4487,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function showBedDialogue(c){
     // 重新判断初夜类型（因为可能被截宠）
-    if(c.bedCount===0){
+    const bedCount=c.bedCount||0;
+    if(bedCount===0){
       // 首次在皇宫侍寝：醉红楼里已被宠幸过的，已知非处女，直接走普通对话
       // 选秀/献美/江南入宫的，初夜时判断是否为处女
       if(c.bedHonglou){
         state._bedVirginType='normal';
-      } else if(c._notVirgin){
+      } else if(c._notVirgin===true){
         state._bedVirginType='anger';
       } else {
         state._bedVirginType='virgin';
@@ -5558,7 +6207,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function genTributeEvent(){
     const monthKey=state.year*12+state.month;
-    if(monthKey-state._lastTributeMonth<3)return null;
+    if(monthKey-state._lastTributeMonth<2)return null;
     const r=Math.random();
     let type;
     if(r<0.3)type='prince';
@@ -5695,7 +6344,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const mother = state.concubines.find(c=>c.id===victim.motherId);
     if(!mother) return null;
     // Pick two suspects from concubines who are NOT the mother
-    const suspects = state.concubines.filter(c=>c.id!==mother.id && c.rank!=='皇后');
+    const suspects = state.concubines.filter(c=>c.id!==mother.id);
     if(suspects.length<2) return null;
     const shuffled = [...suspects].sort(()=>Math.random()-0.5);
     const perp = shuffled[0];      // 真凶
@@ -6034,25 +6683,26 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     // ===== 第二优先级：正常事件池 =====
     const r=Math.random();
-    if(r<0.08){const te=genTributeEvent();if(te)return te;}
-    if(r<0.13){const ce=genColdPalacePlea();if(ce)return ce;}
-    if(r<0.10){const pe=genPregnancyEvent();if(pe)return pe;}
-    if(r<0.25){const ie=genIllnessDeath(con);if(ie)return ie;}
-    if(r<0.23){const cr=genChildRivalry(con);if(cr)return cr;}
-    if(r<0.26){const ci=genColdPalaceIllness(con);if(ci)return ci;}
-    if(r<0.40){const pe=genPoisoning(con);if(pe)return pe;}
-    if(r<0.52){const he=genHarmHeir(con);if(he){if(state.children.some(ch=>ch.gender==='皇子')&&Math.random()<0.15){const ie=genPrincePoisonEvent();if(ie)return ie;}return he;}}
-    if(r<0.60){const hce=genHarmChild(con);if(hce)return hce;}
-    if(r<0.62){const ae=genAdultery(con);if(ae)return ae;}
-    if(r<0.71){const ee=genEmbezzle(con);if(ee)return ee;}
-    if(r<0.72){const fe=genFamilyCrime(con);if(fe)return fe;}
-    if(r<0.79)return genJealousy(con);
-    if(r<0.85)return genFramed(con);
-    if(r<0.92)return genRumor(con);
+    if(r<0.05){const te=genTributeEvent();if(te)return te;}           // 5% 朝臣献美
+    if(r<0.10){const ce=genColdPalacePlea();if(ce)return ce;}         // 5% 冷宫求饶
+    if(r<0.15){const pe=genPregnancyEvent();if(pe)return pe;}         // 5% 孕期风波
+    if(r<0.20){const ie=genIllnessDeath(con);if(ie)return ie;}        // 5% 妃子病逝
+    if(r<0.25){const cr=genChildRivalry(con);if(cr)return cr;}        // 5% 子嗣争宠
+    if(r<0.30){const ci=genColdPalaceIllness(con);if(ci)return ci;}   // 5% 冷宫生病
+    if(r<0.35){const pe=genPoisoning(con);if(pe)return pe;}           // 5% 下毒谋害
+    if(r<0.40){const he=genHarmHeir(con);if(he)return he;}            // 5% 谋害皇嗣
+    if(r<0.45){const hce=genHarmChild(con);if(hce)return hce;}        // 5% 谋害子嗣
+    if(r<0.50){const ae=genAdultery(con);if(ae)return ae;}            // 5% 私通败露
+    if(r<0.55){const ee=genEmbezzle(con);if(ee)return ee;}            // 5% 贪污银两
+    if(r<0.60){const fe=genFamilyCrime(con);if(fe)return fe;}         // 5% 家族犯罪
+    if(r<0.65){const ie2=genPrincePoisonEvent();if(ie2)return ie2;}   // 5% 皇子暴毙（多轮调查，独立触发）
+    if(r<0.72)return genJealousy(con);                                // 7% 嫉妒争宠
+    if(r<0.79)return genFramed(con);                                  // 7% 暗算陷害
+    if(r<0.86)return genRumor(con);                                   // 7% 流言蜚语
     // 争宠博弈类
-    if(r<0.94){const pe2=genPerformance(con);if(pe2)return pe2;}
-    if(r<0.95){const sc=genScheme(con);if(sc)return sc;}
-    return genFlatter(con);
+    if(r<0.91){const pe2=genPerformance(con);if(pe2)return pe2;}      // 5% 御前献艺
+    if(r<0.95){const sc=genScheme(con);if(sc)return sc;}              // 4% 争宠密谋
+    return genFlatter(con);                                           // 5% 献媚讨好
   }
 
   // ===== 事件处理 =====
@@ -6515,7 +7165,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       console.error('Init error:', e);
       // Emergency reset - clear everything
       try{localStorage.removeItem('emperor_game');}catch(e){}
-      state={dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[]};
+      state={dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{}};
       updateUI();
       initStart();
     }
@@ -7065,11 +7715,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-honglou-bed').classList.remove('show');
     closeModal();
   }
+  // 醉红楼子嗣命名（兜底，正常走 reunion 命名弹窗）
   function genChildName(motherName){
-    var boyNames=['承欢','承恩','承泽','承佑','承安','承平','承业','承望','承德','承志'];
-    var girlNames=['婉儿','灵儿','月儿','萱儿','瑶儿','琪儿','琳儿','璐儿','瑾儿','瑗儿'];
-    if(Math.random()<0.5)return pick(boyNames);
-    return pick(girlNames);
+    const gender=Math.random()<0.5?'皇子':'公主';
+    const surname=state.dynasty||'皇';
+    const genChar=gender==='皇子'?(state._princeGenChar||pick(PRINCE_GEN_CHARS).char):(state._princessGenChar||pick(PRINCESS_GEN_CHARS).char);
+    const pool=gender==='皇子'?PRINCE_SECOND_CHARS:PRINCESS_SECOND_CHARS;
+    return surname+genChar+pick(pool);
   }
   // 旧识
   function showHonglouOldFlames(){
@@ -7321,8 +7973,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(state.treasury<cost){showFeedback('银两不足！');return;}
     if(state.concubines.length>=30){showFeedback('后宫已满！');return;}
     state.treasury-=cost;
-    var initRank=b.beauty>=85&&b.talent>=70?'贵人':b.beauty>=70?'常在':'答应';
-    var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:rand(5,20),rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:(b.visitCount||0)>0};
+    var initRank='官女子';
+    var initPower=rand(3,8);
+    var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:initPower,rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:(b.visitCount||0)>0};
     state.concubines.push(concubine);
     state._honglou.beauties=state._honglou.beauties.filter(function(x){return x.id!==b.id;});
     if(state._honglou.oldFlames)state._honglou.oldFlames=state._honglou.oldFlames.filter(function(x){return x.id!==b.id;});
@@ -7480,20 +8133,15 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(!p)return;
     p.decision=['adopt','dismiss','pending'][opt];
     if(opt===0){
-      // 接入宫
-      var genderText=p.childGender==='male'?'皇子':'皇女';
-      var child={id:genId(),name:p.childName,gender:p.childGender,age:0,motherId:p.beautyId,motherName:p.beautyName,type:p.beautyData?p.beautyData.type:'',talent:rand(30,70),martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),fromHonglou:true,adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0};
-      state.children.push(child);
-      // 母亲入宫
-      if(p.beautyData){
-        var initRank='答应';
-        var pObj=p.beautyData.personality||PERSONALITIES[0];
-        var concubine={id:genId(),name:p.beautyName,age:rand(17,25),beauty:rand(70,90),talent:rand(40,80),wisdom:rand(30,70),health:rand(80,100),favor:50,power:rand(5,15),rank:initRank,personality:pObj,trait:p.beautyData.trait||'温柔贤淑',family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:p.beautyData.portraitIdx||1,title:'',fromHonglou:true,honglouSkill:p.beautyData.type||'sing',portraitSeed:p.beautyData.portraitSeed||'',stress:0,stressCap:getStressCap(pObj.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:true};
-        state.concubines.push(concubine);
-      }
-      state.treasury-=200;
-      logEvent('红楼认亲',p.beautyName+'带'+genderText+'入宫');
-      showFeedback('<span class="pos">'+p.childName+'</span> 已接入宫中<br>封为<span class="pos">'+genderText+'</span>');
+      // 接入宫，先命名
+      var genderText=p.childGender==='male'?'皇子':'公主';
+      var childTalent=rand(30,70);
+      var childPersonality=p.beautyData&&p.beautyData.personality?genChildPersonality(p.beautyData.personality):genChildPersonality(pick(PERSONALITIES));
+      var childData={id:genId(),name:'',gender:p.childGender==='male'?'皇子':'公主',age:0,motherId:p.beautyId,motherName:p.beautyName,motherRank:'',type:p.beautyData?p.beautyData.type:'',talent:childTalent,talentTier:genTalentTier(childTalent),appearance:rand(40,80),personality:childPersonality,martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),fromHonglou:true,adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0,_honglouReunion:true,_beautyData:p.beautyData,_beautyName:p.beautyName,_genderText:genderText};
+      state._namingQueue=[{childData,mother:{name:p.beautyName},childType:genderText,isPrince:p.childGender==='male',isFirstPrince:false}];
+      document.getElementById('modal-honglou-reunion').classList.remove('show');
+      closeModal();
+      showNextNaming();
     }else if(opt===1){
       var money=rand(1000,2000);
       state.treasury-=money;
@@ -9146,7 +9794,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     closeModal();
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal};
 })();
 
 // ===== 启动 =====
