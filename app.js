@@ -2258,7 +2258,30 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     playIntroForNewGame();
   }
   function processBannedDecay(){for(const id in state.banned){state.banned[id]--;if(state.banned[id]<=0)delete state.banned[id];}}
-  function processColdDecay(){state.coldPalaceList=state.coldPalaceList.filter(c=>{if(c.power===undefined||isNaN(c.power))c.power=0;c.health=clamp(c.health-10,0,100);c.power=clamp(c.power-5,0,500);if(c.health<=0){logEvent('&#30149;&#36893;&#33268;&#27515;',c.rank+c.name+'&#22312;&#20919;&#23467;&#20013;&#30149;&#36893;');showFeedback('<span class="neg">'+c.name+'</span> &#22312;&#20919;&#23467;&#20013;&#20581;&#24247;&#24402;&#38646;&#65292;&#30149;&#36893;');return false;}return true;});}
+  function processColdDecay(){
+    const deaths=[];
+    state.coldPalaceList=state.coldPalaceList.filter(c=>{
+      if(c.power===undefined||isNaN(c.power))c.power=0;
+      c.health=clamp(c.health-10,0,100);
+      c.power=clamp(c.power-5,0,500);
+      if(c.health<=0){
+        logEvent('病故',c.rank+c.name+'在冷宫中病逝');
+        deaths.push(c);
+        return false;
+      }
+      return true;
+    });
+    // 处理冷宫病故妃嫔的子嗣过继
+    deaths.forEach(c=>{
+      const kids=state.children.filter(ch=>ch.motherId===c.id&&ch.age<16&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
+      if(kids.length>0){
+        triggerOrphanAdoption(c,kids);
+      }
+    });
+    if(deaths.length>0){
+      showFeedback('<span class="neg">'+deaths.map(d=>d.name).join('、')+'</span> 在冷宫中病逝');
+    }
+  }
 
   function consumeAction(){state.actionsLeft--;const used=5-state.actionsLeft;if(state.actionsLeft<=0){setTimeout(()=>{if(!state.pendingEvent){showFeedback('&#26412;&#26376;&#34892;&#21160;&#24050;&#29992;&#23436;&#65292;&#33258;&#21160;&#36827;&#20837;&#19979;&#26376;&#65281;');setTimeout(()=>nextMonth(),1500);}},500);}else{setTimeout(()=>{if(state.concubines.length>=2&&!state.pendingEvent&&!state.eventTriggeredThisMonth){const targetAction=state.monthEventAction;if(used>=targetAction){triggerPalaceEvent();state.eventTriggeredThisMonth=true;}}if(!state.pendingEvent){tryTriggerMorning();}},500);}}
 
@@ -3290,7 +3313,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#c49030;margin-bottom:2px;">${ch.name}</div>
               <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 武力${ch.martial||0} <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;background:${tierColor}22;color:${tierColor};">${tierLabel}</span></div>
-              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
+              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` <span class="orphan-tag">无依</span>`:''}</div>
             </div>
           </div>`;
         });
@@ -3308,7 +3331,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:bold;color:#d07090;margin-bottom:2px;">${ch.name}</div>
               <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 品德${ch.virtue||0} <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;background:${tierColor}22;color:${tierColor};">${tierLabel}</span></div>
-              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` 孤儿($(ch.adoptiveMotherName||''))`:''}</div>
+              <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` <span class="orphan-tag">无依</span>`:''}</div>
             </div>
           </div>`;
         });
@@ -3368,17 +3391,43 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           <div style="font-size:18px;font-weight:bold;color:${personalityColor};">${personalityName}</div>
         </div>
       </div>
-      <div style="font-size:13px;color:#8a7060;line-height:1.8;text-align:left;background:rgba(255,248,240,0.5);border-radius:8px;padding:12px 14px;">
-        生母：${ch.motherRank} ${ch.motherName}<br>
-        生于：${ch.birthYear}年${ch.birthMonth}月
-        ${ch.isOrphan?`<br><span style="color:#c06060;">孤儿 - 由`+(ch.adoptiveMotherName||'未知')+`抚养</span>`:''}
-        ${ch.adoptiveMotherId&&!ch.isOrphan?`<br>养母：`+ch.adoptiveMotherName:''}
-        ${ch.monthlyCost>0?`<br>月费：国库-`+ch.monthlyCost+`/月`:''}
+      <div style="font-size:13px;color:#8a7060;line-height:1.8;text-align:left;background:rgba(255,248,240,0.5);border-radius:8px;padding:12px 14px;" id="child-mother-info">
+        ${function(){
+          const mother=state.concubines.find(c=>c.id===ch.motherId);
+          const motherInCold=state.coldPalaceList&&state.coldPalaceList.find(c=>c.id===ch.motherId);
+          const motherStatus=mother?'normal':(motherInCold?'cold':'deceased');
+          let motherText=ch.motherRank+' '+ch.motherName;
+          let statusHtml='';
+          if(motherStatus==='deceased'){
+            statusHtml=`<span class="mother-deceased">生母：${motherText}（已故）</span>`;
+          } else if(motherStatus==='cold'){
+            statusHtml=`<span class="mother-cold">生母：${motherText}（冷宫）</span>`;
+          } else {
+            statusHtml=`生母：${motherText}`;
+          }
+          let extra='';
+          if(ch.isOrphan){
+            extra+=`<br><span style="color:#c06060;">孤儿 - 由`+(ch.adoptiveMotherName||'未知')+`抚养</span>`;
+          }
+          if(ch.adoptiveMotherId&&!ch.isOrphan){
+            extra+=`<br>养母：`+ch.adoptiveMotherName;
+          }
+          if(ch.monthlyCost>0){
+            extra+=`<br>月费：国库-`+ch.monthlyCost+`/月`;
+          }
+          return statusHtml+`<br>生于：${ch.birthYear}年${ch.birthMonth}月`+extra;
+        }()}
       </div>`;
-    // 培养记录按钮
+    // 培养记录按钮 + 过继按钮
     const hasTrainingRecords=state.trainingRecords&&Object.keys(state.trainingRecords).some(concId=>{const rec=state.trainingRecords[concId];return rec.children&&rec.children[ch.id]&&rec.children[ch.id].monthlyRecords&&rec.children[ch.id].monthlyRecords.length>0;});
+    const mother=state.concubines.find(c=>c.id===ch.motherId);
+    const motherInCold=state.coldPalaceList&&state.coldPalaceList.find(c=>c.id===ch.motherId);
+    const showAdoptBtn=(!mother||(motherInCold))||ch.isOrphan;
     el.innerHTML+=`<div style="margin-top:14px;text-align:center;">`;
-    el.innerHTML+=`<button style="padding:8px 24px;border-radius:8px;border:1px solid rgba(200,160,80,0.3);background:rgba(255,245,230,0.8);color:#a08060;font-size:13px;cursor:pointer;" onclick="Game.showChildTraining('${ch.id}')">${hasTrainingRecords?'📜 查看培养记录':' 培养记录'}</button>`;
+    if(showAdoptBtn){
+      el.innerHTML+=`<button class="btn-adopt" onclick="Game.showAdoptSelect('${ch.id}')">&#36807;&#32487;</button>`;
+    }
+    el.innerHTML+=`<button style="padding:8px 24px;border-radius:8px;border:1px solid rgba(200,160,80,0.3);background:rgba(255,245,230,0.8);color:#a08060;font-size:13px;cursor:pointer;margin-top:8px;" onclick="Game.showChildTraining('${ch.id}')">${hasTrainingRecords?'📜 查看培养记录':' 培养记录'}</button>`;
     el.innerHTML+=`</div>`;
     el.innerHTML+=`</div>`;
     document.getElementById('modal-child-detail').classList.add('show');
@@ -3465,6 +3514,160 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function closeChildDetail(e){
     if(e&&e.target!==e.currentTarget)return;
     document.getElementById('modal-child-detail').classList.remove('show');
+  }
+
+  // ===== 过继选择系统 =====
+  function showAdoptSelect(childId){
+    const ch=state.children.find(x=>x.id===childId);
+    if(!ch)return;
+    // 关闭子嗣详情页（如果开着）
+    document.getElementById('modal-child-detail').classList.remove('show');
+
+    // 判断生母状态
+    const mother=state.concubines.find(c=>c.id===ch.motherId);
+    const motherInCold=state.coldPalaceList&&state.coldPalaceList.find(c=>c.id===ch.motherId);
+    let motherStatus='deceased';
+    if(mother) motherStatus='normal';
+    else if(motherInCold) motherStatus='cold';
+
+    // 构建可选妃嫔列表
+    const candidates=state.concubines.filter(c=>c.id!==ch.motherId);
+    const currentAdopterId=(ch.adoptiveMotherId&&['nanny','temple','empress'].indexOf(ch.adoptiveMotherId)===-1)?ch.adoptiveMotherId:null;
+
+    // 标记当前养母
+    let html='<div style="padding:12px 16px;background:rgba(255,248,240,0.5);border-bottom:1px solid rgba(200,160,80,0.2);">';
+    html+=`<div style="font-size:13px;color:#5a3e28;text-align:center;">当前子嗣：<span style="color:#c49030;font-weight:bold;">${ch.name}</span>（${ch.gender}，${ch.age||0}岁）</div>`;
+    let motherText=ch.motherRank+' '+ch.motherName;
+    if(motherStatus==='deceased') motherText+='（已故）';
+    else if(motherStatus==='cold') motherText+='（冷宫）';
+    html+=`<div style="font-size:12px;color:#8a7060;text-align:center;margin-top:4px;">生母：${motherText}</div>`;
+    html+='</div>';
+
+    if(candidates.length===0){
+      html+='<div style="text-align:center;padding:20px;color:#b0a090;">宫中已无其他妃嫔可托付</div>';
+    } else {
+      html+='<div style="padding:8px 12px;font-size:12px;color:#8a7060;">请选择抚养该子嗣的妃嫔：</div>';
+      candidates.forEach(c=>{
+        const isCurrent=(c.id===currentAdopterId);
+        const isSelected=window._adoptSelected===c.id;
+        html+=`<div class="adopt-item${isCurrent?' selected':''}" onclick="window._adoptSelected='${c.id}';Game.renderAdoptList('${ch.id}');">
+          <div class="adopt-radio"></div>
+          <div class="adopt-info">
+            <span class="adopt-name">${c.rank} ${c.name}</span>${isCurrent?'<span class="adopt-current">（现任）</span>':''}
+            <div class="adopt-stats">势力 ${c.power} | 宠爱 ${c.favor}</div>
+          </div>
+        </div>`;
+      });
+    }
+
+    // 特殊选项
+    html+=`<div class="adopt-special" onclick="window._adoptSelected='nanny';Game.renderAdoptList('${ch.id}');">`;
+    html+=`<div style="font-size:13px;font-weight:bold;color:#a07020;">交由嬷嬷抚养</div>`;
+    html+=`<div style="font-size:11px;color:#8a7060;">月耗150两/人，由宫中嬷嬷代为照料</div>`;
+    html+=`</div>`;
+
+    html+=`<div class="adopt-special" onclick="window._adoptSelected='temple';Game.renderAdoptList('${ch.id}');">`;
+    html+=`<div style="font-size:13px;font-weight:bold;color:#a07020;">送往皇陵守孝</div>`;
+    html+=`<div style="font-size:11px;color:#8a7060;">月耗200两/人，子嗣移出列表，成年后可召回</div>`;
+    html+=`</div>`;
+
+    document.getElementById('adopt-content').innerHTML=html;
+    document.getElementById('adopt-header').textContent='择定养母';
+    window._adoptChildId=childId;
+    window._adoptSelected=null;
+
+    // 确认按钮
+    const btn=document.getElementById('adopt-confirm-btn');
+    btn.disabled=true;
+    btn.style.opacity='0.4';
+    btn.onclick=function(){
+      if(!window._adoptSelected||!window._adoptChildId)return;
+      confirmAdopt(window._adoptChildId,window._adoptSelected);
+    };
+
+    document.getElementById('modal-adopt-select').classList.add('show');
+  }
+
+  // 重新渲染过继列表（更新选中状态）
+  function renderAdoptList(childId){
+    const ch=state.children.find(x=>x.id===childId);
+    if(!ch)return;
+    // 快速更新选中样式
+    const items=document.querySelectorAll('#adopt-content .adopt-item,#adopt-content .adopt-special');
+    items.forEach(item=>{
+      item.classList.remove('selected');
+    });
+    // 通过onclick触发时已经在对应元素上标记了selected
+    event&&event.target&&event.target.closest&&(function(){
+      const el=event.target.closest('.adopt-item')||event.target.closest('.adopt-special');
+      if(el)el.classList.add('selected');
+    })();
+
+    // 更新确认按钮
+    const btn=document.getElementById('adopt-confirm-btn');
+    if(window._adoptSelected){
+      btn.disabled=false;
+      btn.style.opacity='';
+    } else {
+      btn.disabled=true;
+      btn.style.opacity='0.4';
+    }
+  }
+
+  function closeAdoptSelect(){
+    document.getElementById('modal-adopt-select').classList.remove('show');
+    window._adoptChildId=null;
+    window._adoptSelected=null;
+  }
+
+  function confirmAdopt(childId,adopterId){
+    const ch=state.children.find(c=>c.id===childId);
+    if(!ch)return;
+
+    let adopterName='';
+    if(adopterId==='nanny'){
+      ch.adoptiveMotherId='nanny';
+      adopterName='奶嬷嬷';
+      ch.adoptiveMotherName=adopterName;
+      ch.isOrphan=true;
+      ch.orphanMonth=1;
+      ch.monthlyCost=150;
+    } else if(adopterId==='temple'){
+      ch.adoptiveMotherId='temple';
+      adopterName='皇陵';
+      ch.adoptiveMotherName=adopterName;
+      ch.isOrphan=true;
+      ch.orphanMonth=1;
+      ch.monthlyCost=200;
+    } else {
+      const adopter=state.concubines.find(c=>c.id===adopterId);
+      if(!adopter){showFeedback('该妃嫔已不在宫中');closeAdoptSelect();return;}
+      ch.adoptiveMotherId=adopterId;
+      adopterName=adopter.rank+' '+adopter.name;
+      ch.adoptiveMotherName=adopterName;
+      ch.isOrphan=false;
+      ch.orphanMonth=0;
+      ch.monthlyCost=0;
+      // 养母加成
+      adopter.favor=clamp(adopter.favor+80,0,2200);
+      adopter.power=clamp(adopter.power+15,0,500);
+    }
+
+    logEvent('过继子嗣',ch.name+'过继给'+adopterName);
+    closeAdoptSelect();
+    save();
+    updateUI();
+    showFeedback(`已将 <span class="pos">${ch.name}</span> 过继给 <span class="pos">${adopterName}</span>${adopterId!=='nanny'&&adopterId!=='temple'?'<br>'+adopterName+' 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>':''}`);
+
+    // 处理过继队列（下一个子嗣）
+    if(state._orphanQueue&&state._orphanQueue.length>0){
+      state._orphanQueue.shift(); // 移除当前已处理的
+      if(state._orphanQueue.length>0){
+        setTimeout(()=>processOrphanQueue(), 600);
+      } else {
+        delete state._orphanQueue;
+      }
+    }
   }
   function openSettings(){
     if(_modalActive)return;
@@ -4058,7 +4261,44 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     delete state._giftTarget;
   }
 
-  function actionCold(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#23558; '+c.name+' &#25171;&#20837;&#20919;&#23467;&#65281;'))return;c.health=clamp(c.health-30,0,100);c.power=clamp(c.power-30,0,500);state.concubines=state.concubines.filter(x=>x.id!==id);state.coldPalaceList.push(c);consumeAction();delete state.banned[id];save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#25171;&#20837;&#20919;&#23467;<br>&#20581;&#24247; <span class="neg">-30</span>&#65292;&#21183;&#21147; <span class="neg">-30</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
+  // 辅助函数：将妃嫔打入冷宫并触发子嗣过继
+  function _sendToColdPalace(c, showMsg){
+    c.health=clamp(c.health-20,0,100);
+    state.concubines=state.concubines.filter(x=>x.id!==c.id);
+    state.coldPalaceList.push(c);
+    logEvent('冷宫','打入冷宫'+c.name);
+    // 检查子嗣过继
+    const kids=state.children.filter(ch=>ch.motherId===c.id&&ch.age<16);
+    const orphanKids=kids.filter(ch=>!ch.adoptiveMotherId);
+    if(orphanKids.length>0){
+      save();updateUI();
+      if(showMsg) showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫<br>其子嗣无人照料，请择定养母。`);
+      setTimeout(()=>{
+        state._orphanQueue=orphanKids.map(ch=>ch.id);
+        setTimeout(()=>processOrphanQueue(),500);
+      },300);
+    } else {
+      save();updateUI();
+      if(showMsg) showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫`);
+    }
+  }
+
+  function actionCold(id){if(!canAct())return;const c=findC(id);if(!c)return;if(!confirm('&#30830;&#23450;&#23558; '+c.name+' &#25171;&#20837;&#20919;&#23467;&#65281;'))return;c.health=clamp(c.health-30,0,100);c.power=clamp(c.power-30,0,500);state.concubines=state.concubines.filter(x=>x.id!==id);state.coldPalaceList.push(c);consumeAction();delete state.banned[id];
+    // 检查是否有亲生子嗣需要过继
+    const kids=state.children.filter(ch=>ch.motherId===id&&ch.age<16);
+    if(kids.length>0){
+      const orphanKids=kids.filter(ch=>!ch.adoptiveMotherId);
+      if(orphanKids.length>0){
+        save();updateUI();
+        setTimeout(()=>{
+          showFeedback('<span class="neg">'+c.name+'</span> 被打入冷宫，其子嗣无人照料。<br>是否择定养母？');
+          state._orphanQueue=orphanKids.map(ch=>ch.id);
+          setTimeout(()=>processOrphanQueue(),500);
+        },300);
+        return;
+      }
+    }
+    save();updateUI();showFeedback('<span class="neg">'+c.name+'</span> &#25171;&#20837;&#20919;&#23467;<br>&#20581;&#24247; <span class="neg">-30</span>&#65292;&#21183;&#21147; <span class="neg">-30</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');showPage('main');}
 
   function actionKill(id){if(!canAct())return;const c=findC(id);if(!c)return;showExecutionSelect(id,false,true);}
 
@@ -5317,7 +5557,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       {text:'💝 前去安慰（国库-500，宠爱+10）',effect(){spendTreasury(500);c.favor=clamp(c.favor+10,0,2200);c.power=clamp(c.power+3,0,500);logEvent('独处','安慰'+c.name);save();updateUI();showFeedback(`安慰 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+10</span>&#65292;&#21183;&#21147; <span class="pos">+3</span><br>国库 <span class="neg">-500</span>`);}},
       {text:'📝 赐诗一首（宠爱+5）',effect(){c.favor=clamp(c.favor+5,0,2200);c.power=clamp(c.power+2,0,500);logEvent('独处','赐诗'+c.name);save();updateUI();showFeedback(`赐诗 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+5</span>&#65292;&#21183;&#21147; <span class="pos">+2</span>`);}},
       {text:' 不必理会（宠爱-5）',effect(){c.favor=clamp(c.favor-5,0,2200);c.power=clamp(c.power-3,0,500);logEvent('独处','冷落'+c.name);save();updateUI();showFeedback(`${c.name} 宠爱 <span class="neg">-5</span>&#65292;&#21183;&#21147; <span class="neg">-3</span>`);}},
-      {text:'🔒 打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==c.id);c.health=clamp(c.health-20,0,100);c.power=clamp(c.power-20,0,500);state.coldPalaceList.push(c);logEvent('独处','打入冷宫'+c.name);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫`);}},
+      {text:'🔒 打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==c.id);c.health=clamp(c.health-20,0,100);c.power=clamp(c.power-20,0,500);state.coldPalaceList.push(c);logEvent('独处','打入冷宫'+c.name);
+        // 检查子嗣过继
+        const kids=state.children.filter(ch=>ch.motherId===c.id&&ch.age<16);
+        const orphanKids=kids.filter(ch=>!ch.adoptiveMotherId);
+        if(orphanKids.length>0){save();updateUI();setTimeout(()=>{state._orphanQueue=orphanKids.map(ch=>ch.id);setTimeout(()=>processOrphanQueue(),500);},300);return;}
+        save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫`);}},
       {text:'☠ 赐死',effect(){showExecutionSelect(c.id,false,false);}},
     ]};
   }
@@ -5389,6 +5634,15 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       if(victim){victim.favor=clamp(victim.favor+10,0,2200);victim.health=clamp(victim.health+5,0,100);}
       closeModal();save();updateUI();
       showFeedback(`${perpName} 被打入冷宫<br>${victimName} 宠爱 <span class="pos">+10</span>，健康 <span class="pos">+5</span>`);
+      // 检查子嗣过继
+      const kids=state.children.filter(ch=>ch.motherId===perp.id&&ch.age<16);
+      const orphanKids=kids.filter(ch=>!ch.adoptiveMotherId);
+      if(orphanKids.length>0){
+        setTimeout(()=>{
+          state._orphanQueue=orphanKids.map(ch=>ch.id);
+          setTimeout(()=>processOrphanQueue(),500);
+        },600);
+      }
     } else if(idx===2){
       logBehavior(perp,p.eventType||'unknown','medium',true);
       updateStress(perp,20);
@@ -5893,97 +6147,40 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   // ===== 孤儿抚养事件 =====
   function triggerOrphanAdoption(deceased, kids){
-    state._orphanData = {deceasedName:deceased.name, deceasedRank:deceased.rank, childIds:kids.map(ch=>ch.id)};
     var kidNames = kids.map(ch=>ch.name).join('、');
-    // 边界判定：无其他妃子可抚养
-    const hasQueen = state.concubines.some(c => c.rank === '皇后' && c.name !== deceased.name);
-    const queenInCold = state.coldPalaceList.some(c => c.rank === '皇后');
-    const opts = [];
-    // 选项1：指给高位妃嫔（仅当有其他妃子时显示）
-    opts.push({text:' 指给高位妃嫔抚养',effect(){
-      var eligible=state.concubines.filter(c=>c.rank==='贵妃'||c.rank==='妃'||c.rank==='嫔'||c.rank==='皇后');
-      if(eligible.length===0){eligible=state.concubines.filter(c=>c.id!==deceased.id);}
-      if(eligible.length===0){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('无妃嫔可抚养孤儿');return;}
-      var adopter=pick(eligible);
-      state.children.forEach(ch=>{
-        if(state._orphanData.childIds.includes(ch.id)){
-          ch.adoptiveMotherId=adopter.id;
-          ch.adoptiveMotherName=adopter.name;
-          ch.isOrphan=true;
-          ch.orphanMonth=1;
-          ch.monthlyCost=200;
-        }
-      });
-      adopter.favor=clamp(adopter.favor+80,0,2200);
-      adopter.power=clamp(adopter.power+15,0,500);
-      logEvent('孤儿抚养','指给'+adopter.name+'抚养');
-      state._orphanData=null;state._orphanEvent=null;
-      save();updateUI();
-      showFeedback('指给 <span class="pos">'+adopter.name+'</span> 抚养<br>'+adopter.name+' 宠爱<span class="pos">+80</span>，势力<span class="pos">+15</span>');
-    }});
-    // 选项2：交由皇后照管（仅当皇后在宫中且不在冷宫时显示）
-    if(hasQueen && !queenInCold){
-      opts.push({text:' 交由皇后照管',effect(){
-        var empress=state.concubines.find(c=>c.rank==='皇后');
-        if(!empress){state._orphanData=null;state._orphanEvent=null;state.pendingEvent=null;save();updateUI();showFeedback('皇后不在宫中');return;}
-        state.children.forEach(ch=>{
-          if(state._orphanData.childIds.includes(ch.id)){
-            ch.adoptiveMotherId=empress.id;
-            ch.adoptiveMotherName=empress.name;
-            ch.isOrphan=true;
-            ch.orphanMonth=1;
-            ch.monthlyCost=100;
-          }
-        });
-        logEvent('孤儿抚养','交由皇后照管');
-        state._orphanData=null;state._orphanEvent=null;
-        save();updateUI();
-        showFeedback('交由<span class="pos">皇后 '+empress.name+'</span>照管');
-      }});
-    } else if(queenInCold){
-      // 皇后在冷宫时不可选，不添加此选项
+    if(kids.length===1){
+      // 单个子嗣：直接弹出过继选择弹窗
+      setTimeout(()=>{
+        showAdoptSelect(kids[0].id);
+      }, 300);
+    } else {
+      // 多个子嗣：先弹确认，再逐个弹出过继选择
+      state._orphanQueue = kids.map(ch=>ch.id);
+      showFeedback(`${deceased.rank}${deceased.name}已故，留下${kidNames}无人抚养。<br>请逐一择定养母。`);
+      setTimeout(()=>{
+        processOrphanQueue();
+      }, 800);
     }
-    // 选项3：交由嬷嬷抚养（兜底选项，始终可用）
-    opts.push({text:' 交由嬷嬷抚养（每月国库-150/人）',effect(){
-      state.children.forEach(ch=>{
-        if(state._orphanData.childIds.includes(ch.id)){
-          ch.adoptiveMotherId='nanny';
-          ch.adoptiveMotherName='奶嬷嬷';
-          ch.isOrphan=true;
-          ch.orphanMonth=1;
-          ch.monthlyCost=150;
-        }
-      });
-      logEvent('孤儿抚养','交由嬷嬷抚养');
-      state._orphanData=null;state._orphanEvent=null;
-      save();updateUI();
-      showFeedback('交由<span class="pos">奶嬷嬷</span>抚养<br>每月国库<span class="neg">-150</span>/人');
-    }});
-    // 选项4：送往皇陵
-    opts.push({text:' 送往皇陵守孝（孩子成年后可召回）',effect(){
-      state.children.forEach(ch=>{
-        if(state._orphanData.childIds.includes(ch.id)){
-          ch.adoptiveMotherId='temple';
-          ch.adoptiveMotherName='皇陵';
-          ch.isOrphan=true;
-          ch.orphanMonth=1;
-          ch.monthlyCost=50;
-          ch.health=clamp(ch.health-10,0,100);
-        }
-      });
-      logEvent('孤儿抚养','送往皇陵守孝');
-      state._orphanData=null;state._orphanEvent=null;
-      save();updateUI();
-      showFeedback('送往<span class="neg">皇陵</span>守孝<br>健康<span class="neg">-10</span>');
-    }});
+  }
 
-    state._orphanEvent = {
-      title:'【孤儿抚养】',
-      desc:`${deceased.rank}${deceased.name}已故，留下${kidNames}无人抚养。皇室血脉不可断绝，需尽快安排妥当。`,
-      options: opts
-    };
-    state.pendingEvent = state._orphanEvent;
-    showEventModal();
+  // 处理过继队列
+  function processOrphanQueue(){
+    if(!state._orphanQueue||state._orphanQueue.length===0){
+      delete state._orphanQueue;
+      return;
+    }
+    const childId=state._orphanQueue[0];
+    const ch=state.children.find(x=>x.id===childId);
+    if(!ch){
+      state._orphanQueue.shift();
+      setTimeout(()=>processOrphanQueue(), 300);
+      return;
+    }
+    // 弹出过继选择，确认后自动处理下一个
+    showAdoptSelect(childId);
+    // 重写confirmAdopt的回调，让它在完成后继续队列
+    const origConfirmAdopt=confirmAdopt;
+    window._adoptQueueActive=true;
   }
 
   function genChildRivalry(con){
@@ -10468,7 +10665,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt};
 })();
 
 // ===== 启动 =====
