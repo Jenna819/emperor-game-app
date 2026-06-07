@@ -1370,6 +1370,10 @@ const Game = (function() {
     '曲意逢迎':   {'心机':2.5,'虚荣攀比':2.0,'娇媚':2.0,'小气善妒':1.5,'柔弱楚楚':1.5,'风情婉约':1.5,'default':1.0},
     // 受害者反应（夺宠之恨）
     '夺宠之恨':   {'狠戾果决':2.5,'小气善妒':2.5,'心机':2.0,'偏执痴迷':2.0,'多疑敏感':1.8,'城府深沉':1.5,'default':1.0},
+    // 皇后管理事件
+    '皇后赐死':   {'狠戾果决':3.0,'野心勃勃':2.0,'心机':1.5,'城府深沉':1.2,'小气善妒':1.5,'端庄大气':0.5,'端庄':0.5,'伪善假面':0.3,'default':1.0},
+    '皇后欲惩':   {'野心勃勃':2.5,'小气善妒':2.5,'狠戾果决':2.0,'心机':2.0,'城府深沉':2.0,'端庄大气':1.5,'端庄':1.5,'伪善假面':1.5,'default':1.0},
+    '皇后密谋':   {'野心勃勃':3.0,'心机':3.0,'城府深沉':2.5,'伪善假面':2.5,'狠戾果决':1.5,'多疑敏感':1.5,'小气善妒':1.5,'端庄大气':0.3,'端庄':0.3,'慈悲良善':0.1,'温婉':0.2,'default':1.0},
   };
 
   function getStressCap(pname){
@@ -1727,7 +1731,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2243,7 +2247,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.dowager=null;
     state._punishmentShown=false;
     state._lastTributeYear=0;state._lastTributeMonth=0;state._monthlyIncome=0;state._monthlyExpense=0;
-    state._coronationCooldown=null;state._coronationSelectId=null;state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;state._firstPrinceBorn=false;
+    state._coronationCooldown=null;state._queenEventCooldown=0;state._coronationSelectId=null;state.honglouLastVisitMonth=0;state.honglouLastVisitYear=0;state.honglouTotalVisits=0;state.honglouContestCooldown=0;state._firstPrinceBorn=false;
     state.honglouPregnancies=[];state.honglouOutsideFamily=[];state.honglouOldFlames=[];
     state.jiangnanYear=undefined;
     initJiangnan();
@@ -2280,7 +2284,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
   function doNextMonth(){
-    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}processChildTraining();
+    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}if(state._queenEventCooldown>0)state._queenEventCooldown--;processChildTraining();
     // 经济系统：基础税收
     const taxIncome = rand(1000, 2000);
     // 母家进贡（每年6月触发，避开选秀月1月）
@@ -6799,6 +6803,271 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     setTimeout(()=>showEventModal(),500);
   }
 
+  // ===== 皇后管理事件 =====
+  // 【皇后赐死】皇后擅自赐死妃子，事后禀报皇上
+  function genQueenExecute(con){
+    var queen=state.concubines.find(function(c){return c.rank==='皇后';});
+    if(!queen)return null;
+    if(state._queenEventCooldown>0)return null;
+    var targets=con.filter(function(c){return c.id!==queen.id;});
+    if(targets.length===0)return null;
+    var victim=pick(targets);
+    var pname=queen.personality?queen.personality.name:'温婉';
+
+    var reasons={
+      '狠戾果决':['谋害后宫','以下犯上','行刺皇后','私通外臣','巫蛊诅咒'],
+      '野心勃勃':['结党营私','勾结外臣','图谋不轨','暗通消息','僭越犯上'],
+      '心机':['散布流言','暗中下毒','离间后宫','欺瞒皇后','私相授受'],
+      '城府深沉':['暗中联络','私传书信','窥探中宫','私藏禁物','不敬中宫'],
+      '伪善假面':['暗生妒忌','口出怨言','不服管教','暗中诅咒','心怀不轨'],
+      'default':['失仪无礼','嫉妒成性','行为不端','顶撞中宫','以下犯上']
+    };
+    var reason=pick(reasons[pname]||reasons['default']);
+
+    var reactions={
+      '狠戾果决':'臣妾已处置了'+victim.name+'。这等祸害，留在后宫迟早生事。臣妾替皇上清理门户，理所当然。',
+      '野心勃勃':'皇上，'+victim.name+'暗中结党，图谋不轨。臣妾代为处置，以免后患。皇上不会怪臣妾先斩后奏吧？',
+      '心机':'皇上~臣妾本不该自作主张，只是'+victim.name+'的所作所为，实在令臣妾不得不防。臣妾也是为了后宫安宁啊。',
+      '城府深沉':'臣妾有一事禀报。'+victim.name+'已被臣妾处置。个中缘由，臣妾已查明，确有其事。',
+      '伪善假面':'皇上~臣妾实在不忍心，但'+victim.name+'她......臣妾也是无奈之举。臣妾夜里为此事哭了好久的......',
+      'default':'启禀皇上，'+victim.name+'因'+reason+'，已被臣妾赐死。臣妾先斩后奏，请皇上降罪。'
+    };
+    var reaction=reactions[pname]||reactions['default'];
+
+    return{
+      title:'【皇后赐死】',
+      desc:queen.name+'擅自赐死'+victim.rank+victim.name+'，理由是"'+reason+'"。事后她来禀报：\n\n"'+reaction+'"',
+      options:[
+        {
+          text:'默认皇后处置（赐死生效，不追究皇后）',
+          effect(){
+            state.concubines=state.concubines.filter(function(c){return c.id!==victim.id;});
+            logEvent('皇后赐死','默认'+queen.name+'处置'+victim.name);
+            logBehavior(queen,'皇后赐死','heavy',false);
+            queen.power=clamp(queen.power+10,0,500);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上默认皇后处置<br><span class="neg">'+victim.name+'</span> 被赐死<br>'+queen.name+' 势力 <span class="pos">+10</span>');
+          }
+        },
+        {
+          text:'斥责皇后（皇后宠爱-10，势力-5）',
+          effect(){
+            state.concubines=state.concubines.filter(function(c){return c.id!==victim.id;});
+            queen.favor=clamp(queen.favor-10,0,2200);
+            queen.power=clamp(queen.power-5,0,500);
+            checkRankChange(queen);
+            logEvent('皇后赐死','斥责'+queen.name);
+            logBehavior(queen,'皇后赐死','medium',true);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上斥责皇后擅自主张<br><span class="neg">'+victim.name+'</span> 被赐死<br>'+queen.name+' 宠爱 <span class="neg">-10</span>，势力 <span class="neg">-5</span>');
+          }
+        },
+        {
+          text:'废后（皇后打入冷宫，追封'+victim.name+'）',
+          effect(){
+            state.concubines=state.concubines.filter(function(c){return c.id!==queen.id;});
+            state.concubines=state.concubines.filter(function(c){return c.id!==victim.id;});
+            queen.health=clamp(queen.health-20,0,100);
+            state.coldPalaceList.push(queen);
+            logEvent('皇后赐死','废后追封'+victim.name);
+            logBehavior(queen,'皇后赐死','heavy',true);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上怒废皇后！<br>'+queen.name+' 打入冷宫<br>'+victim.name+' 追封抚恤');
+          }
+        },
+        {
+          text:'赐死皇后（极端）',
+          effect(){
+            state._queenEventCooldown=2;
+            save();updateUI();
+            showExecutionSelect(queen.id,false,false,{eventType:'皇后赐死',vars:{perpName:queen.name,victimName:victim.name,year:state.year,month:state.month}});
+          }
+        }
+      ]
+    };
+  }
+
+  // 【皇后欲惩】皇后请求皇上允准惩罚妃子
+  function genQueenPunish(con){
+    var queen=state.concubines.find(function(c){return c.rank==='皇后';});
+    if(!queen)return null;
+    if(state._queenEventCooldown>0)return null;
+    var targets=con.filter(function(c){return c.id!==queen.id;});
+    if(targets.length===0)return null;
+    var victim=pick(targets);
+    var pname=queen.personality?queen.personality.name:'温婉';
+
+    var reasons={
+      '狠戾果决':['对皇后不敬，言辞轻慢','恃宠而骄，目中无人','暗中对皇后行诅咒之事','顶撞中宫，以下犯上'],
+      '野心勃勃':['暗中联络其他妃子，似有结党之嫌','越级行事，不守本分','勾结外臣，传递消息','觊觎后位，不安本分'],
+      '心机':['散布对皇后不利的流言','在皇上面前搬弄是非','暗中挑拨后宫关系','口蜜腹剑，表里不一'],
+      '城府深沉':['私藏禁物，意图不明','窥探中宫事务','私传书信，行为可疑','暗中联络，似有图谋'],
+      '伪善假面':['嫉妒成性，暗中使坏','口出怨言，不知感恩','背后议论皇后，不敬中宫','表面恭顺，暗中不服'],
+      '端庄大气':['失仪于众妃之前，有损宫规','逾越礼制，不守本分','对皇后缺乏应有的敬意','行事鲁莽，有碍风化'],
+      'default':['言行失当，有违宫规','不敬中宫，以下犯上','恃宠而骄，扰乱后宫','挑拨离间，不安本分']
+    };
+    var reason=pick(reasons[pname]||reasons['default']);
+    var punishment=pick(['降位一等','杖责二十','禁足三月','罚俸半年','抄写宫规百遍','掌嘴十下']);
+
+    var requests={
+      '狠戾果决':'皇上，'+victim.name+reason+'。臣妾以为应当'+punishment+'，以正宫规。请皇上允准。',
+      '野心勃勃':'皇上~'+victim.name+reason+'。若不加以惩戒，后宫恐怕难以安宁。臣妾请求'+punishment+'，望皇上恩准。',
+      '心机':'皇上......臣妾有些话不知当讲不当讲。'+victim.name+reason+'。臣妾本想包容，但事关宫规，不得不禀。请皇上示下。',
+      '城府深沉':'启禀皇上，'+victim.name+reason+'。臣妾已暗中查证，确有此事。请皇上裁决如何处置。',
+      '伪善假面':'皇上~臣妾本不该来说这些，'+victim.name+'她其实挺好的，就是'+reason+'。臣妾想着'+punishment+'也能让她长长记性，您看呢？',
+      'default':'启禀皇上，'+victim.name+reason+'。臣妾以为当予以惩戒，请皇上允准'+punishment+'。'
+    };
+    var request=requests[pname]||requests['default'];
+
+    return{
+      title:'【皇后欲惩】',
+      desc:queen.rank+queen.name+'求见皇上，言道：\n\n"'+request+'"\n\n请皇上裁决。',
+      options:[
+        {
+          text:'允准皇后（'+victim.name+'受罚，皇后势力+5）',
+          effect(){
+            victim.favor=clamp(victim.favor-15,0,2200);
+            victim.health=clamp(victim.health-10,0,100);
+            victim.power=clamp(victim.power-8,0,500);
+            checkRankChange(victim);
+            queen.power=clamp(queen.power+5,0,500);
+            updateStress(victim,15);
+            logEvent('皇后欲惩','允准处置'+victim.name);
+            logBehavior(victim,'皇后欲惩','medium',true);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上允准皇后请求<br>'+victim.name+' 受'+punishment+'<br>宠爱 <span class="neg">-15</span>，健康 <span class="neg">-10</span>，势力 <span class="neg">-8</span><br>'+queen.name+' 势力 <span class="pos">+5</span>');
+          }
+        },
+        {
+          text:'出面保下'+victim.name+'（皇后颜面受损，'+victim.name+'获恩）',
+          effect(){
+            victim.favor=clamp(victim.favor+20,0,2200);
+            victim.power=clamp(victim.power+8,0,500);
+            updateStress(victim,-10);
+            queen.favor=clamp(queen.favor-5,0,2200);
+            queen.power=clamp(queen.power-5,0,500);
+            updateStress(queen,5);
+            logEvent('皇后欲惩','保下'+victim.name);
+            logBehavior(queen,'皇后欲惩','light',true);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上出面保下'+victim.name+'<br>'+victim.name+' 宠爱 <span class="pos">+20</span>，势力 <span class="pos">+8</span><br>'+queen.name+' 宠爱 <span class="neg">-5</span>，势力 <span class="neg">-5</span>');
+          }
+        },
+        {
+          text:'各打五十大板（两边都不讨好）',
+          effect(){
+            victim.favor=clamp(victim.favor-5,0,2200);
+            victim.power=clamp(victim.power-3,0,500);
+            updateStress(victim,10);
+            queen.favor=clamp(queen.favor-5,0,2200);
+            queen.power=clamp(queen.power-3,0,500);
+            updateStress(queen,5);
+            logEvent('皇后欲惩','各打五十大板');
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上各打五十大板<br>'+victim.name+' 宠爱 <span class="neg">-5</span>，势力 <span class="neg">-3</span><br>'+queen.name+' 宠爱 <span class="neg">-5</span>，势力 <span class="neg">-3</span>');
+          }
+        }
+      ]
+    };
+  }
+
+  // 【皇后密谋】皇后暗中算计受宠妃子，被皇上察觉
+  function genQueenScheme(con){
+    var queen=state.concubines.find(function(c){return c.rank==='皇后';});
+    if(!queen)return null;
+    if(state._queenEventCooldown>0)return null;
+    var targets=con.filter(function(c){return c.id!==queen.id&&c.favor>200;});
+    if(targets.length===0)return null;
+    var victim=pick(targets);
+    var pname=queen.personality?queen.personality.name:'温婉';
+
+    var schemes={
+      '野心勃勃':[
+        {method:'暗中散布'+victim.name+'母家图谋不轨的流言，企图动摇其圣宠',discovery:'皇上的暗桩截获了皇后宫中宫女向外传递的消息'},
+        {method:'买通'+victim.name+'身边的太监，在其饮食中掺入慢性损容的药物',discovery:'太医在给'+victim.name+'请脉时发现异常'},
+        {method:'伪造'+victim.name+'与外臣私通的信件，欲置其于死地',discovery:'贴身太监察觉信件来路可疑，密报皇上'}
+      ],
+      '心机':[
+        {method:'暗中设计让'+victim.name+'在御前失仪，令皇上对其心生厌恶',discovery:'皇上的眼线发现皇后事先安排了人手起哄'},
+        {method:'在'+victim.name+'的宫中暗藏巫蛊之物，待"偶然"发现后诬陷',discovery:'内务府太监提前走漏了风声，被皇上得知'},
+        {method:'挑拨'+victim.name+'与其他高位妃子的关系，借刀杀人',discovery:'被挑拨的妃子心生怀疑，暗中调查后向皇上禀报'}
+      ],
+      '城府深沉':[
+        {method:'暗中调换'+victim.name+'的补药，使其身体渐衰',discovery:'太医院院判察觉药方被篡改，密奏皇上'},
+        {method:'收买'+victim.name+'的贴身宫女，令其暗中传递不利消息',discovery:'宫女良心不安，暗中向皇上自首'},
+        {method:'在祭天仪式上做手脚，暗示'+victim.name+'是不祥之人',discovery:'钦天监副使察觉异常，私下告知皇上'}
+      ],
+      '伪善假面':[
+        {method:'表面关心'+victim.name+'，暗中却在她的香囊中放入相克之物',discovery:'御医检查香囊时发现异常成分'},
+        {method:'假意替'+victim.name+'祈福，却在佛事中暗藏诅咒之意',discovery:'小和尚不慎说漏了嘴，传到皇上耳中'},
+        {method:'表面上与'+victim.name+'姐妹情深，暗地里却散播其不忠的流言',discovery:'流言追溯到皇后宫中的宫女'}
+      ],
+      'default':[
+        {method:'暗中设计陷害'+victim.name+'，企图使其失宠',discovery:'有人暗中向皇上通风报信'},
+        {method:'在'+victim.name+'的住处做了手脚，意图制造事端',discovery:'内务府发现异常后密报皇上'}
+      ]
+    };
+    var scheme=pick(schemes[pname]||schemes['default']);
+
+    return{
+      title:'【皇后密谋】',
+      desc:'皇上暗中得知，'+queen.rank+queen.name+'正在对付'+victim.rank+victim.name+'——她'+scheme.method+'。\n\n'+scheme.discovery+'。',
+      options:[
+        {
+          text:'暗中调查（国库-800，查明真相后处置）',
+          effect(){
+            if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}
+            state.treasury-=800;
+            if(Math.random()<0.7){
+              showPunishmentOptions(queen.id,victim.id,'皇后密谋','【皇后密谋】');
+            } else {
+              logEvent('皇后密谋','查无实据');
+              _showNoEvidence('【皇后密谋】','经查并未发现确凿证据，恐为误传。');
+            }
+            state._queenEventCooldown=1;
+            save();updateUI();
+          }
+        },
+        {
+          text:'直接质问皇后（皇后宠爱-15，势力-10）',
+          effect(){
+            queen.favor=clamp(queen.favor-15,0,2200);
+            queen.power=clamp(queen.power-10,0,500);
+            checkRankChange(queen);
+            updateStress(queen,15);
+            victim.favor=clamp(victim.favor+10,0,2200);
+            victim.power=clamp(victim.power+5,0,500);
+            updateStress(victim,-5);
+            logEvent('皇后密谋','质问'+queen.name);
+            logBehavior(queen,'皇后密谋','heavy',true);
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上直接质问皇后<br>'+queen.name+' 宠爱 <span class="neg">-15</span>，势力 <span class="neg">-10</span><br>'+victim.name+' 宠爱 <span class="pos">+10</span>，势力 <span class="pos">+5</span>');
+          }
+        },
+        {
+          text:'装作不知（'+victim.name+'危险加剧）',
+          effect(){
+            victim.health=clamp(victim.health-5,0,100);
+            victim.favor=clamp(victim.favor-5,0,2200);
+            updateStress(victim,10);
+            queen.power=clamp(queen.power+3,0,500);
+            logEvent('皇后密谋','装作不知');
+            state._queenEventCooldown=1;
+            save();updateUI();
+            showFeedback('皇上装作不知<br>'+victim.name+' 健康 <span class="neg">-5</span>，宠爱 <span class="neg">-5</span>，危险加剧<br>'+queen.name+' 势力 <span class="pos">+3</span>');
+          }
+        }
+      ]
+    };
+  }
+
   // ===== 事件生成 =====
   function generateEvent(){
     const con=[...state.concubines].sort(()=>Math.random()-0.5);
@@ -6829,13 +7098,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(r<0.55){const ee=genEmbezzle(con);if(ee)return ee;}            // 5% 贪污银两
     if(r<0.60){const fe=genFamilyCrime(con);if(fe)return fe;}         // 5% 家族犯罪
     if(r<0.65){const ie2=genPrincePoisonEvent();if(ie2)return ie2;}   // 5% 皇子暴毙（多轮调查，独立触发）
-    if(r<0.72)return genJealousy(con);                                // 7% 嫉妒争宠
-    if(r<0.79)return genFramed(con);                                  // 7% 暗算陷害
-    if(r<0.86)return genRumor(con);                                   // 7% 流言蜚语
+    // 皇后管理事件
+    if(r<0.68){const qe=genQueenExecute(con);if(qe)return qe;}       // 3% 皇后赐死
+    if(r<0.71){const qp=genQueenPunish(con);if(qp)return qp;}        // 3% 皇后欲惩
+    if(r<0.74){const qs=genQueenScheme(con);if(qs)return qs;}        // 3% 皇后密谋
+    if(r<0.80)return genJealousy(con);                                // 6% 嫉妒争宠
+    if(r<0.86)return genFramed(con);                                  // 6% 暗算陷害
+    if(r<0.92)return genRumor(con);                                   // 6% 流言蜚语
     // 争宠博弈类
-    if(r<0.91){const pe2=genPerformance(con);if(pe2)return pe2;}      // 5% 御前献艺
-    if(r<0.95){const sc=genScheme(con);if(sc)return sc;}              // 4% 争宠密谋
-    return genFlatter(con);                                           // 5% 献媚讨好
+    if(r<0.95){const pe2=genPerformance(con);if(pe2)return pe2;}      // 3% 御前献艺
+    if(r<0.97){const sc=genScheme(con);if(sc)return sc;}              // 2% 争宠密谋
+    return genFlatter(con);                                           // 3% 献媚讨好
   }
 
   // ===== 事件处理 =====
