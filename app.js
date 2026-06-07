@@ -1482,17 +1482,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     html+=`<div class="promo-modal-rank">当前位份：${c.rank} ｜ 势力值：${c.power}</div>`;
     html+=`<div class="promo-modal-options">`;
     eligible.forEach(e=>{
-      const canAfford=state.treasury>=500&&state.actionsLeft>0;
+      const canAfford=state.actionsLeft>0;
       html+=`<div class="promo-modal-opt${canAfford?'':' disabled'}" onclick="${canAfford?"Game.confirmPromotion('"+c.id+"','"+e.rank+"')":""}">`;
       html+=`<div class="opt-rank">晋升为 ${e.rank}</div>`;
-      html+=`<div class="opt-cost">消耗：国库 -500 两${!canAfford?(state.treasury<500?'（国库不足）':'（行动点不足）'):''}</div>`;
+      html+=`<div class="opt-cost">消耗：国库 -500 两${!canAfford?'（行动点不足）':''}</div>`;
       html+=`</div>`;
     });
     html+=`</div>`;
     content.innerHTML=html;
     const confirmBtn=document.getElementById('promo-confirm-btn');
     if(confirmBtn){
-      const canAfford=state.treasury>=500&&state.actionsLeft>0;
+      const canAfford=state.actionsLeft>0;
       confirmBtn.disabled=!canAfford;
       confirmBtn.style.opacity=canAfford?'':'0.4';
       confirmBtn.onclick=function(){if(canAfford)confirmPromotion(c.id,eligible[0].rank);};
@@ -1504,9 +1504,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function confirmPromotion(concubineId,newRank){
     const c=state.concubines.find(x=>x.id===concubineId);
     if(!c||c.power<RANK_POWER_MIN[newRank])return;
-    if(state.treasury<500||state.actionsLeft<=0)return;
+    if(state.actionsLeft<=0)return;
     const oldRank=c.rank;
-    state.treasury-=500;
+    spendTreasury(500);
     consumeAction();
     c.rank=newRank;
     c.power=clampPowerToRank(c.power,newRank);
@@ -2424,7 +2424,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             title:'【夺宠之恨】',
             desc:`深夜，太监来报：${c.rank}${c.name}近日夜不能寐，暗中${schemes}。宫人私下议论，说她眼中满是恨意，似在筹划什么。`,
             options:[
-              {text:'🔍 暗中调查（国库-300）',effect(){if(state.treasury<300){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=300;if(Math.random()<0.5){c.favor=clamp(c.favor-15,0,2200);c.grudge=null;logEvent('夺宠之恨','查实'+c.name);save();updateUI();showFeedback(`查明真相！<span class="neg">${c.name}</span> 宠爱 <span class="neg">-15</span>，怀恨消解`);}else{c.favor=clamp(c.favor+5,0,2200);if(c.grudge)c.grudge.intensity=clamp(c.grudge.intensity+10,0,100);logEvent('夺宠之恨','查无实据');save();updateUI();showFeedback(`查无实据<br>${c.name} 宠爱 <span class="pos">+5</span>`);}}},
+              {text:'🔍 暗中调查（国库-300）',effect(){spendTreasury(300);if(Math.random()<0.5){c.favor=clamp(c.favor-15,0,2200);c.grudge=null;logEvent('夺宠之恨','查实'+c.name);save();updateUI();showFeedback(`查明真相！<span class="neg">${c.name}</span> 宠爱 <span class="neg">-15</span>，怀恨消解`);}else{c.favor=clamp(c.favor+5,0,2200);if(c.grudge)c.grudge.intensity=clamp(c.grudge.intensity+10,0,100);logEvent('夺宠之恨','查无实据');save();updateUI();showFeedback(`查无实据<br>${c.name} 宠爱 <span class="pos">+5</span>`);}}},
               {text:'🗣 召来问话（'+c.name+'压力+20）',effect(){c.favor=clamp(c.favor-10,0,2200);updateStress(c,20);if(c.grudge)c.grudge.intensity=clamp(c.grudge.intensity-10,0,100);logEvent('夺宠之恨','问话'+c.name);save();updateUI();showFeedback(`${c.name} 被召来问话<br>宠爱 <span class="neg">-10</span>，压力 <span class="neg">+20</span>`);}},
               {text:' 装作不知（怀恨+10）',effect(){if(c.grudge)c.grudge.intensity=clamp(c.grudge.intensity+10,0,100);logEvent('夺宠之恨','放任'+c.name);save();updateUI();showFeedback(`皇上装作不知<br>${c.name} 怀恨加深`);}},
             ]
@@ -2479,6 +2479,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       total += inc;
     });
     return total;
+  }
+
+  // ===== 国库支出（允许透支，透支即亡国） =====
+  function spendTreasury(amount){
+    state.treasury -= amount;
+    if(state.treasury <= 0 && !state._demiseTriggered){
+      state._demiseTriggered = true;
+      state._treasuryWarning = true;
+      save();
+      setTimeout(()=>triggerInvasion(), 500);
+    }
   }
 
   // ===== 国库崩溃系统 =====
@@ -3744,8 +3755,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function actionFavor(id){
     if(!canAct())return;const c=findC(id);if(!c)return;
-    if(state.treasury<200){showFeedback('&#22269;&#24211;&#38134;&#20004;&#19981;&#36275;&#65281;');return;}
-    state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
+    spendTreasury(200);c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     checkPromotionEligibility(c);
     let pregChance=0.25;if(c._fertilityPenalty&&c._fertilityPenalty>0){pregChance=0.125;c._fertilityPenalty--;}
@@ -3834,7 +3844,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function openBedFromDetail(id){
     if(!canAct())return;
     const c=findC(id);if(!c)return;
-    if(state.treasury<200){showFeedback('国库银两不足！');return;}
+    spendTreasury(200);
     state._bedInteractTarget=id;
     let html=`<div class="bed-modal-portrait">${portraitHTML(c.portraitIdx,120,150,c.princessPortrait)}</div>`;
     html+=`<div class="bed-modal-name">${c.title?c.title+c.rank:c.name}</div>`;
@@ -4017,7 +4027,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const g=GIFT_LIST[idx];if(!g)return;
     const c=findC(state._giftTarget);if(!c)return;
     if(state.treasury<g.price){/* 允许国库透支 */}
-    state.treasury-=g.price;
+    spendTreasury(g.price);
     c.favor=clamp(c.favor+g.favor,0,2200);
     c.power=clamp(c.power+g.power,0,500);
     c.health=clamp(c.health+g.health,0,100);
@@ -4388,9 +4398,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const c=state.concubines.find(x=>x.id===state._rankPickerTarget);if(!c)return;
     const mode=state._rankPickerMode;const oldRank=c.rank;
     if(mode==='promote'){
-      if(state.treasury<500){showFeedback('&#22269;&#24211;&#19981;&#36275;&#65281;');return;}
       if(c.power<RANK_POWER_MIN[newRank]){showFeedback('&#21183;&#21147;&#19981;&#36275;&#65292;&#26080;&#27861;&#26187;&#21319;&#65281;');return;}
-      state.treasury-=500;consumeAction();
+      spendTreasury(500);consumeAction();
       c.power=clampPowerToRank(c.power,newRank);
     } else {
       consumeAction();
@@ -5077,7 +5086,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(state.concubines.length===0){showFeedback('后宫空无一人，无法举办宴会！');return;}
     if(state.pendingEvent){showFeedback('请先处理后宫异动事件！');return;}
     if(state.banquetHeld){showFeedback('本月已举办过宴会了！');return;}
-    if(state.treasury<800){showFeedback('国库不足800两，无法举办宴会！');return;}
+    spendTreasury(800);
     if(state.actionsLeft<=0){showFeedback('本月行动已用完！');return;}
     state._banquetSelected=null;
     let html='<div style="text-align:center;padding:4px 0;">';
@@ -5116,8 +5125,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function submitBanquet(){
     const prog=state._banquetSelected;
     if(!prog)return;
-    if(state.treasury<800){showFeedback('国库不足800两！');return;}
-    state.treasury-=800;
+    spendTreasury(800);
     state.actionsLeft--;
     // Each concubine performs
     const results=state.concubines.map(c=>{
@@ -5306,7 +5314,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   // ===== 宫殿事件生成 =====
   function genSingle(c){
     return{title:'【'+c.rank+c.name+'】',desc:`${c.rank}${c.name}近日心情不佳，独自一人御花园中赏花落泪。`,options:[
-      {text:'💝 前去安慰（国库-500，宠爱+10）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;c.favor=clamp(c.favor+10,0,2200);c.power=clamp(c.power+3,0,500);logEvent('独处','安慰'+c.name);save();updateUI();showFeedback(`安慰 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+10</span>&#65292;&#21183;&#21147; <span class="pos">+3</span><br>国库 <span class="neg">-500</span>`);}},
+      {text:'💝 前去安慰（国库-500，宠爱+10）',effect(){spendTreasury(500);c.favor=clamp(c.favor+10,0,2200);c.power=clamp(c.power+3,0,500);logEvent('独处','安慰'+c.name);save();updateUI();showFeedback(`安慰 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+10</span>&#65292;&#21183;&#21147; <span class="pos">+3</span><br>国库 <span class="neg">-500</span>`);}},
       {text:'📝 赐诗一首（宠爱+5）',effect(){c.favor=clamp(c.favor+5,0,2200);c.power=clamp(c.power+2,0,500);logEvent('独处','赐诗'+c.name);save();updateUI();showFeedback(`赐诗 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+5</span>&#65292;&#21183;&#21147; <span class="pos">+2</span>`);}},
       {text:' 不必理会（宠爱-5）',effect(){c.favor=clamp(c.favor-5,0,2200);c.power=clamp(c.power-3,0,500);logEvent('独处','冷落'+c.name);save();updateUI();showFeedback(`${c.name} 宠爱 <span class="neg">-5</span>&#65292;&#21183;&#21147; <span class="neg">-3</span>`);}},
       {text:'🔒 打入冷宫',effect(){state.concubines=state.concubines.filter(x=>x.id!==c.id);c.health=clamp(c.health-20,0,100);c.power=clamp(c.power-20,0,500);state.coldPalaceList.push(c);logEvent('独处','打入冷宫'+c.name);save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 被打入冷宫`);}},
@@ -5322,7 +5330,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(others.length<1)return null;
     const rival=pickWeighted(others,'孕期风波','perpetrator');
     return{title:'【孕期风波】',desc:`${c.rank}${c.name}已有${c.pregMonth}个月身孕，近日${rival.rank}${rival.name}屡屡挑衅，${c.name}受惊后腹痛不安，太医说恐有滑胎之险。`,options:[
-      {text:'🏥 精心照料（国库-1200，'+c.name+'健康+10，安心养胎）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+10,0,100);rival.favor=clamp(rival.favor-10,0,2200);rival.power=clamp(rival.power-5,0,500);logEvent('孕期风波','精心照料');save();updateUI();showFeedback(`精心照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span>，安心养胎<br>${rival.name} 宠爱 <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-5</span><br>国库 <span class="neg">-1200</span>`);}},
+      {text:'🏥 精心照料（国库-1200，'+c.name+'健康+10，安心养胎）',effect(){spendTreasury(1200);c.health=clamp(c.health+10,0,100);rival.favor=clamp(rival.favor-10,0,2200);rival.power=clamp(rival.power-5,0,500);logEvent('孕期风波','精心照料');save();updateUI();showFeedback(`精心照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span>，安心养胎<br>${rival.name} 宠爱 <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-5</span><br>国库 <span class="neg">-1200</span>`);}},
       {text:'🔒 禁足'+rival.name+'（'+rival.name+'禁足1月，'+c.name+'安心）',effect(){state.banned[rival.id]=1;c.health=clamp(c.health+5,0,100);logEvent('孕期风波','禁足');save();updateUI();showFeedback(`禁足 <span class="neg">${rival.name}</span> 1月<br>${c.name} 健康 <span class="pos">+5</span>，安心养胎`);}},
       {text:' 顺其自然（'+c.name+'有'+(Math.random()<0.4?'50%':'30%')+'概率流产）',effect(){if(Math.random()<0.4){c.pregnant=false;c.pregMonth=0;c.health=clamp(c.health-20,0,100);c.power=clamp(c.power-10,0,500);logEvent('孕期风波',`${c.name}流产`);save();updateUI();showFeedback(`<span class="neg">${c.name} 不幸流产</span><br>健康 <span class="neg">-20</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>`);}else{c.health=clamp(c.health-5,0,100);logEvent('孕期风波','母子平安');save();updateUI();showFeedback(`${c.name} 有惊无险<br>健康 <span class="neg">-5</span>，母子平安`);}}},
       {text:'☠ 赐死'+rival.name,effect(){state._executeVictimInfo={victimId:c.id,victimName:c.name,favorInc:15,healthInc:10};showExecutionSelect(rival.id,false,false,{eventType:'孕期风波',vars:{perpName:rival.name,victimName:c.name,year:state.year,month:state.month,victimPregMonth:c.pregMonth}});}}
@@ -5460,7 +5468,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     if(!a){a=con[0];b=con[1];}
     return{title:'【暗算陷害】',desc:`${a.rank}${a.name}告发${b.rank}${b.name}暗中行巫蛊之术，诅咒后宫，人证物证俱在，${b.name}矢口否认，声称冤枉。`,options:[
-      {text:'🔍 严查真相（国库-800）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;if(Math.random()<0.5){showPunishmentOptions(b.id,a.id,'暗算陷害','【暗算陷害】');}else{showPunishmentOptions(a.id,b.id,'暗算陷害','【暗算陷害】');}}},
+      {text:'🔍 严查真相（国库-800）',effect(){spendTreasury(800);if(Math.random()<0.5){showPunishmentOptions(b.id,a.id,'暗算陷害','【暗算陷害】');}else{showPunishmentOptions(a.id,b.id,'暗算陷害','【暗算陷害】');}}},
       {text:'☠ 处死'+b.name,effect(){showExecutionSelect(b.id,false,false);}},
       {text:'🔒 都打入冷宫',effect(){logBehavior(a,'暗算陷害','heavy',true);logBehavior(b,'暗算陷害','heavy',true);updateStress(a,30);updateStress(b,30);state.concubines=state.concubines.filter(x=>x.id!==a.id&&x.id!==b.id);a.health=clamp(a.health-20,0,100);b.health=clamp(b.health-20,0,100);state.coldPalaceList.push(a,b);logEvent('陷害','都打入冷宫');save();updateUI();showFeedback(`${a.name}、${b.name} 被打入冷宫`);}},
       {text:' 不予理睬（无事发生）',effect(){logEvent('陷害','不予理睬');save();updateUI();showFeedback('皇上未予理睬，风平浪静。');}},
@@ -5477,7 +5485,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     if(!a){a=con[0];b=con[1];}
     return{title:'【流言蜚语】',desc:`后宫流传${a.rank}${a.name}与${b.rank}${b.name}之争，宫女太监议论纷纷，有损皇家体面。`,options:[
-      {text:'🏥 安抚两人（国库-400，各+5宠爱）',effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;a.favor=clamp(a.favor+5,0,2200);b.favor=clamp(b.favor+5,0,2200);a.power=clamp(a.power+2,0,500);b.power=clamp(b.power+2,0,500);logEvent('流言','安抚');save();updateUI();showFeedback(`两人各 <span class="pos">+5</span> 宠爱&#65292;&#21183;&#21147; <span class="pos">+2</span><br>国库 <span class="neg">-400</span>`);}},
+      {text:'🏥 安抚两人（国库-400，各+5宠爱）',effect(){spendTreasury(400);a.favor=clamp(a.favor+5,0,2200);b.favor=clamp(b.favor+5,0,2200);a.power=clamp(a.power+2,0,500);b.power=clamp(b.power+2,0,500);logEvent('流言','安抚');save();updateUI();showFeedback(`两人各 <span class="pos">+5</span> 宠爱&#65292;&#21183;&#21147; <span class="pos">+2</span><br>国库 <span class="neg">-400</span>`);}},
       {text:' 严惩传谣者（各-10宠爱）',effect(){a.favor=clamp(a.favor-10,0,2200);b.favor=clamp(b.favor-10,0,2200);a.power=clamp(a.power-5,0,500);b.power=clamp(b.power-5,0,500);logEvent('流言','严惩');save();updateUI();showFeedback(`两人各 <span class="neg">-10</span> 宠爱&#65292;&#21183;&#21147; <span class="neg">-5</span>`);}},
       {text:' 不予理睬（宠爱各-3）',effect(){a.favor=clamp(a.favor-3,0,2200);b.favor=clamp(b.favor-3,0,2200);a.power=clamp(a.power-2,0,500);b.power=clamp(b.power-2,0,500);logEvent('流言','冷落');save();updateUI();showFeedback(`两人各 <span class="neg">-3</span> 宠爱&#65292;&#21183;&#21147; <span class="neg">-2</span>`);}},
       {text:'☠ 赐死'+a.name,effect(){state._executeVictimInfo={victimId:b.id,victimName:b.name,favorInc:-5};showExecutionSelect(a.id,false,false);}},
@@ -5495,7 +5503,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const c=pickWeighted(pool,'御前献艺','perpetrator');
     const arts=pick(['抚琴','起舞','吟诗','作画','吹笛']);
     return{title:'【御前献艺】',desc:`皇上路过御花园，忽闻丝竹之声。只见${c.rank}${c.name}正在月下${arts}，技艺精湛，令人驻足。她见皇上驾到，慌忙起身行礼。`,options:[
-      {text:' 驻足观赏（国库-100，宠爱+20）',effect(){if(state.treasury<100){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=100;c.favor=clamp(c.favor+20,0,2200);c.power=clamp(c.power+5,0,500);updateStress(c,-5);logBehavior(c,'御前献艺','light',false);logEvent('御前献艺','观赏'+c.name);save();updateUI();showFeedback(`驻足观赏 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+20</span>&#65292;&#21183;&#21147; <span class="pos">+5</span><br>国库 <span class="neg">-100</span>`);}},
+      {text:' 驻足观赏（国库-100，宠爱+20）',effect(){spendTreasury(100);c.favor=clamp(c.favor+20,0,2200);c.power=clamp(c.power+5,0,500);updateStress(c,-5);logBehavior(c,'御前献艺','light',false);logEvent('御前献艺','观赏'+c.name);save();updateUI();showFeedback(`驻足观赏 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+20</span>&#65292;&#21183;&#21147; <span class="pos">+5</span><br>国库 <span class="neg">-100</span>`);}},
       {text:'📝 淡淡点头离去（宠爱-5）',effect(){c.favor=clamp(c.favor-5,0,2200);updateStress(c,10);logEvent('御前献艺','离去'+c.name);save();updateUI();showFeedback(`皇上淡淡离去<br>${c.name} 宠爱 <span class="neg">-5</span>，压力 <span class="neg">+10</span>`);}},
       {text:'👥 召来同赏（各+10）',effect(){const others=con.filter(x=>x.id!==c.id&&x.rank!=='皇后');if(others.length===0){showFeedback('宫中无其他妃子！');state.pendingEvent=null;save();updateUI();return;}const b=pick(others);c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+3,0,500);b.favor=clamp(b.favor+10,0,2200);b.power=clamp(b.power+2,0,500);updateStress(c,-3);logEvent('御前献艺','同赏'+c.name+'与'+b.name);save();updateUI();showFeedback(`${c.name} 宠爱 <span class="pos">+15</span>，${b.name} 宠爱 <span class="pos">+10</span>`);}},
       {text:' 训斥不守宫规（宠爱-15）',effect(){c.favor=clamp(c.favor-15,0,2200);c.power=clamp(c.power-5,0,500);updateStress(c,20);logBehavior(c,'御前献艺','medium',true);logEvent('御前献艺','训斥'+c.name);save();updateUI();showFeedback(`训斥 <span class="neg">${c.name}</span> 不守宫规<br>宠爱 <span class="neg">-15</span>&#65292;&#21183;&#21147; <span class="neg">-5</span>，压力 <span class="neg">+20</span>`);}},
@@ -5640,8 +5648,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         {
           text: ' 辍朝三日（国库-2000，全体妃嫔宠爱-5）',
           effect(){
-            if(state.treasury < 2000){ showFeedback('国库不足！'); state.pendingEvent = null; save(); updateUI(); return; }
-            state.treasury -= 2000;
+            spendTreasury(2000);
             state.concubines.forEach(x => { x.favor = clamp(x.favor - 5, 0, 2200); });
             logEvent('国丧', '辍朝三日'); save(); updateUI();
             showFeedback('辍朝三日<br>国库 <span class="neg">-2000</span>，全体妃嫔宠爱 <span class="neg">-5</span>');
@@ -5651,8 +5658,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         {
           text: ' 厚葬（国库-3000，家族势力+20）',
           effect(){
-            if(state.treasury < 3000){ showFeedback('国库不足！'); state.pendingEvent = null; save(); updateUI(); return; }
-            state.treasury -= 3000;
+            spendTreasury(3000);
             logEvent('国丧', '厚葬'); save(); updateUI();
             showFeedback('厚葬' + data.victimName + '<br>国库 <span class="neg">-3000</span><br>家族势力 <span class="pos">+20</span>');
             state.pendingEvent = null;
@@ -5733,8 +5739,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         return genEntrustOrphanEvent(c, aliveKids, hasQueen);
       }
       return {title:'【病入膏肓】', desc:`${c.rank}${c.name}已病入膏肓，形销骨立，汤药难进。太医悄悄说，恐熬不过这个月了。`, options:[
-        {text:'💊 不惜代价救治（国库-2000，健康+15）', effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
-        {text:' 静养调理（国库-800，健康+5）', effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
+        {text:'💊 不惜代价救治（国库-2000，健康+15）', effect(){spendTreasury(2000);c.health=clamp(c.health+15,0,100);if(c.health>=20){c._illnessStage=1;}logEvent('病入膏肓','不惜代价救治'+c.name);save();updateUI();showFeedback(`不惜代价救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-2000</span>`);}},
+        {text:' 静养调理（国库-800，健康+5）', effect(){spendTreasury(800);c.health=clamp(c.health+5,0,100);logEvent('病入膏肓','静养调理'+c.name);save();updateUI();showFeedback(`静养调理 <span class="pos">${c.name}</span><br>健康 <span class="pos">+5</span><br>国库 <span class="neg">-800</span>`);}},
         {text:' 安排后事（默认病故）', effect(){c.health=0;executeIllnessDeath(c);}},
       ]};
     }
@@ -5748,9 +5754,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         return genGlowEvent(c);
       }
       return {title:'【缠绵病榻】', desc:`${c.rank}${c.name}近日缠绵病榻，面色日渐憔悴。太医诊脉后说，若不好生调养，恐有性命之忧。`, options:[
-        {text:'💊 重金求医（国库-1200，健康+15）', effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;c.health=clamp(c.health+15,0,100);c._illnessStage=0;logEvent('缠绵病榻','重金求医'+c.name);save();updateUI();showFeedback(`重金求医 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-1200</span>`);}},
+        {text:'💊 重金求医（国库-1200，健康+15）', effect(){spendTreasury(1200);c.health=clamp(c.health+15,0,100);c._illnessStage=0;logEvent('缠绵病榻','重金求医'+c.name);save();updateUI();showFeedback(`重金求医 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-1200</span>`);}},
         {text:'👑 亲自探望（宠爱+50，健康+3）', effect(){c.favor=clamp(c.favor+50,0,2200);c.health=clamp(c.health+3,0,100);c._illnessStage=0;logEvent('缠绵病榻','亲自探望'+c.name);save();updateUI();showFeedback(`亲自探望 <span class="pos">${c.name}</span><br>宠爱 <span class="pos">+50</span>，健康 <span class="pos">+3</span>`);}},
-        {text:' 继续服药（国库-400，健康+8）', effect(){if(state.treasury<400){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=400;c.health=clamp(c.health+8,0,100);logEvent('缠绵病榻','继续服药'+c.name);save();updateUI();showFeedback(`继续服药 <span class="pos">${c.name}</span><br>健康 <span class="pos">+8</span><br>国库 <span class="neg">-400</span>`);}},
+        {text:' 继续服药（国库-400，健康+8）', effect(){spendTreasury(400);c.health=clamp(c.health+8,0,100);logEvent('缠绵病榻','继续服药'+c.name);save();updateUI();showFeedback(`继续服药 <span class="pos">${c.name}</span><br>健康 <span class="pos">+8</span><br>国库 <span class="neg">-400</span>`);}},
       ]};
     }
     // Fallback: original behavior for health < 40
@@ -5758,8 +5764,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(eligible.length === 0) return null;
     const c = pick(eligible);
     return {title:'【妃子病故】', desc:`${c.rank}${c.name}近日身染重病，太医全力救治仍不见好转，如今气息微弱，恐时日无多。`, options:[
-      {text:'🏥 全力救治（国库-1500，健康+20）', effect(){if(state.treasury<1500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1500;c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
-      {text:' 派太医照料（国库-600，健康+10）', effect(){if(state.treasury<600){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=600;c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
+      {text:'🏥 全力救治（国库-1500，健康+20）', effect(){spendTreasury(1500);c.health=clamp(c.health+20,0,100);logEvent('病故','全力救治');save();updateUI();showFeedback(`全力救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+20</span><br>国库 <span class="neg">-1500</span>`);}},
+      {text:' 派太医照料（国库-600，健康+10）', effect(){spendTreasury(600);c.health=clamp(c.health+10,0,100);logEvent('病故','派太医');save();updateUI();showFeedback(`派太医照料 <span class="pos">${c.name}</span><br>健康 <span class="pos">+10</span><br>国库 <span class="neg">-600</span>`);}},
       {text:' 听天由命（50%概率病故）', effect(){if(Math.random()<0.5){c.health=0;executeIllnessDeath(c);}else{c.health=clamp(c.health+5,0,100);logEvent('病故','挺过来了');save();updateUI();showFeedback(`${c.name} 挺过来了<br>健康 <span class="pos">+5</span>`);}}},
     ]};
   }
@@ -5792,8 +5798,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       desc: `${c.rank}${c.name}自知时日无多，跪求皇上为${kidNames}安排后路。"${c.name}死不足惜，只求皇上看在骨血的份上，给他们一条活路……"`,
       options: [
         {text:' 封为嫡出（孩子prestige+20，国库-500）', effect(){
-          if(state.treasury < 500){showFeedback('国库不足！');return;}
-          state.treasury -= 500;
+          spendTreasury(500);
           kids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 20; ch._isDiChu = true; });
           logEvent('托孤遗愿','封为嫡出'); save(); updateUI();
           showFeedback('封 <span class="pos">' + kidNames + '</span> 为嫡出<br>prestige <span class="pos">+20</span><br>国库 <span class="neg">-500</span>');
@@ -5994,9 +5999,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(!c1||!c2)return null;
     return{title:'【子嗣夺宠】',desc:`${m1.name}之子${c1.name}与${m2.name}之子${c2.name}在御花园争抢玩具，闹得不可开交。两位妃嫔也因此起了嫌隙。`,options:[
       {text:' 各打五十大板（双方宠爱-30）',effect(){m1.favor=clamp(m1.favor-30,0,2200);m2.favor=clamp(m2.favor-30,0,2200);c1.talent=clamp((c1.talent||0)-5,0,100);c2.talent=clamp((c2.talent||0)-5,0,100);logEvent('夺宠','各打五十大板');save();updateUI();showFeedback('双方宠爱<span class="neg">-30</span>');}},
-      {text:' 赏赐安抚（国库-500）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;m1.favor=clamp(m1.favor+20,0,2200);m2.favor=clamp(m2.favor+20,0,2200);logEvent('夺宠','赏赐安抚');save();updateUI();showFeedback('国库<span class="neg">-500</span>，双方宠爱<span class="pos">+20</span>');}},
+      {text:' 赏赐安抚（国库-500）',effect(){spendTreasury(500);m1.favor=clamp(m1.favor+20,0,2200);m2.favor=clamp(m2.favor+20,0,2200);logEvent('夺宠','赏赐安抚');save();updateUI();showFeedback('国库<span class="neg">-500</span>，双方宠爱<span class="pos">+20</span>');}},
       {text:' 严惩${c1.name}之母（${m1.name}宠爱-60，势力-20）',effect(){m1.favor=clamp(m1.favor-60,0,2200);m1.power=clamp(m1.power-20,0,500);m2.favor=clamp(m2.favor+30,0,2200);logEvent('夺宠','严惩'+m1.name);save();updateUI();showFeedback(`${m1.name} 宠爱<span class="neg">-60</span>，势力<span class="neg">-20</span><br>${m2.name} 宠爱<span class="pos">+30</span>`);}},
-      {text:' 请太傅教导（孩子品德+10，国库-300）',effect(){if(state.treasury<300){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=300;c1.virtue=clamp((c1.virtue||0)+10,0,100);c2.virtue=clamp((c2.virtue||0)+10,0,100);logEvent('夺宠','请太傅教导');save();updateUI();showFeedback('孩子品德<span class="pos">+10</span>，国库<span class="neg">-300</span>');}},
+      {text:' 请太傅教导（孩子品德+10，国库-300）',effect(){spendTreasury(300);c1.virtue=clamp((c1.virtue||0)+10,0,100);c2.virtue=clamp((c2.virtue||0)+10,0,100);logEvent('夺宠','请太傅教导');save();updateUI();showFeedback('孩子品德<span class="pos">+10</span>，国库<span class="neg">-300</span>');}},
     ]};
   }
 
@@ -6007,7 +6012,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(eligible.length===0)return null;
     const c=pick(eligible);
     return{title:'【冷宫病危】',desc:`冷宫传来消息，${c.rank}${c.name}在冷宫中病势沉重，奄奄一息。虽犯过错，毕竟是皇家旧人。`,options:[
-      {text:'🏥 派太医救治（国库-500，健康+15）',effect(){if(state.treasury<500){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=500;c.health=clamp(c.health+15,0,100);logEvent('冷宫病危','派太医救治'+c.name);save();showColdPalace();showFeedback(`派太医救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-500</span>`);}},
+      {text:'🏥 派太医救治（国库-500，健康+15）',effect(){spendTreasury(500);c.health=clamp(c.health+15,0,100);logEvent('冷宫病危','派太医救治'+c.name);save();showColdPalace();showFeedback(`派太医救治 <span class="pos">${c.name}</span><br>健康 <span class="pos">+15</span><br>国库 <span class="neg">-500</span>`);}},
       {text:' 放出冷宫，恢复位份',effect(){state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==c.id);state.concubines.push(c);c.health=clamp(c.health+5,0,100);logEvent('冷宫病危','放出'+c.name);save();updateUI();showFeedback(`${c.name} 被放出冷宫<br>健康 <span class="pos">+5</span>`);}},
       {text:' 不予理会',effect(){c.health=clamp(c.health-10,0,100);logEvent('冷宫病危','不予理会');save();showColdPalace();showFeedback(`${c.name} 健康 <span class="neg">-10</span>`);}},
     ]};
@@ -6020,7 +6025,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const b=pick(con.filter(c=>c.id!==a.id));
     if(!b)return null;
     return{title:'【暗中下毒】',desc:`${a.rank}${a.name}暗中在${b.rank}${b.name}的膳食中下毒，被管事嬷嬷察觉异样，${b.name}服后上吐下泻，太医诊断为中毒之症。`,options:[
-      {text:'🔍 严查真凶（国库-1000）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;if(Math.random()<0.7){showPunishmentOptions(a.id,b.id,'暗中下毒','【暗中下毒】');}else{_showNoEvidence('【暗中下毒】','经查并未发现确凿证据，'+a.name+' 否认下毒，此事恐为谣传。');}}},
+      {text:'🔍 严查真凶（国库-1000）',effect(){spendTreasury(1000);if(Math.random()<0.7){showPunishmentOptions(a.id,b.id,'暗中下毒','【暗中下毒】');}else{_showNoEvidence('【暗中下毒】','经查并未发现确凿证据，'+a.name+' 否认下毒，此事恐为谣传。');}}},
       {text:`🔒 将${a.name}打入冷宫`,effect(){state.concubines=state.concubines.filter(x=>x.id!==a.id);a.health=clamp(a.health-20,0,100);state.coldPalaceList.push(a);b.health=clamp(b.health+5,0,100);logEvent('下毒','打入冷宫');save();updateUI();showFeedback(`<span class="neg">${a.name}</span> 打入冷宫<br>${b.name} 健康 <span class="pos">+5</span>`);}},
       {text:`☠ 将${a.name}赐死`,effect(){state._executeVictimInfo={victimId:b.id,victimName:b.name,favorInc:10,healthInc:10};showExecutionSelect(a.id,false,false,{eventType:'暗中下毒',vars:{perpName:a.name,victimName:b.name,year:state.year,month:state.month}});}},
       {text:`不予追究（${b.name}健康-10）`,effect(){b.health=clamp(b.health-10,0,100);logEvent('下毒','不予追究');save();updateUI();showFeedback(`皇上不予追究<br>${b.name} 健康 <span class="neg">-10</span>`);}},
@@ -6041,7 +6046,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       ?`${perp.rank}${perp.name}暗中在安胎药中动手脚，${victim.rank}${victim.name}服后腹痛见红，太医诊断恐有滑胎之险。`
       :`${perp.rank}${perp.name}买通乳母，在${victim.rank}${victim.name}的孩子饮食中下毒，孩子上吐下泻，太医抢救后脱离危险。`;
     return{title:'【谋害皇嗣】',desc:desc,options:[
-      {text:' 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){
+      {text:' 严查真凶（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.75){
         if(isPreg){
           if(Math.random()<0.60){
             victim.pregnant=false;victim.pregMonth=0;
@@ -6072,7 +6077,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const partnerNames=['侍卫统领','御前太监','太医','书童','画师','琴师'];
     const partnerName=pick(partnerNames);
     return{title:'【私通败露】',desc:`宫中传出${c.rank}${c.name}与${partnerName}私通之流言，有宫女亲眼目睹两人在御花园假山后举止亲昵，此事若传扬出去，皇家颜面尽失。`,options:[
-      {text:'🔍 秘密调查（国库-800）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;if(Math.random()<0.3){c.favor=clamp(c.favor-10,0,2200);c.health=clamp(c.health-10,0,100);_showNoEvidence('【私通败露】','经查并未发现确凿证据，'+c.name+' 受惊过度，此事恐为谣传。');}else{showPunishmentOptions(c.id,null,'私通败露','【私通败露】');}}},
+      {text:'🔍 秘密调查（国库-800）',effect(){spendTreasury(800);if(Math.random()<0.3){c.favor=clamp(c.favor-10,0,2200);c.health=clamp(c.health-10,0,100);_showNoEvidence('【私通败露】','经查并未发现确凿证据，'+c.name+' 受惊过度，此事恐为谣传。');}else{showPunishmentOptions(c.id,null,'私通败露','【私通败露】');}}},
       {text:` 立即赐死${c.name}`,effect(){showExecutionSelect(c.id,false,false,{eventType:'私通败露',vars:{perpName:c.name,victimName:'皇家',year:state.year,month:state.month}});}},
       {text:'🔒 打入冷宫',effect(){logBehavior(c,'私通败露','heavy',true);updateStress(c,30);state.concubines=state.concubines.filter(x=>x.id!==c.id);c.health=clamp(c.health-20,0,100);state.coldPalaceList.push(c);logEvent('私通','打入冷宫');save();updateUI();showFeedback(`<span class="neg">${c.name}</span> 打入冷宫`);}},
       {text:'📝 压下此事（减15宠爱）',effect(){c.favor=clamp(c.favor-15,0,2200);c.power=clamp(c.power-8,0,500);const rc=checkRankChange(c);logEvent('私通','压下此事');save();updateUI();let msg='此事被压下<br>宠爱 <span class="neg">-15</span>&#65292;&#21183;&#21147; <span class="neg">-8</span>';if(rc&&rc.type==='demote'){msg+=`<br>${c.name} 降为 <span class="neg">${rc.rank}</span>`;}showFeedback(msg);}},
@@ -6111,10 +6116,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       showFeedback('<span class="neg">'+child.name+'</span> 不治夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')+(extra?extra:''));
     }
     return{title:'【暗害子嗣】',desc:`${perp.rank}${perp.name}${scenario.method}，${child.name}${scenario.result}，太医全力救治仅能暂时稳住病情。`,perpetrator:perp,child:child,mother:mother,scenario:scenario,options:[
-      {text:' 严查真凶（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人，恐是宫人疏忽所致。<br>'+child.name+' 仍在病中。');}}},
+      {text:' 严查真凶（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人，恐是宫人疏忽所致。<br>'+child.name+' 仍在病中。');}}},
       {text:'🔒 将'+perp.name+'打入冷宫',effect(){logBehavior(perp,'暗害子嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','打入冷宫');save();updateUI();showFeedback('<span class="neg">'+perp.name+'</span> 打入冷宫<br>'+child.name+' 仍在救治中');}},
       {text:'☠ 将'+perp.name+'赐死',effect(){showExecutionSelect(perp.id,false,false,{eventType:'暗害子嗣',vars:{perpName:perp.name,victimName:child.name,year:state.year,month:state.month}});}},
-      {text:'🏥 全力救治孩子（国库-1000）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;if(Math.random()<0.50){logEvent('暗害子嗣','救治成功');save();updateUI();showFeedback('全力救治 <span class="pos">'+child.name+'</span><br>孩子已脱离危险<br>国库 <span class="neg">-1000</span>');}else{childDeathFeedback(child,mother,'<br>国库 <span class="neg">-1000</span>');}}},
+      {text:'🏥 全力救治孩子（国库-1000）',effect(){spendTreasury(1000);if(Math.random()<0.50){logEvent('暗害子嗣','救治成功');save();updateUI();showFeedback('全力救治 <span class="pos">'+child.name+'</span><br>孩子已脱离危险<br>国库 <span class="neg">-1000</span>');}else{childDeathFeedback(child,mother,'<br>国库 <span class="neg">-1000</span>');}}},
       {text:' 不予追究（孩子健康-20）',effect(){if(Math.random()<0.55){childDeathFeedback(child,mother);}else{logEvent('暗害子嗣','自行恢复');save();updateUI();showFeedback(child.name+' 身体虚弱，慢慢调养');}}},
     ]};
   }
@@ -6138,9 +6143,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     ];
     const reason=pick(reasons);
     return{title:'【克扣用度】',desc:`${perp.rank}${perp.name}协理六宫期间${reason}，${victim.rank}${victim.name}份例锐减，寒冬中衣着单薄、饮食粗劣，已病倒在床，宫人暗中上报求皇上做主。`,perpetrator:perp,victim:victim,options:[
-      {text:'🏥 太医诊治（国库-800，'+victim.name+'健康+15）',effect(){if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=800;victim.health=clamp(victim.health+15,0,100);logEvent('克扣用度','太医诊治');save();updateUI();showFeedback(`太医诊治 <span class="pos">${victim.name}</span><br>健康 <span class="pos">+15</span>（当前${victim.health}）<br>国库 <span class="neg">-800</span>`);}},
-      {text:' 补发份例（国库-1000，'+victim.name+'宠爱+10，'+perp.name+'势力-15）',effect(){if(state.treasury<1000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1000;victim.favor=clamp(victim.favor+10,0,2200);perp.power=clamp(perp.power-15,0,500);const rc=checkRankChange(perp);logEvent('克扣用度','补发份例');save();updateUI();let msg=`补发份例 <span class="pos">${victim.name}</span><br>宠爱 <span class="pos">+10</span><br>${perp.name} 势力 <span class="neg">-15</span><br>国库 <span class="neg">-1000</span>`;if(rc){msg+='<br><span class="pos">'+perp.name+' 势力不足，降为 '+rc.rank+'</span>';}showFeedback(msg);}},
-      {text:'🔍 严查账目（国库-1200）',effect(){if(state.treasury<1200){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=1200;if(Math.random()<0.7){const demoteText=victim.rank==='官女子'?'':'降位份1级';if(perp.rank!=='官女子'){perp.power=clamp(perp.power-30,0,500);const rc2=checkRankChange(perp);logEvent('克扣用度','查实贪墨');save();updateUI();let msg=`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>势力 <span class="neg">-30</span>`;if(rc2){msg+='<br><span class="pos">'+perp.name+' 降为 '+rc2.rank+'</span>';}showFeedback(msg);}else{logEvent('克扣用度','查实贪墨');save();updateUI();showFeedback(`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>但其位份已是最低，改为削减宠爱 <span class="neg">-20</span>`);perp.favor=clamp(perp.favor-20,0,2200);}}else{_showNoEvidence('【克扣用度】','经查账目虽有疏漏，但并无确凿贪墨证据，'+perp.name+' 辩称是下人办事不力，恐难定其罪。');}}},
+      {text:'🏥 太医诊治（国库-800，'+victim.name+'健康+15）',effect(){spendTreasury(800);victim.health=clamp(victim.health+15,0,100);logEvent('克扣用度','太医诊治');save();updateUI();showFeedback(`太医诊治 <span class="pos">${victim.name}</span><br>健康 <span class="pos">+15</span>（当前${victim.health}）<br>国库 <span class="neg">-800</span>`);}},
+      {text:' 补发份例（国库-1000，'+victim.name+'宠爱+10，'+perp.name+'势力-15）',effect(){spendTreasury(1000);victim.favor=clamp(victim.favor+10,0,2200);perp.power=clamp(perp.power-15,0,500);const rc=checkRankChange(perp);logEvent('克扣用度','补发份例');save();updateUI();let msg=`补发份例 <span class="pos">${victim.name}</span><br>宠爱 <span class="pos">+10</span><br>${perp.name} 势力 <span class="neg">-15</span><br>国库 <span class="neg">-1000</span>`;if(rc){msg+='<br><span class="pos">'+perp.name+' 势力不足，降为 '+rc.rank+'</span>';}showFeedback(msg);}},
+      {text:'🔍 严查账目（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.7){const demoteText=victim.rank==='官女子'?'':'降位份1级';if(perp.rank!=='官女子'){perp.power=clamp(perp.power-30,0,500);const rc2=checkRankChange(perp);logEvent('克扣用度','查实贪墨');save();updateUI();let msg=`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>势力 <span class="neg">-30</span>`;if(rc2){msg+='<br><span class="pos">'+perp.name+' 降为 '+rc2.rank+'</span>';}showFeedback(msg);}else{logEvent('克扣用度','查实贪墨');save();updateUI();showFeedback(`查实 <span class="neg">${perp.name}</span> 贪墨之罪<br>但其位份已是最低，改为削减宠爱 <span class="neg">-20</span>`);perp.favor=clamp(perp.favor-20,0,2200);}}else{_showNoEvidence('【克扣用度】','经查账目虽有疏漏，但并无确凿贪墨证据，'+perp.name+' 辩称是下人办事不力，恐难定其罪。');}}},
       {text:' 置之不理',effect(){victim.health=clamp(victim.health-20,0,100);victim.favor=clamp(victim.favor-10,0,2200);perp.power=clamp(perp.power+3,0,500);logEvent('克扣用度','置之不理');save();updateUI();showFeedback(`皇上置之不理<br>${victim.name} 健康 <span class="neg">-20</span>（当前${victim.health}），宠爱 <span class="neg">-10</span><br>${perp.name} 势力 <span class="pos">+3</span>`);}},
     ]};
   }
@@ -6154,7 +6159,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const crime=pick(crimeTypes);
     const demoteText=c.rank==='官女子'?'减20宠爱':'降位份2级';
     return{title:'【母家获罪】',desc:`${c.rank}${c.name}之母家被查出${crime}之罪，朝中大臣联名上奏，请求严惩其母家，并牵连${c.name}降位份以正宫规。`,options:[
-      {text:`👑 保全${c.name}（国库-2000，母家从轻发落）`,effect(){if(state.treasury<2000){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}state.treasury-=2000;c.favor=clamp(c.favor+10,0,2200);logEvent('母家获罪','保全');save();updateUI();showFeedback(`保全 <span class="pos">${c.name}</span><br>母家从轻发落<br>${c.name} 宠爱 <span class="pos">+10</span><br>国库 <span class="neg">-2000</span>`);}},
+      {text:`👑 保全${c.name}（国库-2000，母家从轻发落）`,effect(){spendTreasury(2000);c.favor=clamp(c.favor+10,0,2200);logEvent('母家获罪','保全');save();updateUI();showFeedback(`保全 <span class="pos">${c.name}</span><br>母家从轻发落<br>${c.name} 宠爱 <span class="pos">+10</span><br>国库 <span class="neg">-2000</span>`);}},
       {text:`⚖ 依法处置（${c.name}${demoteText}）`,effect(){
         if(c.rank==='官女子'){
           c.favor=clamp(c.favor-20,0,2200);logEvent('母家获罪','依法处置');save();updateUI();showFeedback(`${c.name} 位份已是最低，改为削减宠爱<br>宠爱 <span class="neg">-20</span>`);
@@ -6634,11 +6639,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       const branch = sc.step2.branches[inv.branch];
       const ch = branch.choices[idx];
       if(ch.cost){
-        if(state.treasury < ch.cost){
-          showFeedback('国库不足！');
-          return;
-        }
-        state.treasury -= ch.cost;
+        spendTreasury(ch.cost);
       }
       let clue = ch.clue;
       clue = clue.replace('{branchA_perp}', inv.branchA_perp).replace('{branchB_perp}', inv.branchB_perp).replace('{branchC_perp}', inv.branchC_perp);
@@ -6652,11 +6653,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function deepDiveInvestigation(){
     const inv = state._investigation;
     if(!inv || inv.deepDive) return;
-    if(state.treasury < 500){
-      showFeedback('国库不足！');
-      return;
-    }
-    state.treasury -= 500;
+    spendTreasury(500);
     inv.deepDive = true;
     const perpLabel = `${inv.perpRank}${inv.perpName}`;
     inv.deepDiveClue = `刑部密探查实：<b>${perpLabel}</b>府中搜出剩余砒霜与断肠草，与其贴身宫女供词吻合。证据确凿。`;
@@ -7022,8 +7019,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         {
           text:'暗中调查（国库-800，查明真相后处置）',
           effect(){
-            if(state.treasury<800){showFeedback('国库不足！');state.pendingEvent=null;save();updateUI();return;}
-            state.treasury-=800;
+            spendTreasury(800);
             if(Math.random()<0.7){
               showPunishmentOptions(queen.id,victim.id,'皇后密谋','【皇后密谋】');
             } else {
@@ -7769,7 +7765,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     return html;
   }
   function showHonglou(){
-    if(state.treasury<200){showFeedback('国库空虚，无法前往醉红楼！');return;}
+    spendTreasury(200);
     var curKey=state.year*12+state.month;
     if(state.honglouLastVisitMonth && state.honglouLastVisitMonth >= curKey){showFeedback('本月已经去过醉红楼了。');return;}
     state._honglou={active:true,beauties:[],currentBeauty:null,contest:null,listenCount:0,hongCount:0,selectedForAdopt:[],oldFlames:[]};
@@ -7844,8 +7840,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
   function showHonglouListen(){
     var cost=rand(50,150);
-    if(state.treasury<cost){showFeedback('银两不足！');return;}
-    state.treasury-=cost;
+    spendTreasury(cost);
     state._honglou.listenCount++;
     // 生成1-2位表演者
     var perfCount=Math.random()<0.5?1:2;
@@ -7864,8 +7859,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function showHonglouDance(){
     var costs=[100,200,300];
     var cost=pick(costs);
-    if(state.treasury<cost){showFeedback('银两不足！');return;}
-    state.treasury-=cost;
+    spendTreasury(cost);
     state._honglou.listenCount++;
     // 根据花费决定表演规模
     var perfCount=cost>=300?3:cost>=200?2:1;
@@ -7917,8 +7911,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-honglou-performance').classList.add('show');
   }
   function flipHonglouPerf(id,cost){
-    if(state.treasury<cost){showFeedback('银两不足！');return;}
-    state.treasury-=cost;
+    spendTreasury(cost);
     var b=state._honglou.beauties.find(function(x){return x.id===id;});
     if(!b){
       // 表演临时生成的女子，加到beauties
@@ -7931,8 +7924,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(b)setTimeout(function(){enterHonglouRoom(b.id);},300);
   }
   function tipHonglouPerf(amount){
-    if(state.treasury<amount){showFeedback('银两不足！');return;}
-    state.treasury-=amount;
+    spendTreasury(amount);
     // 所有表演女子好感+3
     var perfs=state._honglou._perfs||[];
     perfs.forEach(function(b){b.favor=Math.min((b.favor||0)+3,100);b.favorLevel=getFavorKey(b.favor);});
@@ -8062,8 +8054,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function honglouGift(){
     var b=state._honglou.currentBeauty;
     if(!b)return;
-    if(state.treasury<100){showFeedback('银两不足！');return;}
-    state.treasury-=100;
+    spendTreasury(100);
     var gifts=[
       {icon:'\u{1F48E}',name:'珍珠钗'},
       {icon:'\u{1F3A8}',name:'团扇一把'},
@@ -8085,8 +8076,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(!b)return;
     if(b.favor<20){showFeedback('她还对你有些生分，先多聊聊吧。');return;}
     var bedCost=b.price>=800?300:200;
-    if(state.treasury<bedCost){showFeedback('银两不足！');return;}
-    state.treasury-=bedCost;
+    spendTreasury(bedCost);
     // 宠幸剧情
     var pName=b.personality.name;
     var bedTexts=HL_BED_TEXTS[pName]||HL_BED_TEXTS.温婉;
@@ -8222,10 +8212,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       var b=hl.beauties.filter(function(x){return x.favor>=40;})[idx];
       if(b){totalPrice+=parseInt(c.getAttribute('data-price'));selected.push(b);}
     });
-    if(state.treasury<totalPrice){showFeedback('银两不足，需要 '+totalPrice+' 两！');return;}
+    spendTreasury(totalPrice);
     var remain=30-state.concubines.length;
     if(selected.length>remain){showFeedback('后宫只剩 '+remain+' 个名额，最多只能选 '+remain+' 人！');return;}
-    state.treasury-=totalPrice;
     var names=[];
     selected.forEach(function(b){
       var disc=calcPriceDiscount(b);
@@ -8257,10 +8246,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(!b)return;
     var disc=calcPriceDiscount(b);
     var finalPrice=Math.round(b.price*disc);
-    if(state.treasury<finalPrice){showFeedback('银两不足，需要 '+finalPrice+' 两！');return;}
+    spendTreasury(finalPrice);
     if(state.concubines.length>=30){showFeedback('后宫已满30人！');return;}
     showConfirm('&#32435;&#22914;','&#30830;&#23450;&#35201;&#32435; <b style="color:#c49030;">'+b.name+'</b> &#20026;&#22914;&#21527;&#65311;<br>&#36176;&#36523;&#20215; <b style="color:#ffd700;">'+finalPrice+'</b> &#20004;&#12290;',function(){
-      state.treasury-=finalPrice;
       var initRank='官女子';
       var initPower=rand(3,8);
       var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:initPower,rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:(b.visitCount||0)>0};
@@ -8279,8 +8267,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
   // 花魁大赛
   function showHonglouContestStart(){
-    if(state.treasury<500){showFeedback('银两不足，花魁大赛需要500两！');return;}
-    state.treasury-=500;
+    spendTreasury(500);
     var hl=state._honglou;
     // 生成5位参赛女子
     hl.contest={active:true,contestants:[],round:0,playerInvested:{}};
@@ -8368,8 +8355,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     showFeedback('多看了'+b.name+'一眼，她脸颊微红，更加卖力表演了。<br>得分 <span class="pos">+5</span>，好感 <span class="pos">+5</span>');
   }
   function contestInvest(id,amount){
-    if(state.treasury<amount){showFeedback('银两不足！');return;}
-    state.treasury-=amount;
+    spendTreasury(amount);
     var b=state._honglou.contest.contestants.find(function(x){return x.id===id;});
     if(b){
       b.contestScore+=20;
@@ -8390,8 +8376,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var b=state._honglou.contest.contestants.find(function(x){return x.id===id;});
     if(!b)return;
     var cost=Math.round(b.price*1.5);
-    if(state.treasury<cost){showFeedback('银两不足！');return;}
-    state.treasury-=cost;
+    spendTreasury(cost);
     b.favor=75;b.favorLevel='love';
     document.getElementById('modal-honglou-contest').classList.remove('show');
     closeModal();
@@ -8401,9 +8386,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     var b=state._honglou.contest.contestants.find(function(x){return x.id===id;});
     if(!b)return;
     var cost=Math.round(b.price*0.7);
-    if(state.treasury<cost){showFeedback('银两不足！');return;}
     if(state.concubines.length>=30){showFeedback('后宫已满！');return;}
-    state.treasury-=cost;
+    spendTreasury(cost);
     var initRank='官女子';
     var initPower=rand(3,8);
     var concubine={id:genId(),name:b.name,age:b.age,beauty:b.beauty,talent:b.talent,wisdom:b.wisdom,health:b.health,favor:Math.round(b.beauty*1.5),power:initPower,rank:initRank,personality:b.personality,trait:b.trait,family:{name:'醉红楼',initRank:initRank,color:'#c49030'},pregnant:false,pregMonth:0,portraitIdx:b.portraitIdx,title:'',fromHonglou:true,honglouSkill:b.type,portraitSeed:b.portraitSeed,stress:0,stressCap:getStressCap(b.personality.name),behaviorLog:[],_favored:false,favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:(b.visitCount||0)>0};
@@ -8482,8 +8466,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           logEvent('醉红楼','御史弹劾，皇上置之不理');
         }},
         {text:'贬官压制（500两）',effect:function(){
-          if(state.treasury>=500){state.treasury-=500;showFeedback('贬了御史的官，平息了风波。<br>国库 <span class="neg">-500</span> 两');}
-          else{showFeedback('国库空虚，拿不出500两……<br>只能置之不理了。');}
+          spendTreasury(500);showFeedback('贬了御史的官，平息了风波。<br>国库 <span class="neg">-500</span> 两');
           logEvent('醉红楼','皇上贬官压制');
         }},
         {text:'下罪己诏',effect:function(){
@@ -8693,7 +8676,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function showJiangnanStart(){
     if(state.jiangnanYear===state.year){showFeedback('今年已经下过江南了！');return;}
-    if(state.treasury<2000){showFeedback('国库不足，需2000两！');return;}
+    spendTreasury(2000);
     if(state.actionsLeft<3){showFeedback('本月行动不足3次，无法出远门！');return;}
     var html='<div style="padding:16px;">';
     html+='<div style="font-size:14px;color:#5a3e28;line-height:1.8;text-align:center;margin-bottom:14px;">';
@@ -8712,7 +8695,6 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function startJiangnan(){
-    state.treasury-=2000;
     state.actionsLeft-=3;
     state.jiangnanYear=state.year;
     initJiangnan();
@@ -8909,7 +8891,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     html+='<div style="font-size:13px;color:#8a7060;margin-bottom:10px;text-align:center;">皇上想赠予 '+bs.name+' 何物？</div>';
     html+='<div class="jn-gift-grid">';
     JN_GIFTS.forEach(function(g,i){
-      var dis=state.treasury<g.cost?'style="opacity:0.4;pointer-events:none;"':'';
+      var dis='';
       html+='<div class="jn-gift-item" onclick="Game.giveJnGift('+i+')" '+dis+'>';
       html+='<div class="jn-gift-icon">'+g.icon+'</div>';
       html+='<div style="flex:1;"><div class="jn-gift-name">'+g.name+'</div><div class="jn-gift-desc">国库 -'+g.cost+'两 | 好感 +'+g.favor+'</div></div>';
@@ -8923,10 +8905,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function giveJnGift(idx){
     var g=JN_GIFTS[idx];
-    if(state.treasury<g.cost){showFeedback('国库不足！');return;}
+    spendTreasury(g.cost);
     var bs=state._jnCurrentBeauty;
     if(!bs)return;
-    state.treasury-=g.cost;
     bs.favor=clamp(bs.favor+g.favor,0,100);
     document.getElementById('modal-jn-gift').classList.remove('show');
     // Re-render event scene
@@ -9316,7 +9297,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function openCoronationSelect(){
     if(state.concubines.length===0){showFeedback('后宫空无一人，无法册立皇后');return;}
     if(state.actionsLeft<=0){showFeedback('本月行动已用完');return;}
-    if(state.treasury<3000){showFeedback('国库不足3000两，无法册立皇后');return;}
+    spendTreasury(3000);
     if(state.concubines.find(x=>x.rank==='皇后')){showFeedback('已有皇后，无需册立');return;}
     state._coronationSelectId=null;
     renderCoronationSelectModal();
@@ -9363,10 +9344,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(state.concubines.find(function(x){return x.rank==='皇后';})){
       showFeedback('&#24050;&#26377;&#30343;&#21518;&#65292;&#26080;&#38656;&#20876;&#31435;');closeCoronationSelect();return;
     }
-    if(state.treasury<3000){showFeedback('&#22269;&#24211;&#19981;&#36275;3000&#19976;&#65292;&#26080;&#27861;&#20876;&#31435;');closeCoronationSelect();return;}
     if(state.actionsLeft<=0){showFeedback('&#26412;&#26376;&#34892;&#21160;&#24050;&#29992;&#23436;');closeCoronationSelect();return;}
+    spendTreasury(3000);
     state.actionsLeft--;
-    state.treasury-=3000;
     // &#21183;&#21147;&#34917;&#36275;
     if((c.power||0)<321)c.power=321;
     c.rank='皇后';c.power=clamp(c.power,321,500);
@@ -10260,7 +10240,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     {id:'dowager_ill',name:'太后病中探望',conditions(){return state.dowager.health<60&&state.dowager.greetingCount>=2;},
       lines:['（咳嗽）哀家老毛病又犯了，不碍事的……','人老了，身子骨不中用了。皇帝不必挂心。'],
       options:[
-        {text:'立刻派太医前来诊治（国库-300）',effects:{favorDelta:10,result:function(){if(state.treasury<300){state.treasury=0;return'国库不足，太医未能及时赶到。太后好感 <span class="neg">-5</span>。';}state.treasury-=300;state.dowager.health=clamp(state.dowager.health+20,0,100);return'太医诊治后，太后气色好转。太后健康 <span class="pos">+20</span>，好感 <span class="pos">+10</span>。';},action:null}},
+        {text:'立刻派太医前来诊治（国库-300）',effects:{favorDelta:10,result:function(){spendTreasury(300);state.dowager.health=clamp(state.dowager.health+20,0,100);return'太医诊治后，太后气色好转。太后健康 <span class="pos">+20</span>，好感 <span class="pos">+10</span>。';},action:null}},
         {text:'儿臣亲自去探望（消耗1行动）',effects:{favorDelta:8,result:function(){if(state.actionsLeft<=1){return'本月行动已用完，无法亲自探望。';}consumeAction();state.dowager.health=clamp(state.dowager.health+10,0,100);return'皇上亲自探望，太后十分欣慰。太后健康 <span class="pos">+10</span>，好感 <span class="pos">+8</span>。';},action:null}},
         {text:'儿臣政务繁忙，改日再探望',effects:{favorDelta:-8,result:'太后眼中闪过一丝失望：「皇帝忙，哀家理解的……」',action:null}},
       ]},
@@ -10279,7 +10259,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     {id:'birthday',name:'太后寿辰',conditions(){return state.year>=2&&state.dowager.greetingCount>=10;},
       lines:['下月便是哀家的寿辰了……','哀家也不图什么热闹，只是觉得日子过得真快。'],
       options:[
-        {text:'儿臣定当大办，为母后祝寿（国库-2000）',effects:{favorDelta:20,result:function(){if(state.treasury<2000){state.treasury=0;return'国库不足，寿辰只能从简。太后好感 <span class="neg">-5</span>。';}state.treasury-=2000;return'寿辰大办，太后龙颜大悦。国库 <span class="neg">-2000</span>，太后好感 <span class="pos">+20</span>。';},action:null}},
+        {text:'儿臣定当大办，为母后祝寿（国库-2000）',effects:{favorDelta:20,result:function(){spendTreasury(2000);return'寿辰大办，太后龙颜大悦。国库 <span class="neg">-2000</span>，太后好感 <span class="pos">+20</span>。';},action:null}},
         {text:'儿臣简办即可，母后心意最重要（国库-200）',effects:{favorDelta:5,result:function(){state.treasury-=200;return'简办寿辰，太后虽有些失望但也能理解。国库 <span class="neg">-200</span>，好感 <span class="pos">+5</span>。';},action:null}},
       ]},
   ];
@@ -10354,9 +10334,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function offerDowagerGift(){
     if(!canAct())return;
     if(!state.dowager||!state.dowager.alive){showFeedback('太后已不在人世。');return;}
-    if(state.treasury<200){showFeedback('国库不足！');return;}
+    spendTreasury(200);
     consumeAction();
-    state.treasury-=200;
     const d=state.dowager;
     d.giftedCount++;
     d.health=clamp(d.health+3,0,100);
