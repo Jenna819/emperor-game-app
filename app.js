@@ -1486,6 +1486,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     });
     html+=`</div>`;
     content.innerHTML=html;
+    const confirmBtn=document.getElementById('promo-confirm-btn');
+    if(confirmBtn){
+      const canAfford=state.treasury>=500&&state.actionsLeft>0;
+      confirmBtn.disabled=!canAfford;
+      confirmBtn.style.opacity=canAfford?'':'0.4';
+      confirmBtn.onclick=function(){if(canAfford)confirmPromotion(c.id,eligible[0].rank);};
+    }
     document.getElementById('modal-promotion').classList.add('show');
   }
   function closePromotion(){document.getElementById('modal-promotion').classList.remove('show');}
