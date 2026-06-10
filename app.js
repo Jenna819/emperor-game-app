@@ -3730,6 +3730,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     html+='<button id="music-toggle-btn" onclick="Game.toggleMusic()" style="padding:8px 28px;border-radius:20px;border:2px solid #c49030;background:'+(musicOn?'#c49030':'transparent')+';color:'+(musicOn?'#fff':'#c49030')+';font-size:14px;font-family:inherit;font-weight:bold;cursor:pointer;transition:all 0.2s;">'+(musicOn?'&#24050;&#24320;&#21551;':'&#24050;&#20851;&#38381;')+'</button></div>';
     html+='<div style="text-align:center;margin-top:16px;"><div style="font-size:12px;color:#8a7060;margin-bottom:6px;">&#38899;&#37327;</div>';
     html+='<input type="range" min="0" max="100" id="music-volume-slider" value="50" style="width:200px;" oninput="Game.setMusicVolume(this.value/100)"></div>';
+    html+='<div style="border-top:1px solid rgba(200,160,80,0.2);margin:16px 0;"></div>';
+    html+='<div style="text-align:center;"><a href="privacy.html" style="color:#a07020;font-size:13px;text-decoration:none;">&#38544;&#31169;&#25919;&#31574;</a></div>';
     html+='<div style="text-align:center;margin-top:12px;"><button class="btn-primary" style="max-width:160px;margin:0 auto;" onclick="Game.closeSettings()">&#20851; &#38381;</button></div>';
     html+='</div>';
     el.innerHTML=html;
