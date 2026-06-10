@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="皇帝后宫养成 - 一款古风文字养成网页游戏。体验帝王生活，选秀纳妃，子嗣养成，朝政治理。">
 <title>皇帝后宫养成</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1111532453734273" crossorigin="anonymous"></script>
 <style>
@@ -533,6 +534,15 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .promo-modal-opt .opt-rank{font-weight:bold;color:#c49030;}
 .promo-modal-opt .opt-cost{font-size:11px;color:#a08060;margin-top:4px;}
 
+#site-footer{text-align:center;padding:40px 20px 20px;font-size:11px;color:#b0a090;}
+#site-footer a{color:#a07020;text-decoration:none;}
+
+.cookie-consent{position:fixed;bottom:0;left:0;right:0;background:rgba(60,40,20,0.95);color:#f5f0e8;padding:14px 20px 16px;z-index:10000;font-size:13px;display:none;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;}
+.cookie-consent.show{display:flex;}
+.cookie-consent a{color:#ffd700;text-decoration:underline;}
+.cookie-consent-btn{background:#a07020;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;white-space:nowrap;}
+.cookie-consent-btn:hover{background:#c49030;}
+
 </style>
 </head>
 <body>
@@ -725,6 +735,18 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
   <div class="gameover-restart-fixed">
     <button id="gameover-restart-btn">重新开始</button>
   </div>
+</div>
+
+<div id="site-footer">
+  <p>&copy; 2025 皇帝后宫养成 All Rights Reserved</p>
+  <p><a href="privacy.html">&#38544;&#31169;&#25919;&#31574;</a> &middot; &#32852;&#31995;&#37038;&#31665;&#65306;jenna@duodianmeihao.com</p>
+</div>
+
+<div id="cookie-consent" class="cookie-consent">
+  <span>&#26412;&#31449;&#20351;&#29992; Cookie &#25913;&#21892;&#20307;&#39564;&#21450;&#25237;&#25918;&#24191;&#21578;&#12290;&#32487;&#32493;&#20351;&#29992;&#21363;&#34920;&#31034;&#24744;&#21516;&#24847;&#25105;&#20204;&#30340;
+    <a href="privacy.html">&#38544;&#31169;&#25919;&#31574;</a>&#12290;
+  </span>
+  <button class="cookie-consent-btn" onclick="acceptCookies()">&#25105;&#30693;&#36947;&#20102;</button>
 </div>
 
 <audio id="bgm" loop preload="none"><source data-src="media/bgm.mp3" type="audio/mpeg"></audio>
