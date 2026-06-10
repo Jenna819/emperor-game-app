@@ -15,12 +15,6 @@ function lazyLoadBgAudio(){
   var src=audio.querySelector('source[data-src]');
   if(src){src.setAttribute('src',src.getAttribute('data-src'));audio.load();}
 }
-function lazyLoadIntroVideo(){
-  var video=document.getElementById('intro-video');
-  if(!video||video.src)return;
-  var ds=video.getAttribute('data-src');
-  if(ds){video.src=ds;video.load();}
-}
 function lazyLoadMap(){
   var img=document.getElementById('out-map-img');
   if(!img||img.src)return;
@@ -2235,39 +2229,16 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function showIntro(){
-    lazyLoadIntroVideo();
     const overlay=document.getElementById('intro-overlay');
-    const video=document.getElementById('intro-video');
-    const hint=document.getElementById('intro-hint');
     if(overlay){overlay.classList.add('show');}
-    if(video){
-      video.currentTime=0;
-      video.muted=true;
-      video.play().then(function(){
-        if(hint)hint.classList.add('hide');
-      }).catch(function(){
-        if(hint)hint.classList.remove('hide');
-      });
-      // 点击任意处取消静音（手机端自动播放必为静音，需手动解除）
-      overlay.onclick=function(e){
-        if(e.target===overlay||e.target===video){
-          video.muted=false;
-          video.play();
-          if(hint)hint.classList.add('hide');
-          overlay.onclick=null;
-        }
-      };
-      video.onended=function(){hideIntro();};
-    }
+    // 文字动画约6秒自动结束
+    setTimeout(function(){hideIntro();},6000);
   }
 
   function skipIntro(){
     lazyLoadBgAudio();
-    // 判断当前是新游戏流程还是旧流程
     const overlay=document.getElementById('intro-overlay');
-    const video=document.getElementById('intro-video');
-    if(video){video.pause();video.currentTime=0;video.onended=null;}
-    if(overlay){overlay.classList.remove('show');overlay.onclick=null;}
+    if(overlay){overlay.classList.remove('show');}
     // 如果国库弹窗已关闭（新游戏流程），直接进入游戏
     const treasuryModal=document.getElementById('modal-treasury');
     if(treasuryModal&&!treasuryModal.classList.contains('show')){
@@ -2281,47 +2252,20 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function hideIntro(){
     const overlay=document.getElementById('intro-overlay');
-    const video=document.getElementById('intro-video');
-    if(video){video.pause();video.currentTime=0;}
-    if(overlay){overlay.classList.remove('show');overlay.onclick=null;}
+    if(overlay){overlay.classList.remove('show');}
     showPage('start');
   }
 
   function playIntroForNewGame(){
-    lazyLoadIntroVideo();
     lazyLoadBgAudio();
     const overlay=document.getElementById('intro-overlay');
-    const video=document.getElementById('intro-video');
-    const hint=document.getElementById('intro-hint');
     if(overlay){overlay.classList.add('show');}
-    if(video){
-      video.currentTime=0;
-      // 用户已点击按钮，浏览器已授权，直接带声音播放
-      video.muted=false;
-      video.play().then(function(){
-        if(hint)hint.classList.add('hide');
-      }).catch(function(){
-        // 兜底：若仍被拦截，则静音播放，点击屏幕取消静音
-        video.muted=true;
-        video.play();
-        if(hint)hint.classList.remove('hide');
-        overlay.onclick=function(e){
-          if(e.target===overlay||e.target===video){
-            video.muted=false;
-            video.play();
-            if(hint)hint.classList.add('hide');
-            overlay.onclick=null;
-          }
-        };
-      });
-      video.onended=function(){
-        if(video){video.pause();video.currentTime=0;}
-        if(overlay){overlay.classList.remove('show');overlay.onclick=null;video.onended=null;}
-        if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
-        showPage('main');updateUI();
-        setTimeout(()=>triggerDraft(),800);
-      };
-    }
+    // 文字动画约6秒自动结束
+    setTimeout(function(){
+      if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
+      showPage('main');updateUI();
+      setTimeout(()=>triggerDraft(),800);
+    },6000);
   }
   function startNewGame(){
     const v=document.getElementById('dynasty-input').value.trim();

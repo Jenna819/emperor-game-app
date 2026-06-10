@@ -266,11 +266,9 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 /* 开局动画 */
 #intro-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;cursor:pointer}
 #intro-overlay.show{display:flex}
-#intro-overlay video{width:100vw;height:100vh;object-fit:cover}
-#intro-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.7);font-size:18px;letter-spacing:4px;pointer-events:none;transition:opacity 0.3s;text-align:center}
-#intro-hint.hide{opacity:0}
-#intro-skip{position:absolute;bottom:30px;right:30px;background:rgba(0,0,0,0.6);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 20px;border-radius:20px;font-size:14px;cursor:pointer;font-family:inherit;transition:background 0.2s}
-#intro-skip:hover{background:rgba(0,0,0,0.8)}
+.intro-text-line{font-family:"STKaiti","KaiTi","楷体","SimSun","宋体",serif;color:#ffd700;font-size:28px;letter-spacing:10px;text-align:center;opacity:0;animation:fadeInOut 3s ease-in-out forwards;text-shadow:0 0 20px rgba(255,215,0,0.4),0 0 40px rgba(255,215,0,0.2)}
+@keyframes fadeInOut{0%{opacity:0;transform:translateY(10px);}20%{opacity:1;transform:translateY(0);}70%{opacity:1;}100%{opacity:0;transform:translateY(-10px);}}
+.intro-line-3{font-size:36px;letter-spacing:14px;color:#ffe08a;text-shadow:0 0 30px rgba(255,215,0,0.5),0 0 60px rgba(255,215,0,0.3)}
 
 /* ===== 宫外场景 ===== */
 #page-out { position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#000;display:none;flex-direction:column; }
@@ -537,10 +535,10 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </style>
 </head>
 <body>
-<div id="intro-overlay">
-  <video id="intro-video" data-src="media/intro-video.mp4" playsinline muted></video>
-  <div id="intro-hint">&#36828;&#36814;&#26032;&#26391;</div>
-  <button id="intro-skip" onclick="Game.skipIntro()">跳过动画</button>
+<div id="intro-overlay" onclick="Game.skipIntro()">
+  <div class="intro-text-line intro-line-1">&#22823;&#21608;&#20047;&#36947;&#65292;&#20154;&#27665;&#25343;&#21521;</div>
+  <div class="intro-text-line intro-line-2" style="animation-delay:1.5s">&#20809;&#36208;&#21147;&#33258;&#24378;&#65292;&#21400;&#21457;&#21518;&#22330;</div>
+  <div class="intro-text-line intro-line-3" style="animation-delay:3s">&#36828;&#36814;&#26032;&#26391;</div>
 </div>
 <div class="scroll-container">
 <div id="month-transition"></div>
