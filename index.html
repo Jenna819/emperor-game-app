@@ -2,9 +2,6 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>皇帝后宫养成</title>
 <style>
@@ -296,7 +293,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 #modal-unavailable .modal-body p { color:#8a7060;font-size:15px;margin-bottom:18px; }
 
 /* ===== 江南寻美 ===== */
-#page-jiangnan { position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:url('皇帝下江南风景图生成.png') center/cover no-repeat;display:none;flex-direction:column; }
+#page-jiangnan { position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#1a3020;display:none;flex-direction:column; }
 #page-jiangnan.active { display:flex; }
 .jn-header { position:relative;width:100%;padding:12px 16px;background:linear-gradient(180deg,rgba(255,240,220,0.95) 0%,rgba(255,235,215,0.9) 95%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,160,80,0.3);z-index:10;display:flex;align-items:center; }
 .jn-back-btn { background:none;border:none;font-size:16px;color:#8a7060;cursor:pointer;padding:6px 12px;font-family:inherit;font-weight:bold;letter-spacing:2px; }
@@ -541,7 +538,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </head>
 <body>
 <div id="intro-overlay">
-  <video id="intro-video" src="media/intro-video.mp4" playsinline muted></video>
+  <video id="intro-video" data-src="media/intro-video.mp4" playsinline muted></video>
   <div id="intro-hint">&#36828;&#36814;&#26032;&#26391;</div>
   <button id="intro-skip" onclick="Game.skipIntro()">跳过动画</button>
 </div>
@@ -611,7 +608,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
     <div class="out-title">宫外</div>
   </div>
   <div class="out-map-container">
-    <img id="out-map-img" src="media/out-map.png" alt="宫外地图">
+    <img id="out-map-img" data-src="media/out-map.png" alt="宫外地图">
     <div class="out-locations">
       <div class="out-location" onclick="Game.showHonglou()"></div>
       <div class="out-location" onclick="Game.clickLocation('繁华大街')"></div>
@@ -731,7 +728,7 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
   </div>
 </div>
 
-<audio id="bgm" loop preload="auto"><source src="media/bgm.mp3" type="audio/mpeg"></audio>
-<script src="app.js"></script>
+<audio id="bgm" loop preload="none"><source data-src="media/bgm.mp3" type="audio/mpeg"></audio>
+<script src="app.js" defer></script>
 </body>
 </html>

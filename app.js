@@ -7,6 +7,33 @@ function doStartGame(){
     alert('JS加载失败，请刷新页面');
   }
 }
+
+// ========== 懒加载工具 ==========
+function lazyLoadBgAudio(){
+  var audio=document.getElementById('bgm');
+  if(!audio||audio.querySelector('source[src]'))return;
+  var src=audio.querySelector('source[data-src]');
+  if(src){src.setAttribute('src',src.getAttribute('data-src'));audio.load();}
+}
+function lazyLoadIntroVideo(){
+  var video=document.getElementById('intro-video');
+  if(!video||video.src)return;
+  var ds=video.getAttribute('data-src');
+  if(ds){video.src=ds;video.load();}
+}
+function lazyLoadMap(){
+  var img=document.getElementById('out-map-img');
+  if(!img||img.src)return;
+  var ds=img.getAttribute('data-src');
+  if(ds){img.src=ds;}
+}
+function lazyLoadJiangnanBg(){
+  var el=document.getElementById('page-jiangnan');
+  if(!el||el.dataset.bgLoaded)return;
+  el.style.backgroundImage="url('皇帝下江南风景图生成.png')";
+  el.dataset.bgLoaded='1';
+}
+
 // ========== 古装美女立绘生成 ==========
 const Portrait = (function() {
   const SKIN = ['#faf0e6','#f5e1d0','#fce8d5','#f8e0cc','#fde6d4','#f0d8c8','#fce0d0','#f7dcc8'];
@@ -2208,6 +2235,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function showIntro(){
+    lazyLoadIntroVideo();
     const overlay=document.getElementById('intro-overlay');
     const video=document.getElementById('intro-video');
     const hint=document.getElementById('intro-hint');
@@ -2234,6 +2262,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function skipIntro(){
+    lazyLoadBgAudio();
     // 判断当前是新游戏流程还是旧流程
     const overlay=document.getElementById('intro-overlay');
     const video=document.getElementById('intro-video');
@@ -2259,6 +2288,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function playIntroForNewGame(){
+    lazyLoadIntroVideo();
+    lazyLoadBgAudio();
     const overlay=document.getElementById('intro-overlay');
     const video=document.getElementById('intro-video');
     const hint=document.getElementById('intro-hint');
@@ -3762,6 +3793,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function toggleMusic(){
+    lazyLoadBgAudio();
     const audio=document.getElementById('bgm');if(!audio)return;
     if(audio.paused){audio.play().catch(()=>{});localStorage.removeItem('emperor_music');}
     else{audio.pause();localStorage.setItem('emperor_music','off');}
@@ -7847,6 +7879,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       updateUI();
       initStart();
       // Restore music preference (default ON)
+      lazyLoadBgAudio();
       if(localStorage.getItem('emperor_music')!=='off'){
         const audio=document.getElementById('bgm');
         if(audio)audio.play().catch(()=>{});
@@ -7872,6 +7905,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   
   // ===== 宫外功能 =====
   function showOut(){
+    lazyLoadMap();
     document.getElementById('page-out').classList.add('active');
   }
   function closeOut(){
@@ -9011,6 +9045,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function showJiangnan(){
+    lazyLoadJiangnanBg();
     document.getElementById('page-jiangnan').classList.add('active');
     // Hide banner since page uses background image now
     var banner=document.querySelector('.jn-banner');
