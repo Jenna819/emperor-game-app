@@ -8441,8 +8441,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('confirm-content').innerHTML=msg;
     _confirmCallback=onYes;
     document.getElementById('confirm-yes-btn').onclick=function(){
-      if(_confirmCallback)_confirmCallback();
+      const cb=_confirmCallback;
       closeConfirm();
+      if(cb)cb();
     };
     tryOpenModal(()=>{document.getElementById('modal-confirm').classList.add('show');});
   }
