@@ -1761,7 +1761,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;if(c.birthCount===undefined)c.birthCount=state.children.filter(ch=>ch.motherId===c.id).length;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2351,7 +2351,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
   function doNextMonth(){
-    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;});state.coldPalaceList.forEach(c=>{c.age++;});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}if(state._queenEventCooldown>0)state._queenEventCooldown--;processChildTraining();checkNaturalDeath();if(state._naturalDeathTriggered)return;
+    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.coldPalaceList.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}if(state._queenEventCooldown>0)state._queenEventCooldown--;processChildTraining();checkNaturalDeath();if(state._naturalDeathTriggered)return;
     // 经济系统：基础税收
     const taxIncome = rand(1000, 2000);
     // 母家进贡（每年6月触发，避开选秀月1月）
@@ -3332,8 +3332,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         if(Math.random()<rate){
           c.pregnant=false;c.pregMonth=0;
           c.health=clamp(c.health-15,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-5,0,500);
+          const slipLoss=applyBeautyDecay(c,1,'misc');
           logEvent('自然滑胎',c.name+'不幸滑胎');triggerMiscarriageAftermath(c);
-          setTimeout(()=>showFeedback('<span class="neg">'+c.name+'</span> 不幸滑胎<br>健康<span class="neg">-15</span>，宠爱<span class="neg">-10</span>'),300);
+          setTimeout(()=>showFeedback('<span class="neg">'+c.name+'</span> 不幸滑胎<br>健康<span class="neg">-15</span>，宠爱<span class="neg">-10</span>'+(slipLoss>0?'，美貌<span class="neg">-'+slipLoss+'</span>':'')),300);
           return;
         }
       }
@@ -3358,6 +3359,34 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(Math.random()<0.30){c._fertilityPenalty=3;logEvent('流产后遗症',c.name+'体虚难孕');}
   }
 
+  // ===== 容貌衰减：岁月与生育 =====
+  const BEAUTY_AGE_LOGS=['{name}近日对镜梳妆，觉容颜稍逊往年','{name}鬓边偶见华发，方知韶华易逝','{name}不复当年鲜妍，宫中美人如云，渐有新人胜旧人之势'];
+  const BEAUTY_BIRTH_LOGS=['{name}诞育劳损，气血两亏，颜色少衰','{name}产后体虚，容颜较孕前清减了些'];
+  const BEAUTY_MISC_LOGS=['{name}小产后元气受损，容颜暗耗'];
+  function beautyFloor(c){return Math.max(30,Math.round(c.baseBeauty*0.55));}
+  function applyBeautyDecay(c,amt,reason){
+    if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;
+    const before=c.beauty;
+    c.beauty=Math.max(beautyFloor(c),c.beauty-amt);
+    const loss=before-c.beauty;
+    if(loss>0){
+      const pool=reason==='birth'?BEAUTY_BIRTH_LOGS:reason==='misc'?BEAUTY_MISC_LOGS:BEAUTY_AGE_LOGS;
+      logEvent('容貌',pick(pool).replace('{name}',c.name));
+    }
+    return loss;
+  }
+  function yearlyBeautyTick(c){
+    if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;
+    if(c.age<=22){if(Math.random()<0.10)c.beauty=clamp(c.beauty+1,0,99);return;}
+    let chance=0,amt=0;
+    if(c.age<=27){chance=0.30;amt=1;}
+    else if(c.age<=35){chance=0.50;amt=1;}
+    else if(c.age<=45){chance=0.70;amt=rand(1,2);}
+    else{chance=1;amt=rand(2,3);}
+    if(c.favor>1500)chance=chance/2;
+    if(Math.random()<chance)applyBeautyDecay(c,amt,'age');
+  }
+
   function showPregnancyAlert(name,powerInc){
     const el=document.getElementById('birth-content');
     const pInc=powerInc||8;
@@ -3374,6 +3403,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       c.favor=clamp(c.favor+favorInc,0,2200);
       c.power=clamp(c.power+powerInc,0,500);
       c.health=clamp(c.health+10,0,100);
+      c.birthCount=(c.birthCount||0)+1;
+      const beautyLoss=applyBeautyDecay(c,rand(2,4)+(c.birthCount>=3?1:0),'birth');
       const childTalent=clamp(Math.round(50*0.2+c.talent*0.2+c.wisdom*0.1+rand(10,50)),0,100);
       const childAppearance=clamp(Math.round(c.beauty*0.4+rand(10,50)),0,100);
       const childPersonality=genChildPersonality(c.personality);
@@ -3387,7 +3418,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         appearance:childAppearance,personality:childPersonality,
         martial:rand(20,60),virtue:rand(40,80),prestige:0,health:rand(70,100),
         adoptiveMotherId:null,adoptiveMotherName:null,isOrphan:false,orphanMonth:0,monthlyCost:0,
-        _favorInc:favorInc,_powerInc:powerInc,_isFirstPrince:isFirstPrince
+        _favorInc:favorInc,_powerInc:powerInc,_isFirstPrince:isFirstPrince,_beautyLoss:beautyLoss
       };
       state._namingQueue.push({childData,mother:c,childType,isPrince,isFirstPrince});
     });
@@ -4322,11 +4353,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       const icon=isPrince?'👶':'👧';
       const childType=isPrince?'皇子':'公主';
       const starHtml=isFirstPrince?'<div style="font-size:14px;color:#c49030;font-weight:bold;margin-bottom:6px;"> 贵子降生 </div>':'';
-      html+=`<div class="birth-icon">${icon}</div>${starHtml}<div class="baby-type">${ch.motherName} 诞下${childType}！</div><div class="baby-info">${ch.motherRank} ${ch.motherName}，十月怀胎，一朝分娩<br>母子平安</div><div class="baby-promote">因诞下${isFirstPrince?'贵子':childType}，${ch.motherName} 宠爱+${favorInc}，势力+${powerInc}</div>`;
+      html+=`<div class="birth-icon">${icon}</div>${starHtml}<div class="baby-type">${ch.motherName} 诞下${childType}！</div><div class="baby-info">${ch.motherRank} ${ch.motherName}，十月怀胎，一朝分娩<br>母子平安</div><div class="baby-promote">因诞下${isFirstPrince?'贵子':childType}，${ch.motherName} 宠爱+${favorInc}，势力+${powerInc}${(ch._beautyLoss||0)>0?'，气血亏损，美貌-'+ch._beautyLoss:''}</div>`;
       // 清理标记
       delete ch._favorInc;
       delete ch._powerInc;
       delete ch._isFirstPrince;
+      delete ch._beautyLoss;
     });
     html+='<button class="btn-primary" onclick="Game.closeBirth()">大喜，同喜！</button></div>';
     el.innerHTML=html;
@@ -4397,19 +4429,20 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     let pregChance=0.25;if(c._fertilityPenalty&&c._fertilityPenalty>0){pregChance=0.125;c._fertilityPenalty--;}
     if(!c.pregnant&&Math.random()<pregChance){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     // 怀孕妃子宠幸有阶段性流产风险
-    let miscarriage=false;
+    let miscarriage=false;let miscBeautyLoss=0;
     if(c.pregnant){
       let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
       if(Math.random()<miscRate){
         miscarriage=true;c.pregnant=false;c.pregMonth=0;
         c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        miscBeautyLoss=applyBeautyDecay(c,1,'misc');
         logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
       }
     }
     consumeAction();save();updateUI();
     let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(miscarriage){
-      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>'+(miscBeautyLoss>0?'，美貌 <span class="neg">-'+miscBeautyLoss+'</span>':'');
     }
     showFeedback(msg);
     showDetail(id);
@@ -4811,12 +4844,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     triggerFavorBackground(c);
     checkPromotionEligibility(c);
     // 怀孕宠幸有阶段性流产风险
-    let miscarriage=false;
+    let miscarriage=false;let miscBeautyLoss=0;
     if(c.pregnant){
       let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
       if(Math.random()<miscRate){
         miscarriage=true;c.pregnant=false;c.pregMonth=0;
         c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        miscBeautyLoss=applyBeautyDecay(c,1,'misc');
         logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
       }
     }
@@ -4824,7 +4858,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     consumeAction();save();updateUI();
     let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(miscarriage){
-      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>'+(miscBeautyLoss>0?'，美貌 <span class="neg">-'+miscBeautyLoss+'</span>':'');
       logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');
     }
     showFeedback(msg);
@@ -4840,12 +4874,13 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     checkPromotionEligibility(c);
-    let miscarriage=false;
+    let miscarriage=false;let miscBeautyLoss=0;
     if(c.pregnant){
       let miscRate=c.pregMonth<=3?0.12:c.pregMonth<=6?0.06:0.02;
       if(Math.random()<miscRate){
         miscarriage=true;c.pregnant=false;c.pregMonth=0;
         c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);
+        miscBeautyLoss=applyBeautyDecay(c,1,'misc');
         logEvent('&#27969;&#20135;',c.rank+c.name+'&#23456;&#24184;&#21168;&#32780;&#27969;&#20135;');triggerMiscarriageAftermath(c);
       }
     }
@@ -4854,7 +4889,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     let msg='&#23456;&#24184;&#20102; <span class="pos">'+c.name+'</span><br>&#23456;&#29233; <span class="pos">+15</span>&#65292;&#21183;&#21147; <span class="pos">+2</span><br>&#22269;&#24211; <span class="neg">-200</span>&#20004;<br>&#34892;&#21160; <span class="neg">-1</span>';
     if(state._bedVirginType==='virgin'){msg+='<br><span style="color:#e06080;font-size:12px;">（今夜是'+c.name+'的初夜）</span>';}
     if(miscarriage){
-      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>';
+      msg+='<br><span class="neg">'+c.name+' &#23456;&#24184;&#21168;&#32780;&#27969;&#20135;&#65281;</span><br>&#20581;&#24247; <span class="neg">-20</span>&#65292;&#23456;&#29233; <span class="neg">-10</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>'+(miscBeautyLoss>0?'，美貌 <span class="neg">-'+miscBeautyLoss+'</span>':'');
     }
     if(state._bedVirginType==='virgin'){msg+='<br><span style="color:#e06080;font-size:12px;">（今夜是'+c.name+'的初夜）</span>';}
     showFeedback(msg);
@@ -8343,7 +8378,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.treasury-=200;c.favor=clamp(c.favor+15,0,2200);c.power=clamp(c.power+2,0,500);
     triggerFavorBackground(c);
     // 皇后宠幸有阶段性流产风险
-    if(c.pregnant&&Math.random()<0.06){c.pregnant=false;c.pregMonth=0;c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);logEvent('流产',c.name+'不幸流产');}
+    if(c.pregnant&&Math.random()<0.06){c.pregnant=false;c.pregMonth=0;c.health=clamp(c.health-20,0,100);c.favor=clamp(c.favor-10,0,2200);c.power=clamp(c.power-10,0,500);applyBeautyDecay(c,1,'misc');logEvent('流产',c.name+'不幸流产');}
     if(!c.pregnant&&Math.random()<0.25){c.pregnant=true;c.pregMonth=1;c.power=clamp(c.power+8,0,500);setTimeout(()=>showPregnancyAlert(c.name,8),500);}
     consumeAction();save();updateUI();
     let msg='宠幸了皇后 <span class="pos">'+c.name+'</span><br>宠爱 <span class="pos">+15</span>，势力 <span class="pos">+2</span><br>国库 <span class="neg">-200</span>两<br>行动 <span class="neg">-1</span>';
