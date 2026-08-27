@@ -7403,6 +7403,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     // Pick two suspects from concubines who are NOT the mother
     const suspects = state.concubines.filter(c=>c.id!==mother.id);
     if(suspects.length<2) return null;
+    // 皇子已中毒身亡：移出子嗣列表，生母哀损耗
+    state.children=state.children.filter(x=>x.id!==victim.id);
+    mother.favor=clamp(mother.favor-50,0,2200);
+    mother.health=clamp(mother.health-15,0,100);
+    mother.stress=clamp((mother.stress||0)+15,0,100);
+    logEvent('皇子薨逝',victim.name+'中毒薨逝');
     const shuffled = [...suspects].sort(()=>Math.random()-0.5);
     const perp = shuffled[0];      // 真凶
     const decoy = shuffled[1];     // 干扰嫌疑人
@@ -7529,7 +7535,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     // Hide confirm button for investigation mode
     const btn = document.getElementById('event-confirm-btn');
     if(btn) btn.style.display='none';
-    tryOpenModal(()=>{document.getElementById('modal-event').classList.add('show');});
+    // 复用已打开的事件弹窗时不再入队，防止结案后队列逐条弹出旧的查案弹窗
+    const m=document.getElementById('modal-event');
+    if(!m.classList.contains('show'))tryOpenModal(()=>{m.classList.add('show');});
   }
 
   function processInvestigationChoice(idx){
