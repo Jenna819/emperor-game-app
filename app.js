@@ -2235,17 +2235,28 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     setTimeout(function(){hideIntro();},6000);
   }
 
-  function skipIntro(){
-    lazyLoadBgAudio();
+  let _introEntered=false;
+  let _introTimer=null;
+  function enterGameFromIntro(){
+    if(_introEntered)return;
+    _introEntered=true;
+    if(_introTimer){clearTimeout(_introTimer);_introTimer=null;}
     const overlay=document.getElementById('intro-overlay');
     if(overlay){overlay.classList.remove('show');}
+    if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
+    showPage('main');updateUI();
+    setTimeout(()=>triggerDraft(),800);
+  }
+
+  function skipIntro(){
+    lazyLoadBgAudio();
     // 如果国库弹窗已关闭（新游戏流程），直接进入游戏
     const treasuryModal=document.getElementById('modal-treasury');
     if(treasuryModal&&!treasuryModal.classList.contains('show')){
-      if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
-      showPage('main');updateUI();
-      setTimeout(()=>triggerDraft(),800);
+      enterGameFromIntro();
     } else {
+      const overlay=document.getElementById('intro-overlay');
+      if(overlay){overlay.classList.remove('show');}
       showPage('start');
     }
   }
@@ -2258,14 +2269,11 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function playIntroForNewGame(){
     lazyLoadBgAudio();
+    _introEntered=false;
     const overlay=document.getElementById('intro-overlay');
     if(overlay){overlay.classList.add('show');}
     // 文字动画约6秒自动结束
-    setTimeout(function(){
-      if(localStorage.getItem('emperor_music')!=='off'){const audio=document.getElementById('bgm');if(audio)audio.play().catch(()=>{});}
-      showPage('main');updateUI();
-      setTimeout(()=>triggerDraft(),800);
-    },6000);
+    _introTimer=setTimeout(function(){_introTimer=null;enterGameFromIntro();},6000);
   }
   function startNewGame(){
     const v=document.getElementById('dynasty-input').value.trim();
@@ -8761,6 +8769,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   // ===== 选秀系统 =====
   function triggerDraft(){
+    if(state._drafting)return;
     if(state.concubines.length>30){showFeedback('后宫已满30人，无法选秀！');return;}
     state._drafting=true;
     state._draftPool=[];
