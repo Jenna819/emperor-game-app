@@ -1555,7 +1555,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function closePromotionConfirm(){document.getElementById('modal-promotion-confirm').classList.remove('show');}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,_emperorAge:0,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{},banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,_lastPrincessYear:0,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false,crownPrinceId:null,dowager:null,_dowagerTeachUsed:false,_dowagerEventTriggered:false,_dowagerPregnancyBoost:false,_dowagerTreasuryBonus:0,_dowagerDraftBoost:false,_dowagerBlessingMonth:0,_promotionPending:[],_naturalDeathTriggered:false};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,_emperorAge:0,concubines:[],coldPalaceList:[],banned:{},eventLog:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{},banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,_lastPrincessYear:0,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false,crownPrinceId:null,dowager:null,_dowagerTeachUsed:false,_dowagerEventTriggered:false,_dowagerPregnancyBoost:false,_dowagerTreasuryBonus:0,_dowagerDraftBoost:false,_dowagerBlessingMonth:0,_promotionPending:[],_naturalDeathTriggered:false,_marriageQueue:[],_marriageQueueYear:0,_pendingMarriageEvent:null,_lastHeqinCountry:null,_marriagePeaceUntil:0,_marriagePeaceApplied:false,_heqinTributeAmt:0,_heqinTributeYears:0};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -1761,7 +1761,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;if(c.birthCount===undefined)c.birthCount=state.children.filter(ch=>ch.motherId===c.id).length;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state.crownPrinceId!==null&&!state.children.some(c=>c.id===state.crownPrinceId))state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;if(c.birthCount===undefined)c.birthCount=state.children.filter(ch=>ch.motherId===c.id).length;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state.crownPrinceId!==null&&!state.children.some(c=>c.id===state.crownPrinceId))state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;if(!state._marriageQueue)state._marriageQueue=[];if(state._marriageQueueYear===undefined)state._marriageQueueYear=0;if(state._pendingMarriageEvent===undefined)state._pendingMarriageEvent=null;if(state._lastHeqinCountry===undefined)state._lastHeqinCountry=null;if(state._marriagePeaceUntil===undefined)state._marriagePeaceUntil=0;if(state._marriagePeaceApplied===undefined)state._marriagePeaceApplied=false;if(state._heqinTributeAmt===undefined)state._heqinTributeAmt=0;if(state._heqinTributeYears===undefined)state._heqinTributeYears=0;return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2351,7 +2351,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
   function doNextMonth(){
-    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.coldPalaceList.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;}if(state._queenEventCooldown>0)state._queenEventCooldown--;processChildTraining();checkNaturalDeath();if(state._naturalDeathTriggered)return;
+    state.month++;if(state.month>12){state.month=1;state.year++;state._emperorAge++;state.concubines.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.coldPalaceList.forEach(c=>{c.age++;yearlyBeautyTick(c);});state.children.forEach(ch=>{ch.age++;if(ch.age>=6){ch.talent=clamp(ch.talent+rand(2,5),0,100);ch.virtue=clamp(ch.virtue+rand(1,3),0,100);}if(ch.age>=12){ch.martial=clamp(ch.martial+rand(1,3),0,100);ch.prestige=clamp(ch.prestige+rand(1,2),0,100);}});state.draftTriggeredThisYear=false;if(state.month===1&&state._marriageQueueYear!==state.year)genMarriageQueue();}if(state._queenEventCooldown>0)state._queenEventCooldown--;processChildTraining();checkNaturalDeath();if(state._naturalDeathTriggered)return;
     // 经济系统：基础税收
     const taxIncome = rand(1000, 2000);
     // 母家进贡（每年6月触发，避开选秀月1月）
@@ -2382,6 +2382,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     // 太后佛堂祈福：下月事件触发率降低
     const dowagerBlessing=state._dowagerBlessingMonth===state.year*12+state.month;
     if(dowagerBlessing){state.eventTriggerRate=Math.max(state.eventTriggerRate-20,10);}
+    // 和亲边境安宁期：进入时事件率-10，到期恢复
+    const peaceNow=!!state._marriagePeaceUntil&&state.year*12+state.month<=state._marriagePeaceUntil;
+    if(peaceNow&&!state._marriagePeaceApplied){state.eventTriggerRate=Math.max(state.eventTriggerRate-10,10);state._marriagePeaceApplied=true;}
+    else if(!peaceNow&&state._marriagePeaceApplied){state.eventTriggerRate=Math.min(state.eventTriggerRate+10,60);state._marriagePeaceApplied=false;}
     processBannedDecay();processColdDecay();processPregnancy();
     // 太后催生：当月妃嫔怀孕概率提升
     if(state._dowagerPregnancyBoost){
@@ -2419,6 +2423,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       state.draftTriggeredThisYear=true;
       setTimeout(()=>triggerDraft(),300);
     }
+    // 公主出嫁队列：每月投放一条（置于所有月度事件之后，避免 return 吞掉其他事件）
+    if(dispatchMarriageEvent())return;
   }
 
 
@@ -3032,7 +3038,18 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         const motherFavor=mother?mother.favor:0;
         const isSameMother=newEmperorId&&ch.motherId===newEmperorId?false:(newEmperorId&&state.children.find(x=>x.id===newEmperorId&&x.motherId===ch.motherId));
 
-        if(ch.age<16){
+        if(ch.married==='marry'){
+          const h=ch.marriageInfo||{};
+          fateText='先帝在世时已下嫁驸马'+(h.name||'某')+'，'+(h.father?'夫家'+h.father+'，':'')+(h.legit===false?'虽出庶门，':'')+'诰封命妇，岁时节庆尚可入宫请安，一生安稳顺遂。';
+          borderColor='#40a060';
+        } else if(ch.married==='heqin'){
+          const h=ch.marriageInfo||{};
+          fateText='早年奉旨和亲'+(h.country||'异域')+'，位至王妃，朔漠风沙磨去了少女颜色。逢中原使臣过境，隔帐相望，归宁无期。';
+          borderColor='#a08090';
+        } else if(ch.married==='out'){
+          fateText='年长逾笄期，赐婚民间，领嫁出宫。布衣荆钗，市井烟火里过完了平凡一生。';
+          borderColor='#b0a090';
+        } else if(ch.age<16){
           fateText='年幼未嫁，由太后抚养宫中。待及笄之后，再议婚嫁。';
           borderColor='#b0a0d0';
         } else if(isSameMother){
@@ -3772,10 +3789,11 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         daughters.forEach(ch=>{
           const tierLabel=ch.talentTier||genTalentTier(ch.talent||50);
           const tierColor=tierLabel==='天赋异禀'?'#ffd700':tierLabel==='聪慧过人'?'#40a060':tierLabel==='资质中等'?'#a08060':'#b0a090';
+          const marriedTag=ch.married==='marry'?'<span style="padding:1px 6px;border-radius:3px;font-size:10px;background:rgba(64,160,96,0.15);color:#2a8a50;margin-left:6px;">已出降</span>':ch.married==='heqin'?'<span style="padding:1px 6px;border-radius:3px;font-size:10px;background:rgba(120,90,160,0.15);color:#7a4aa0;margin-left:6px;">和亲·'+((ch.marriageInfo&&ch.marriageInfo.country)||'异域')+'</span>':ch.married==='out'?'<span style="padding:1px 6px;border-radius:3px;font-size:10px;background:rgba(150,140,130,0.15);color:#8a8070;margin-left:6px;">出降民间</span>':'';
           html+=`<div style="display:flex;align-items:center;padding:10px 12px;margin-bottom:8px;background:linear-gradient(135deg,rgba(255,240,245,0.95),rgba(255,230,240,0.95));border:1px solid rgba(255,120,150,0.3);border-radius:10px;cursor:pointer;" onclick="Game.showChildDetail('${ch.id}')">
             <div style="font-size:28px;margin-right:12px;">👧</div>
             <div style="flex:1;">
-              <div style="font-size:14px;font-weight:bold;color:#d07090;margin-bottom:2px;">${ch.name}</div>
+              <div style="font-size:14px;font-weight:bold;color:#d07090;margin-bottom:2px;">${ch.name}${marriedTag}</div>
               <div style="font-size:12px;color:#8a7060;">${ch.gender} | ${ch.age||0}岁 | 才学${ch.talent||0} 品德${ch.virtue||0} <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;background:${tierColor}22;color:${tierColor};">${tierLabel}</span></div>
               <div style="font-size:12px;color:#8a7060;">生母：${ch.motherRank} ${ch.motherName}${ch.isOrphan?` <span class="orphan-tag">无依</span>`:''}</div>
             </div>
@@ -3799,10 +3817,15 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const personalityName=ch.personality?ch.personality.name:'未知';
     const personalityColor=ch.personality?ch.personality.color:'#8a7060';
     const el=document.getElementById('child-detail-content');
+    const marriedBadge=ch.married==='marry'?'<span style="padding:2px 8px;border-radius:4px;font-size:11px;background:rgba(64,160,96,0.15);color:#2a8a50;margin-left:8px;vertical-align:middle;">已出降·驸马府</span>':ch.married==='heqin'?'<span style="padding:2px 8px;border-radius:4px;font-size:11px;background:rgba(120,90,160,0.15);color:#7a4aa0;margin-left:8px;vertical-align:middle;">和亲·'+(((ch.marriageInfo&&ch.marriageInfo.country)||'异域')+'</span>'):ch.married==='out'?'<span style="padding:2px 8px;border-radius:4px;font-size:11px;background:rgba(150,140,130,0.15);color:#8a8070;margin-left:8px;vertical-align:middle;">下嫁民间</span>':'';
     el.innerHTML=`<div style="text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">${icon}</div>
-      <div style="font-size:20px;font-weight:bold;color:#c49030;margin-bottom:4px;">${ch.name}</div>
-      <div style="font-size:13px;color:#a08060;margin-bottom:20px;">${ch.gender} | ${ch.age||0}岁</div>
+      <div style="font-size:20px;font-weight:bold;color:#c49030;margin-bottom:4px;">${ch.name}${marriedBadge}</div>
+      <div style="font-size:13px;color:#a08060;margin-bottom:${ch.gender==='公主'&&ch.age>=16&&ch.age<=25&&!ch.married?'4px':'20px'};">${ch.gender} | ${ch.age||0}岁</div>
+      ${ch.gender==='公主'&&!ch.married&&ch.age>=16&&ch.age<=25?'<div style="font-size:12px;color:#d07090;margin-bottom:16px;">&#128140; 年已及笄，待议婚嫁</div>':''}
+      ${ch.married==='marry'&&ch.marriageInfo?'<div style="font-size:12px;color:#2a8a50;margin-bottom:16px;line-height:1.7;">驸马：'+ch.marriageInfo.name+'（'+(ch.marriageInfo.father||'')+'，'+(ch.marriageInfo.legit?'嫡出':'庶出')+'）· '+ch.marriedAge+'岁出降</div>':''}
+      ${ch.married==='heqin'&&ch.marriageInfo?'<div style="font-size:12px;color:#7a4aa0;margin-bottom:16px;line-height:1.7;">和亲'+ch.marriageInfo.country+'·国势'+(ch.marriageInfo.power||'')+' · '+ch.marriedAge+'岁远嫁，归宁无期</div>':''}
+      ${ch.married==='out'?'<div style="font-size:12px;color:#8a8070;margin-bottom:16px;">'+ch.marriedAge+'岁赐婚民间，领嫁出宫</div>':''}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:left;margin-bottom:20px;">
         <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
           <div style="font-size:11px;color:#a08060;">才学</div>
@@ -3968,6 +3991,245 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function closeChildDetail(e){
     if(e&&e.target!==e.currentTarget)return;
     document.getElementById('modal-child-detail').classList.remove('show');
+  }
+
+  // ===== 公主出嫁系统（议婚·和亲） =====
+  const OFFICIAL_TITLES={
+    '国公世家':['袭爵国公','从征将军'],
+    '一品文臣':['大学士','吏部尚书','户部尚书'],
+    '一品武将':['大将军','九门提督'],
+    '侯爵世家':['袭爵侯爷','禁军统领'],
+    '二品文臣':['礼部侍郎','都察院御史'],
+    '二品武将':['总兵','威武将军'],
+    '伯爵世家':['袭伯爵','太仆寺卿'],
+    '三品文臣':['通政使','顺天府尹'],
+    '三品武将':['参将','盐运使'],
+    '四品朝臣':['道台','太常寺少卿'],
+    '四品武将':['游击将军','守城尉'],
+    '五品文臣':['员外郎','知府'],
+    '五品武将':['守备','千总'],
+    '六品主事':['六部主事','县丞'],
+    '七品县令':['知县'],
+    '八品典吏':['典吏','教谕'],
+    '乡绅富户':['乡绅子弟','富户少主'],
+  };
+  const SUITOR_POS_ACH=['金榜题名·殿试二甲','军前立功·斩首陷阵','治河安澜·百姓立祠','书画双绝·名动京华','断案明察·平反冤狱','孝悌闻于乡里','理财有方·府库充盈','礼部试案首'];
+  const SUITOR_NEG_ACH=['游手好闲·斗鸡走马','流连秦楼·恶名暗传','体弱多病·恐难百年','骄纵跋扈·与友多隙','屡试不第·才具平庸','好酒失仪·为御史劾'];
+  const HEQIN_COUNTRIES=[
+    {name:'突厥汗国',power:'汗国',weight:1,bride:[18000,25000],tribute:1200},
+    {name:'吐蕃',power:'强',weight:2,bride:[10000,15000],tribute:800},
+    {name:'乌孙',power:'强',weight:2,bride:[10000,14000],tribute:800},
+    {name:'波斯',power:'富',weight:2,bride:[6000,9000],tribute:600},
+    {name:'天竺',power:'富',weight:2,bride:[6000,9000],tribute:600},
+    {name:'龟兹',power:'富',weight:2,bride:[6000,8000],tribute:600},
+    {name:'高昌',power:'中',weight:3,bride:[4500,6000],tribute:0},
+    {name:'于阗',power:'弱',weight:3,bride:[3000,5000],tribute:0},
+    {name:'焉耆',power:'弱',weight:3,bride:[3000,5000],tribute:0},
+    {name:'楼兰',power:'弱',weight:3,bride:[3000,5000],tribute:0},
+  ];
+
+  function getMarriageablePrincesses(){
+    return state.children.filter(ch=>ch.gender==='公主'&&ch.age>=16&&ch.age<=25&&!ch.married&&ch.health>0);
+  }
+  function princessTitleTier(ch){
+    const mr=ch.motherRank||'';
+    if(mr==='皇后'||mr==='皇贵妃'||mr==='贵妃')return {label:'固伦公主',dowry:2000};
+    if(mr==='妃'||mr==='嫔')return {label:'和硕公主',dowry:1200};
+    return {label:'恩封县主',dowry:rand(500,800)};
+  }
+  function genSuitor(recommender){
+    const pool=FAMILY_TIERS.filter(t=>t.name!=='宗室王族');
+    let tier=(recommender&&recommender.family&&pool.indexOf(recommender.family)>=0&&Math.random()<0.5)?recommender.family:pick(pool);
+    const linked=!!(recommender&&tier===recommender.family);
+    const surname=linked?getSurname(recommender.name):pick(SURS);
+    const isMil=/武将/.test(tier.name);
+    const ach=[];const n=Math.random()<0.55?2:1;
+    for(let i=0;i<n;i++){const posP=ach.length===0?Math.random()<0.75:Math.random()<0.5;ach.push(posP?{text:pick(SUITOR_POS_ACH),pos:true}:{text:pick(SUITOR_NEG_ACH),pos:false});}
+    return {
+      name:surname+makeName(2),age:rand(17,28),
+      fatherName:surname+makeName(1),fatherTitle:pick(OFFICIAL_TITLES[tier.name]||['清贵公子']),
+      tierName:tier.name,tierColor:tier.color,power:rand(tier.powerMin,tier.powerMax),
+      legit:Math.random()<0.7,beauty:rand(55,95),talent:rand(35,95),martial:rand(isMil?55:20,isMil?95:60),
+      personality:pick(PERSONALITIES),ach,linked,
+      relation:linked?pick(['臣兄之子','臣犹子也']):pick(['臣同僚之子','臣故交之子','臣好友之子']),
+    };
+  }
+  function genHeqinCountry(){
+    const pool=HEQIN_COUNTRIES.filter(c=>c.name!==state._lastHeqinCountry);
+    const list=pool.length>0?pool:HEQIN_COUNTRIES;
+    const w=[];list.forEach(c=>{for(let i=0;i<c.weight;i++)w.push(c);});
+    const c=pick(w);
+    const bride=Math.round(rand(c.bride[0],c.bride[1])*(1+0.05*(state.year-1))/100)*100;
+    return {name:c.name,power:c.power,bride,tribute:c.tribute};
+  }
+  function genMarriageQueue(){
+    state._marriageQueue=[];state._marriageQueueYear=state.year;
+    // 和亲岁币：每年正月入账
+    if(state._heqinTributeYears>0){state.treasury+=state._heqinTributeAmt;state._heqinTributeYears--;logEvent('和亲岁币','属国岁币入贡，国库 +'+state._heqinTributeAmt+' 两');}
+    let heqinUsed=false;
+    state.children.forEach(ch=>{
+      if(ch.gender!=='公主'||ch.married)return;
+      if(ch.age>=26){
+        ch.married='out';ch.marriedAge=ch.age;
+        ch.prestige=clamp((ch.prestige||0)-5,0,100);
+        logEvent('公主出嫁',ch.name+'年已逾笄期，赐婚民间，领嫁出宫');
+        return;
+      }
+      if(ch.age<16)return;
+      let type=Math.random()<0.55?'recommend':'heqin';
+      if(type==='heqin'){if(heqinUsed)type='recommend';else heqinUsed=true;}
+      const item={type,childId:ch.id};
+      if(type==='recommend'){
+        let rec=null;
+        const mother=state.concubines.find(c=>c.id===ch.motherId);
+        if(mother&&Math.random()<0.6)rec=mother;
+        else{const cand=state.concubines.filter(c=>c.favor>=60);if(cand.length>0)rec=pick(cand);}
+        item.recommenderId=rec?rec.id:null;
+        item.suitor=genSuitor(rec);
+      }else{
+        item.country=genHeqinCountry();
+      }
+      state._marriageQueue.push(item);
+    });
+  }
+  function dispatchMarriageEvent(){
+    if(state._pendingMarriageEvent){tryOpenModal(()=>openMarriageModal());return true;}
+    if(!state._marriageQueue||state._marriageQueue.length===0)return false;
+    let item=null;
+    while(state._marriageQueue.length>0){
+      const it=state._marriageQueue.shift();
+      const ch=state.children.find(x=>x.id===it.childId);
+      if(ch&&!ch.married&&ch.gender==='公主'&&ch.age>=16){item=it;break;}
+    }
+    if(!item){save();return false;}
+    state._pendingMarriageEvent=item;save();
+    tryOpenModal(()=>openMarriageModal());
+    return true;
+  }
+  function openMarriageModal(){
+    const item=state._pendingMarriageEvent;
+    if(!item){closeModal();return;}
+    if(item.type==='recommend')renderMarryModal(item);
+    else renderHeqinModal(item);
+  }
+  function renderMarryModal(item){
+    const ch=state.children.find(x=>x.id===item.childId);
+    if(!ch){state._pendingMarriageEvent=null;save();closeModal();return;}
+    const s=item.suitor||genSuitor(null);
+    const rec=item.recommenderId?state.concubines.find(c=>c.id===item.recommenderId):null;
+    const pt=princessTitleTier(ch);
+    const achHtml=s.ach.map(a=>'<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border-radius:4px;font-size:11px;background:'+(a.pos?'rgba(212,160,23,0.15);color:#b08020':'rgba(120,130,150,0.15);color:#6a7a8a')+';">'+(a.pos?'✦ ':'✧ ')+a.text+'</span>').join('');
+    let html='';
+    html+='<div style="font-size:12px;color:#8a7060;line-height:1.8;margin-bottom:10px;">'+(rec?rec.rank+' '+rec.name+' 携'+s.relation+'求见，奏曰：「<span class="pos">'+ch.name+'</span> 已及笄，'+(s.linked?'此子乃妾家子弟，少年老成':'此子才貌兼资')+'，愿充驸马之选。」':'太常寺查黄册得佳子弟，择吉进呈，为 <span class="pos">'+ch.name+'</span> 议尚驸马。')+'</div>';
+    html+='<div style="background:rgba(255,248,235,0.9);border:1px solid rgba(200,160,80,0.3);border-radius:10px;padding:14px 16px;">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:16px;font-weight:bold;color:#c49030;">'+s.name+' · '+s.age+'岁</span><span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:'+(s.legit?'rgba(212,160,23,0.2);color:#d4a017':'rgba(150,140,130,0.18);color:#8a8070')+';">'+(s.legit?'嫡出':'庶出')+'</span></div>';
+    html+='<div style="font-size:12px;color:#8a7060;margin-bottom:6px;">父 '+s.fatherName+' · <span style="padding:1px 6px;border-radius:3px;font-size:11px;color:#fff;background:'+s.tierColor+';">'+s.fatherTitle+'</span> <span style="color:#a08060;">('+s.tierName+' · '+desc(s.power,POWER_D)+')</span></div>';
+    html+='<div style="font-size:12px;color:#5a3e28;margin:6px 0;">容貌 '+s.beauty+' · 才学 '+s.talent+' · 武艺 '+s.martial+' · 性格 <span style="color:'+(s.personality.color||'#c06040')+';">'+s.personality.name+'</span></div>';
+    html+='<div style="margin:6px 0 10px;">'+achHtml+'</div>';
+    html+='<div style="border-top:1px dashed rgba(200,160,80,0.4);padding-top:10px;font-size:12px;color:#8a7060;line-height:1.9;">允婚：以 <b>'+pt.label+'</b> 之礼下嫁，国库备嫁妆 <span class="neg">-'+pt.dowry+'</span> 两 · 公主声望 <span class="pos">+10</span>'+(rec?(s.linked?'<br>母家恩荣更盛':'<br>并结朝臣之援'):'')+'<br>婉拒：'+(rec?rec.name+' 举荐落空，颜面有损':'此事作罢')+'，'+ch.name+' 声望微损，来岁再议</div>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:10px;margin-top:14px;"><button class="btn-primary" style="flex:1;" onclick="Game.approveMarry()">赐 婚</button><button style="flex:1;padding:12px;border:1px solid rgba(200,160,80,0.3);border-radius:10px;background:rgba(255,250,240,0.8);color:#a08060;font-size:14px;font-family:inherit;font-weight:bold;cursor:pointer;" onclick="Game.declineMarry()">婉 拒</button></div>';
+    document.getElementById('princess-marry-content').innerHTML=html;
+    document.getElementById('modal-princess-marry').classList.add('show');
+  }
+  function approveMarry(){
+    const item=state._pendingMarriageEvent;if(!item)return;
+    document.getElementById('modal-princess-marry').classList.remove('show');
+    state._pendingMarriageEvent=null;
+    const ch=state.children.find(x=>x.id===item.childId);const s=item.suitor;
+    if(!ch||!s){save();closeModal();return;}
+    const pt=princessTitleTier(ch);
+    ch.married='marry';ch.marriedAge=ch.age;
+    ch.marriageInfo={name:s.name,father:s.fatherTitle+'·'+s.fatherName,legit:s.legit,tierName:s.tierName};
+    state.treasury-=pt.dowry;
+    ch.prestige=clamp((ch.prestige||0)+10,0,100);
+    let lines='<span class="pos">'+ch.name+'</span> 赐婚驸马 '+s.name+'（'+s.fatherTitle+'之子）<br>嫁妆 <span class="neg">-'+pt.dowry+'</span> 两 · 声望 <span class="pos">+10</span>';
+    const mother=state.concubines.find(c=>c.id===ch.motherId);
+    if(mother){
+      mother.favor=clamp(mother.favor+15,0,2200);mother.power=clamp(mother.power+10,0,500);
+      lines+='<br>生母 '+mother.name+' 恩宠 <span class="pos">+15</span> · 母家势 <span class="pos">+10</span>';
+    }
+    if(item.recommenderId&&(!mother||item.recommenderId!==mother.id)){
+      const rec=state.concubines.find(c=>c.id===item.recommenderId);
+      if(rec){rec.power=clamp(rec.power+8,0,500);rec.favor=clamp(rec.favor+5,0,2200);lines+='<br>举荐者 '+rec.name+' 结亲朝臣，势力 <span class="pos">+8</span>';}
+    }
+    const grp=getPersonalityGroup(ch.personality?ch.personality.name:'');
+    const wed={'心机':'她敛衽拜谢天恩，眼底掠过一丝算计——驸马府的门路，从此任她铺陈。','端庄':'凤冠霞帔之下，她礼数丝毫不差，满宫称叹公主贤德。','温婉':'她红着脸领了旨，轻声道谢，心里揣着对良人最初的想象。','活泼':'她偷偷掀开盖头一角张望外面的热闹，被乳母按住才安分下来。','傲骨':'她拜旨时脊背挺直，目光平静——嫁的是人，不是笼。','清冷':'她垂眸道谢，神色淡淡，仿佛赐婚圣旨不过是又一道寻常文书。','妖娆':'她眼波一转，已向未来的驸马府备下了一份厚礼。','慈悲':'她合十谢过佛祖庇佑，又替宫里的姐妹们祈了福。','刚烈':'她盯着圣旨半晌，忽然一笑：「嫁便嫁，谁也不怕。」'};
+    lines+='<br>'+(wed[grp]||pick(['仪制司草定婚仪，择吉日大婚，阖宫同庆。','嫁妆十里出宫门，百姓夹道争睹天家气象。']));
+    logEvent('公主出嫁',ch.name+' 下嫁驸马'+s.name);
+    save();updateUI();showFeedback(lines);closeModal();
+  }
+  function declineMarry(){
+    const item=state._pendingMarriageEvent;if(!item)return;
+    document.getElementById('modal-princess-marry').classList.remove('show');
+    state._pendingMarriageEvent=null;
+    const ch=state.children.find(x=>x.id===item.childId);const s=item.suitor;
+    let lines='圣谕婉辞，'+(s?s.name:'其子')+' 之议暂罢。';
+    if(ch){ch.prestige=clamp((ch.prestige||0)-5,0,100);lines+='<br><span class="neg">'+ch.name+'</span> 闻讯默然良久——议婚被拒，宫闱之中不是秘密，声望 <span class="neg">-5</span>。';}
+    const rec=item.recommenderId?state.concubines.find(c=>c.id===item.recommenderId):null;
+    if(rec){rec.favor=clamp(rec.favor-10,0,2200);lines+='<br>'+rec.name+' 举荐落空，颜面有损，宠爱 <span class="neg">-10</span>。';}
+    lines+='<br>来岁再议，良缘或另有去处。';
+    logEvent('公主议婚',(ch?ch.name:'公主')+' 婚议被婉拒');
+    save();updateUI();showFeedback(lines);closeModal();
+  }
+  function renderHeqinModal(item){
+    const cands=getMarriageablePrincesses();
+    const c=item.country;
+    if(cands.length===0){
+      document.getElementById('modal-heqin').classList.remove('show');
+      state._pendingMarriageEvent=null;save();
+      showFeedback(c.name+' 求亲使者驻驿日久，闻宫中公主皆已择配，悻悻而归。');
+      closeModal();return;
+    }
+    const envoys={'汗国':'大可汗遣使携狼纛入朝：「汗庭铁骑十万，愿以兵戈之威换公主一诺，和则岁奉骏马千匹。」','强':'国王披甲执礼，其使桀骜：「和亲则兵戈永息，否则——」他没说下去，只把手按在刀柄上。','富':'其国据丝路要冲，使臣奉上黄金美玉：「愿以国宝尚公主，世为婚姻。」','中':'国王恭谨，使臣言辞恳切：「愿世为藩属，求公主以安社稷。」','弱':'小国使臣长跪不起：「寡国偏贫，唯竭诚尽敬，求公主下嫁以结永好。」'};
+    let html='<div style="font-size:12px;color:#8a7060;line-height:1.8;margin-bottom:10px;">'+c.name+' 遣使携聘礼入朝，求娶公主和亲。'+(envoys[c.power]||envoys['中'])+'</div>';
+    html+='<div style="background:rgba(90,60,140,0.08);border:1px solid rgba(120,90,160,0.3);border-radius:10px;padding:12px 14px;margin-bottom:12px;">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><span style="font-size:15px;font-weight:bold;color:#6a4a90;">'+c.name+' · 国势'+c.power+'</span><span style="font-size:12px;color:#8a7060;">聘礼 <span class="pos">+'+c.bride+'</span> 两'+(c.tribute>0?' · 岁币 '+c.tribute+' 两/年×6年':'')+'</span></div>';
+    html+='<div style="font-size:12px;color:#5a3e28;margin-top:6px;line-height:1.8;">和成之后，边境安宁六月（后宫事件率 <span class="pos">-10</span>），公主声望 <span class="pos">+5</span>。</div></div>';
+    html+='<div style="font-size:12px;color:#a08060;margin-bottom:8px;">使者廷立不去，非迎公主不下誓——<b style="color:#c04040;">和亲万里，一别故土，归宁无期</b>。请择一位适婚公主：</div>';
+    cands.sort((a,b)=>(b.age||0)-(a.age||0));
+    cands.forEach(ch=>{
+      html+='<label style="display:block;padding:10px 12px;margin-bottom:8px;background:rgba(255,248,240,0.8);border:1px solid rgba(200,160,80,0.3);border-radius:10px;cursor:pointer;">';
+      html+='<div style="display:flex;align-items:center;gap:10px;"><input type="radio" name="heqin-p" value="'+ch.id+'" onchange="Game.heqinPick()" style="accent-color:#c49030;">';
+      html+='<div style="flex:1;"><div style="font-size:14px;font-weight:bold;color:#d07090;">'+ch.name+' · '+ch.age+'岁</div>';
+      html+='<div style="font-size:11px;color:#8a7060;margin-top:2px;">容貌 '+(ch.appearance||0)+' · 才学 '+(ch.talent||0)+' · 性格 '+(ch.personality?ch.personality.name:'')+' · 生母 '+(ch.motherRank||'')+' '+(ch.motherName||'')+'</div></div></div></label>';
+    });
+    html+='<div style="margin-top:12px;"><button id="heqin-confirm-btn" class="btn-primary" style="width:100%;" disabled onclick="Game.confirmHeqin()">下 旨 和 亲</button></div>';
+    document.getElementById('heqin-content').innerHTML=html;
+    document.getElementById('modal-heqin').classList.add('show');
+  }
+  function heqinPick(){
+    const sel=document.querySelector('input[name="heqin-p"]:checked');
+    const btn=document.getElementById('heqin-confirm-btn');
+    if(sel&&btn)btn.disabled=false;
+  }
+  function confirmHeqin(){
+    const item=state._pendingMarriageEvent;if(!item)return;
+    const sel=document.querySelector('input[name="heqin-p"]:checked');
+    if(!sel){showFeedback('请先择定公主。');return;}
+    const ch=state.children.find(x=>x.id===sel.value);
+    document.getElementById('modal-heqin').classList.remove('show');
+    state._pendingMarriageEvent=null;
+    if(!ch){save();closeModal();return;}
+    const c=item.country;
+    ch.married='heqin';ch.marriedAge=ch.age;ch.marriageInfo={country:c.name,power:c.power};
+    state.treasury+=c.bride;
+    state._lastHeqinCountry=c.name;
+    state._marriagePeaceUntil=state.year*12+state.month+6;
+    if(c.tribute>0){state._heqinTributeAmt=c.tribute;state._heqinTributeYears=6;}
+    ch.prestige=clamp((ch.prestige||0)+5,0,100);
+    let lines='<span class="neg">'+ch.name+'</span> 奉旨和亲，远嫁'+c.name+'。<br>聘礼入国库 <span class="pos">+'+c.bride+'</span> 两 · 边境安宁六月 · 声望 <span class="pos">+5</span>';
+    if(c.tribute>0)lines+='<br>属国岁币 <span class="pos">'+c.tribute+'</span> 两/年，六年为期';
+    const mother=state.concubines.find(cc=>cc.id===ch.motherId);
+    if(mother){
+      mother.favor=clamp(mother.favor-20,0,2200);mother.health=clamp(mother.health-5,0,100);updateStress(mother,15);
+      lines+='<br>生母 '+mother.name+' 日夜泣血，宠爱 <span class="neg">-20</span> · 健康 <span class="neg">-5</span>';
+    }
+    const grp=getPersonalityGroup(ch.personality?ch.personality.name:'');
+    const part={'刚烈':'她亲手折了随身玉簪，跃上马背时没有回头。','温婉':'她替随行的老宫女拭了泪，自己反倒笑了：「女儿不孝。」','活泼':'队伍里一路都没有公主的声音，出塞那日，她回头望了很久的宫城。','心机':'她收下了属国的聘礼，也悄悄记下了每条商路的关隘。','傲骨':'她一身红裙上马，脊背如刀——和亲的女儿，未必是输的那一个。','清冷':'风沙起了，她把面纱拢上，从此乡音只在梦里。','端庄':'她捧旨跪谢的那一刻，脸上没有一丝裂痕，只在转身时红了眼眶。','慈悲':'她带走了一尊小佛，说要为两国苍生祈福。','妖娆':'临行前她把最艳的妆容画满了，仿佛远嫁也是一场盛大登场。'};
+    lines+='<br>'+(part[grp]||'车驾出塞，朔风猎猎，从此宫墙之内少了一位公主，天涯之外多了一位王妃。');
+    logEvent('公主和亲',ch.name+' 远嫁'+c.name+'，得聘礼 '+c.bride+' 两');
+    save();updateUI();showFeedback(lines);closeModal();
   }
 
   // ===== 立太子/废太子 =====
@@ -8556,6 +8818,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       updateUI();
       initStart();
       checkCookieConsent();
+      // 刷新/重开后恢复未决策的公主出嫁弹窗
+      if(state._pendingMarriageEvent)setTimeout(()=>{tryOpenModal(()=>openMarriageModal());},1500);
       // Restore music preference (default ON)
       lazyLoadBgAudio();
       if(localStorage.getItem('emperor_music')!=='off'){
@@ -11486,7 +11750,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;}};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;}};
 })();
 
 // ===== 启动 =====
