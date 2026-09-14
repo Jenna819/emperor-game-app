@@ -2460,34 +2460,47 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   // ===== 子嗣幼年夭折判定（月度健康阶梯概率） =====
   function processChildrenHealth(){
     state.children=state.children.filter(ch=>{
-      // 月度健康衰减（支持浮点数）
-      ch.health=clamp(ch.health-(ch.isOrphan?0.3:0.15),0,100);
-      // 所有子嗣都有月度死亡风险（基于健康的阶梯概率）
+      // 月度基础健康衰减（支持浮点数）
+      let decay=ch.isOrphan?0.3:0.15;
+      // 病势恶化：健康<40 额外-1，<20 再-1.5（不干预会持续下滑）
+      if(ch.health<40)decay+=1;
+      if(ch.health<20)decay+=1.5;
+      ch.health=clamp(ch.health-decay,0,100);
+      // 死亡判定：健康主导的阶梯概率，健康娃几乎不白死
       let rate;
       const h=ch.health;
-      if(h>=80)rate=0.003;
-      else if(h>=60)rate=0.005;
-      else if(h>=40)rate=0.012;
-      else if(h>=20)rate=0.025;
-      else rate=0.045;
+      if(h<=0)rate=1;
+      else if(h>=70)rate=0.001;
+      else if(h>=60)rate=0.003;
+      else if(h>=40)rate=0.015;
+      else if(h>=20)rate=0.06;
+      else if(h>=10)rate=0.15;
+      else rate=0.35;
+      // 幼年（≤3岁）更娇弱，死亡率×1.5
+      if((ch.age||0)<=3&&rate<1)rate*=1.5;
       if(Math.random()<rate){
-        const mother=state.concubines.find(c=>c.id===ch.motherId);
-        if(mother){
-          mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
-          mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
-          const pn=mother.personality?mother.personality.name:'';
-          if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
-            const targets=state.concubines.filter(c=>c.id!==mother.id);
-            if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
-          }
-        }
-        logEvent('子嗣夭折',ch.name+'夭折');
-        setTimeout(()=>showFeedback('<span class="neg">'+ch.name+'</span> 不幸夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')),200);
+        childDeathResolve(ch,state.concubines.find(c=>c.id===ch.motherId));
         return false;
       }
       return true;
     });
     ensureCrownPrinceValid();
+  }
+
+  function childDeathResolve(ch,mother,extraMsg,logTag){
+    state.children=state.children.filter(x=>x.id!==ch.id);
+    ensureCrownPrinceValid();
+    if(mother){
+      mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
+      mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
+      const pn=mother.personality?mother.personality.name:'';
+      if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
+        const targets=state.concubines.filter(c=>c.id!==mother.id);
+        if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
+      }
+    }
+    logEvent(logTag||'子嗣夭折',ch.name+'夭折');
+    setTimeout(()=>showFeedback('<span class="neg">'+ch.name+'</span> 不幸夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')+(extraMsg||'')),200);
   }
 
   // ===== 夺宠之恨月度处理 =====
@@ -3863,7 +3876,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         </div>
         <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
           <div style="font-size:11px;color:#a08060;">健康</div>
-          <div style="font-size:18px;font-weight:bold;color:#c49030;">${Math.round(ch.health)||0}</div>
+          <div style="font-size:18px;font-weight:bold;color:${(ch.health||0)>=70?'#4caf50':(ch.health||0)>=40?'#ff9800':'#e55555'};">${Math.round(ch.health)||0}</div>
         </div>
         <div style="background:rgba(255,245,230,0.6);border-radius:8px;padding:10px 14px;">
           <div style="font-size:11px;color:#a08060;">颜值</div>
@@ -3915,6 +3928,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       el.innerHTML+=`<button class="btn-adopt" onclick="Game.showAdoptSelect('${ch.id}')">&#36807;&#32487;</button>`;
     }
     el.innerHTML+=`<button style="padding:8px 24px;border-radius:8px;border:1px solid rgba(200,160,80,0.3);background:rgba(255,245,230,0.8);color:#a08060;font-size:13px;cursor:pointer;margin-top:8px;" onclick="Game.showChildTraining('${ch.id}')">${hasTrainingRecords?' 查看培养记录':' 培养记录'}</button>`;
+    el.innerHTML+=`<button style="padding:8px 24px;border-radius:8px;border:1px solid rgba(90,160,120,0.5);background:linear-gradient(180deg,rgba(120,190,140,0.35),rgba(90,160,110,0.35));color:#3a7a50;font-size:13px;cursor:pointer;font-weight:bold;margin-top:8px;margin-left:6px;" onclick="Game.openChildTonic('${ch.id}')">🍵 赐补品</button>`;
+    if(Math.round(ch.health||0)<40){
+      el.innerHTML+=`<div style="margin-top:10px;font-size:12px;color:#e55555;line-height:1.7;background:rgba(220,80,60,0.08);border:1px solid rgba(220,80,60,0.3);border-radius:8px;padding:8px 12px;">&#9888; ${ch.name} 体弱多病（健康 ${Math.round(ch.health||0)}），久病恐有夭折之危，宜速赐补品调养。</div>`;
+    }
     if(ch.gender==='皇子'){
       const hasCrownPrince=state.crownPrinceId!==null;
       if(ch.isCrownPrince){
@@ -5470,7 +5487,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     {name:'香囊',icon:'\u{1F390}',price:200,favor:10,power:0,health:0,talent:0,wisdom:0,desc:'小物件，聊表心意'},
     {name:'绸缎',icon:'\u{1F9F5}',price:500,favor:15,power:2,health:0,talent:0,wisdom:0,desc:'实用好礼'},
     {name:'珠宝首饰',icon:'\u{1F48E}',price:1000,favor:25,power:5,health:0,talent:0,wisdom:0,desc:'常规礼品'},
-    {name:'人参灵芝',icon:'\u{1F33F}',price:800,favor:0,power:0,health:15,talent:0,wisdom:0,desc:'养生佳品'},
+    {name:'人参灵芝',icon:'\u{1F33F}',price:2500,favor:0,power:0,health:15,talent:0,wisdom:0,desc:'养生佳品（价昂）'},
     {name:'佛珠手串',icon:'\u{1F4FF}',price:600,favor:5,power:0,health:5,talent:0,wisdom:8,desc:'静心养性'},
     {name:'四书五经',icon:'\u{1F4DA}',price:1200,favor:10,power:0,health:0,talent:0,wisdom:10,desc:'经典礼学'},
     {name:'书画名帖',icon:'\u{1F4DC}',price:1500,favor:20,power:2,health:0,talent:10,wisdom:0,desc:'才女偏好'},
@@ -5478,7 +5495,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     {name:'玉如意',icon:'\u{1F3EE}',price:2000,favor:40,power:10,health:0,talent:5,wisdom:0,desc:'贵重礼物'},
     {name:'凤钗',icon:'\u{1F451}',price:3000,favor:60,power:15,health:0,talent:10,wisdom:0,desc:'顶级礼物'},
     {name:'桂花糕',icon:'\u{1F358}',price:300,favor:8,health:3,talent:0,wisdom:0,desc:'江南名点'},
-    {name:'燕窝银耳',icon:'\u{1F95C}',price:700,favor:10,health:8,talent:0,wisdom:0,desc:'滋补甜品'},
+    {name:'燕窝银耳',icon:'\u{1F95C}',price:1800,favor:10,health:8,talent:0,wisdom:0,desc:'滋补甜品（价昂）'},
     {name:'御膳糕点',icon:'\u{1F96E}',price:400,favor:8,power:2,health:2,talent:0,wisdom:0,desc:'宫廷御制'},
   ];
 
@@ -5543,6 +5560,61 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     document.getElementById('modal-gift-select').classList.remove('show');
     closeModal();
     delete state._giftTarget;
+  }
+
+  // ===== 子嗣赐补品（贵价回血）=====
+  const CHILD_TONICS=[
+    {name:'膳食补给',price:1200,health:12,desc:'御膳房特供，温补元气'},
+    {name:'老参炖盅',price:3000,health:25,desc:'百年老参，固本培元'},
+    {name:'百年灵芝',price:5000,health:40,desc:'灵药入膳，沉疴渐愈'},
+    {name:'天山雪莲',price:8000,health:65,desc:'绝世奇药，起死回生'},
+  ];
+  function openChildTonic(id){
+    if(!canAct())return;
+    const ch=state.children.find(x=>x.id===id);if(!ch)return;
+    state._tonicTarget=id;
+    const cur=Math.round(ch.health||0);
+    let html='<div style="text-align:center;margin-bottom:12px;">';
+    html+='<div style="font-size:16px;font-weight:bold;color:#c49030;margin-top:6px;">赐补品 · '+ch.name+'</div>';
+    html+='<div style="font-size:12px;color:#a08060;margin-top:4px;">当前健康 <b style="color:'+(cur>=70?'#4caf50':cur>=40?'#ff9800':'#e55555')+'">'+cur+'</b>/100'+(cur<40?' <span style="color:#e55555;">· 病弱</span>':'')+'</div>';
+    html+='<div style="font-size:11px;color:#a08060;margin-top:6px;">太医有言：补品价贵，宜量力而救</div>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;padding:4px;">';
+    CHILD_TONICS.forEach(function(g,i){
+      const after=Math.min(100,cur+g.health);
+      const canBuy=state.treasury>=g.price;
+      html+='<button class="gift-item'+(canBuy?'':' gift-disabled')+'" onclick="'+(canBuy?'Game.confirmChildTonic('+i+')':'')+'" '+(canBuy?'':'disabled')+'>';
+      html+='<div class="gift-left"><span class="gift-icon">🍵</span><span class="gift-name">'+g.name+'</span></div>';
+      html+='<div class="gift-right"><span class="gift-price">'+g.price+'两</span><span class="gift-desc">健康+'+g.health+'（'+cur+'→'+after+'）·'+g.desc+'</span></div>';
+      html+='</button>';
+    });
+    html+='</div>';
+    html+='<button class="btn-secondary" style="margin-top:12px;width:100%;" onclick="Game.cancelChildTonic()">取消</button>';
+    document.getElementById('gift-select-content').innerHTML=html;
+    tryOpenModal(function(){document.getElementById('modal-gift-select').classList.add('show');});
+  }
+  function confirmChildTonic(idx){
+    const g=CHILD_TONICS[idx];if(!g)return;
+    const ch=state.children.find(x=>x.id===state._tonicTarget);if(!ch){cancelChildTonic();return;}
+    if(state.treasury<g.price){showFeedback('国库不足！');return;}
+    if(!canAct())return;
+    spendTreasury(g.price);
+    consumeAction();
+    const before=Math.round(ch.health||0);
+    ch.health=clamp(ch.health+g.health,0,100);
+    logEvent('赐补品',ch.name+'服'+g.name+'，健康 '+before+'→'+Math.round(ch.health));
+    save();
+    document.getElementById('modal-gift-select').classList.remove('show');
+    closeModal();
+    delete state._tonicTarget;
+    updateUI();
+    showFeedback('<span class="pos">'+ch.name+'</span> 服下 <span class="pos">'+g.name+'</span><br>健康 <span class="pos">+'+g.health+'</span>（'+before+' → '+Math.round(ch.health)+'）<br>国库 <span class="neg">-'+g.price+'</span>两<br>行动 <span class="neg">-1</span>');
+    showChildDetail(ch.id);
+  }
+  function cancelChildTonic(){
+    document.getElementById('modal-gift-select').classList.remove('show');
+    closeModal();
+    delete state._tonicTarget;
   }
 
   // 辅助函数：将妃嫔打入冷宫并触发子嗣过继
@@ -7479,7 +7551,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const c2=pick(state.children.filter(ch=>ch.motherId===m2.id&&ch.age>=3));
     if(!c1||!c2)return null;
     return{title:'【子嗣夺宠】',desc:`${m1.name}之子${c1.name}与${m2.name}之子${c2.name}在御花园争抢玩具，闹得不可开交。两位妃嫔也因此起了嫌隙。`,options:[
-      {text:' 各打五十大板（双方宠爱-30）',effect(){m1.favor=clamp(m1.favor-30,0,2200);m2.favor=clamp(m2.favor-30,0,2200);c1.talent=clamp((c1.talent||0)-5,0,100);c2.talent=clamp((c2.talent||0)-5,0,100);logEvent('夺宠','各打五十大板');save();updateUI();showFeedback('双方宠爱<span class="neg">-30</span>');}},
+      {text:' 各打五十大板（双方宠爱-30，孩子健康-5）',effect(){m1.favor=clamp(m1.favor-30,0,2200);m2.favor=clamp(m2.favor-30,0,2200);c1.talent=clamp((c1.talent||0)-5,0,100);c2.talent=clamp((c2.talent||0)-5,0,100);c1.health=clamp((c1.health||0)-5,0,100);c2.health=clamp((c2.health||0)-5,0,100);logEvent('夺宠','各打五十大板');save();updateUI();showFeedback('双方宠爱<span class="neg">-30</span>，孩子健康<span class="neg">-5</span>');}},
       {text:' 赏赐安抚（国库-500）',effect(){spendTreasury(500);m1.favor=clamp(m1.favor+20,0,2200);m2.favor=clamp(m2.favor+20,0,2200);logEvent('夺宠','赏赐安抚');save();updateUI();showFeedback('国库<span class="neg">-500</span>，双方宠爱<span class="pos">+20</span>');}},
       {text:' 严惩${c1.name}之母（${m1.name}宠爱-60，势力-20）',effect(){m1.favor=clamp(m1.favor-60,0,2200);m1.power=clamp(m1.power-20,0,500);m2.favor=clamp(m2.favor+30,0,2200);logEvent('夺宠','严惩'+m1.name);save();updateUI();showFeedback(`${m1.name} 宠爱<span class="neg">-60</span>，势力<span class="neg">-20</span><br>${m2.name} 宠爱<span class="pos">+30</span>`);}},
       {text:' 请太傅教导（孩子品德+10，国库-300）',effect(){spendTreasury(300);c1.virtue=clamp((c1.virtue||0)+10,0,100);c2.virtue=clamp((c2.virtue||0)+10,0,100);logEvent('夺宠','请太傅教导');save();updateUI();showFeedback('孩子品德<span class="pos">+10</span>，国库<span class="neg">-300</span>');}},
@@ -7523,9 +7595,14 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const perp=pickWeighted(mothers.filter(c=>c.id!==victim.id),'谋害皇嗣','perpetrator');
     if(!perp)return null;
     const isPreg=victim.pregnant;
+    let heirDmg=0;
+    if(!isPreg){
+      const kids=state.children.filter(k=>k.motherId===victim.id&&k.health>0);
+      if(kids.length>0){const hc=pick(kids);heirDmg=rand(5,15);hc.health=clamp(hc.health-heirDmg,0,100);}
+    }
     const desc=isPreg
       ?`${perp.rank}${perp.name}暗中在安胎药中动手脚，${victim.rank}${victim.name}服后腹痛见红，太医诊断恐有滑胎之险。`
-      :`${perp.rank}${perp.name}买通乳母，在${victim.rank}${victim.name}的孩子饮食中下毒，孩子上吐下泻，太医抢救后脱离危险。`;
+      :`${perp.rank}${perp.name}买通乳母，在${victim.rank}${victim.name}的孩子饮食中下毒，孩子上吐下泻，健康 <span class="neg">-${heirDmg}</span>，太医抢救后暂稳病情。`;
     return{title:'【谋害皇嗣】',desc:desc,options:[
       {text:' 严查真凶（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.75){
         if(isPreg){
@@ -7582,27 +7659,16 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       {method:'指使太监在孩子经过的廊下泼了冰水',result:'滑倒摔伤，加之受寒，病势沉重'},
     ];
     const scenario=pick(scenarios);
-    function childDeathFeedback(child,mother,extra){
-      state.children=state.children.filter(x=>x.id!==child.id);
-      ensureCrownPrinceValid();
-      if(mother){
-        mother.favor=clamp(mother.favor-50,0,2200);mother.health=clamp(mother.health-15,0,100);
-        mother.power=clamp(mother.power-15,0,500);mother.stress=clamp((mother.stress||0)+15,0,100);
-        const pn=mother.personality?mother.personality.name:'';
-        if((pn==='狠戾果决'||pn==='偏执痴迷')&&Math.random()<0.30){
-          const targets=state.concubines.filter(c=>c.id!==mother.id);
-          if(targets.length>0)mother.grudge={targetId:pick(targets).id,intensity:50};
-        }
-      }
-      logEvent('暗害子嗣',child.name+'夭折');save();updateUI();
-      showFeedback('<span class="neg">'+child.name+'</span> 不治夭折'+(mother?'<br>生母 '+mother.name+' 伤心欲绝':'')+(extra?extra:''));
-    }
-    return{title:'【暗害子嗣】',desc:`${perp.rank}${perp.name}${scenario.method}，${child.name}${scenario.result}，太医全力救治仅能暂时稳住病情。`,perpetrator:perp,child:child,mother:mother,scenario:scenario,options:[
-      {text:' 严查真凶（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人，恐是宫人疏忽所致。<br>'+child.name+' 仍在病中。');}}},
-      {text:'🔒 将'+perp.name+'打入冷宫',effect(){logBehavior(perp,'暗害子嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','打入冷宫');save();updateUI();showFeedback('<span class="neg">'+perp.name+'</span> 打入冷宫<br>'+child.name+' 仍在救治中');}},
-      {text:'☠ 将'+perp.name+'赐死',effect(){showExecutionSelect(perp.id,false,false,{eventType:'暗害子嗣',vars:{perpName:perp.name,victimName:child.name,year:state.year,month:state.month}});}},
-      {text:'🏥 全力救治孩子（国库-1000）',effect(){spendTreasury(1000);if(Math.random()<0.50){logEvent('暗害子嗣','救治成功');save();updateUI();showFeedback('全力救治 <span class="pos">'+child.name+'</span><br>孩子已脱离危险<br>国库 <span class="neg">-1000</span>');}else{childDeathFeedback(child,mother,'<br>国库 <span class="neg">-1000</span>');}}},
-      {text:' 不予追究（孩子健康-20）',effect(){if(Math.random()<0.55){childDeathFeedback(child,mother);}else{logEvent('暗害子嗣','自行恢复');save();updateUI();showFeedback(child.name+' 身体虚弱，慢慢调养');}}},
+    const dmg=rand(25,40);
+    child.health=clamp(child.health-dmg,0,100);
+    logEvent('暗害子嗣',child.name+'遇害受伤 健康-'+dmg);
+    save();
+    return{title:'【暗害子嗣】',desc:`${perp.rank}${perp.name}${scenario.method}，${child.name}${scenario.result}，健康 <span class="neg">-${dmg}</span>（当前${Math.round(child.health)}），太医暂稳病情，望圣裁。`,perpetrator:perp,child:child,mother:mother,scenario:scenario,options:[
+      {text:'🔍 严查真凶（国库-1200）',effect(){spendTreasury(1200);if(Math.random()<0.75){showPunishmentOptions(perp.id,null,'暗害子嗣','【暗害子嗣】');}else{_showNoEvidence('【暗害子嗣】','查无确凿证据指向任何人。<br>'+child.name+' 带伤未愈（健康当前'+Math.round(child.health)+'），可速赐补品调养。');}save();updateUI();}},
+      {text:'🔒 将'+perp.name+'打入冷宫',effect(){logBehavior(perp,'暗害子嗣','heavy',true);updateStress(perp,30);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','打入冷宫');save();updateUI();showFeedback('<span class="neg">'+perp.name+'</span> 打入冷宫<br>'+child.name+' 健康 <span class="neg">-'+dmg+'</span>（当前'+Math.round(child.health)+'），宜赐补品调养');}},
+      {text:'☠ 将'+perp.name+'赐死',effect(){logBehavior(perp,'暗害子嗣','heavy',true);save();updateUI();showExecutionSelect(perp.id,false,false,{eventType:'暗害子嗣',vars:{perpName:perp.name,victimName:child.name,year:state.year,month:state.month}});}},
+      {text:'🏥 严惩并全力救治（国库-1500）',effect(){spendTreasury(1500);const heal=rand(35,50);child.health=clamp(child.health+heal,0,100);logBehavior(perp,'暗害子嗣','heavy',true);state.concubines=state.concubines.filter(x=>x.id!==perp.id);perp.health=clamp(perp.health-20,0,100);state.coldPalaceList.push(perp);logEvent('暗害子嗣','严惩并救治'+child.name);save();updateUI();showFeedback('严惩真凶并全力救治 <span class="pos">'+child.name+'</span><br>太医调补 健康 <span class="pos">+'+heal+'</span>（当前'+Math.round(child.health)+'）<br>国库 <span class="neg">-1500</span>');}},
+      {text:'🤲 不予追究（伤情恐迁延）',effect(){logEvent('暗害子嗣','未追究'+child.name+'伤情');save();updateUI();showFeedback(child.name+' 健康 <span class="neg">-'+dmg+'</span>（当前'+Math.round(child.health)+'）<br>皇上未追究，孩子伤情恐日渐沉重');}},
     ]};
   }
 
@@ -12038,7 +12104,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;}};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,openChildTonic,confirmChildTonic,cancelChildTonic,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;}};
 })();
 
 // ===== 启动 =====
