@@ -16,5 +16,8 @@ zuihonglou/*.png
 # 开发工具
 .claude/
 
+# 密钥
+.env
+
 # 输出目录（本地用）
 out/
