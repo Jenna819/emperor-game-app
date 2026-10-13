@@ -7293,65 +7293,43 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  // 国丧事件
+  // 国丧事件：走标准事件弹窗（选项单选→确认执行），勿再手动拼 HTML 绕过 showEventModal
   function triggerMourningEvent(c){
     const data = state._mourningEvent;
     if(!data) return;
-    let html = '<div style="text-align:center;">';
-    html += '<p style="color:#a08060;font-size:13px;margin-bottom:16px;">' + data.victimRank + data.victimName + '病故，宫中哀声一片。请皇上定夺丧仪规格。</p>';
-    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
-    html += '<button class="btn-option" onclick="Game.mourningChoice(0)">辍朝三日（国库-2000，全体妃嫔宠爱-5）</button>';
-    html += '<button class="btn-option" onclick="Game.mourningChoice(1)">厚葬（国库-3000，家族势力+20）</button>';
-    html += '<button class="btn-option" onclick="Game.mourningChoice(2)">从简办理（国库-500）</button>';
-    html += '</div></div>';
-    document.getElementById('event-content').innerHTML = html;
-    const btn = document.getElementById('event-confirm-btn');
-    if(btn){ btn.textContent = '确认'; btn.disabled = true; btn.style.opacity = '0.5'; btn.onclick = function(){ Game.confirmEventOption(); }; }
-    document.getElementById('modal-event').classList.add('show');
-    // 作为 pendingEvent 处理
+    const done=function(){state._mourningEvent=null;};
     state.pendingEvent = {
       title: '【国丧事宜】',
-      desc: data.victimRank + data.victimName + '病故，请皇上定夺丧仪规格。',
+      desc: data.victimRank + data.victimName + '病故，宫中哀声一片，请皇上定夺丧仪规格。',
       options: [
         {
           text: ' 辍朝三日（国库-2000，全体妃嫔宠爱-5）',
           effect(){
             spendTreasury(2000);
             state.concubines.forEach(x => { x.favor = clamp(x.favor - 5, 0, 2200); });
-            logEvent('国丧', '辍朝三日'); save(); updateUI();
+            logEvent('国丧', '辍朝三日'); done(); save(); updateUI();
             showFeedback('辍朝三日<br>国库 <span class="neg">-2000</span>，全体妃嫔宠爱 <span class="neg">-5</span>');
-            state.pendingEvent = null;
           }
         },
         {
           text: ' 厚葬（国库-3000，家族势力+20）',
           effect(){
             spendTreasury(3000);
-            logEvent('国丧', '厚葬'); save(); updateUI();
+            logEvent('国丧', '厚葬'); done(); save(); updateUI();
             showFeedback('厚葬' + data.victimName + '<br>国库 <span class="neg">-3000</span><br>家族势力 <span class="pos">+20</span>');
-            state.pendingEvent = null;
           }
         },
         {
           text: ' 从简办理（国库-500）',
           effect(){
             state.treasury -= 500;
-            logEvent('国丧', '从简办理'); save(); updateUI();
+            logEvent('国丧', '从简办理'); done(); save(); updateUI();
             showFeedback('从简办理' + data.victimName + '<br>国库 <span class="neg">-500</span>');
-            state.pendingEvent = null;
           }
         },
       ]
     };
     showEventModal();
-  }
-
-  function mourningChoice(idx){
-    const data = state._mourningEvent;
-    if(!data){ state.pendingEvent = null; return; }
-    delete state._mourningEvent;
-    // 选择已在 pendingEvent options 中处理
-    closeModal();
   }
 
   // 月度病危检测
@@ -7505,25 +7483,38 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           showFeedback('陪 <span class="pos">' + c.name + '</span> 说话<br>宠爱 <span class="pos">+30</span>，健康 <span class="pos">+3</span>');
         }},
         {text:' 答应她的遗愿', effect(){
-          state._glowTarget = c.id;
-          // 内嵌子选项
+          // 遗愿子选项走第二个标准事件弹窗（勿手动替换 event-content，弹窗会被外层关闭）
           const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0);
           const hasGrudge = c.grudge && c.grudge.targetId;
-          let subHtml = '<div style="text-align:center;">';
-          subHtml += '<p style="color:#a08060;font-size:13px;margin-bottom:16px;">' + c.name + '含泪道："臣妾有一心愿，求皇上成全……"</p>';
-          subHtml += '<div style="display:flex;flex-direction:column;gap:8px;">';
+          const wishOpts = [];
           if(aliveKids.length > 0){
-            subHtml += '<button class="btn-option" onclick="Game.glowWish(0)">请善待我的孩子</button>';
+            wishOpts.push({text:' 请善待我的孩子', effect(){
+              aliveKids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 15; });
+              state.treasury = Math.max(0, state.treasury - 300);
+              logEvent('回光返照','善待孩子'); save(); updateUI();
+              showFeedback('答应遗愿：善待孩子<br>孩子 prestige <span class="pos">+15</span><br>国库 <span class="neg">-300</span>');
+            }});
           }
           if(hasGrudge){
-            subHtml += '<button class="btn-option" onclick="Game.glowWish(1)">请不要再怪罪她</button>';
+            wishOpts.push({text:' 请不要再怪罪她', effect(){
+              c.grudge = null;
+              logEvent('回光返照','清除grudge'); save(); updateUI();
+              showFeedback('答应遗愿：不再记恨<br>' + c.name + '放下了执念……');
+            }});
           }
-          subHtml += '<button class="btn-option" onclick="Game.glowWish(2)">臣妾别无他求</button>';
-          subHtml += '</div></div>';
-          document.getElementById('event-content').innerHTML = subHtml;
-          const btn = document.getElementById('event-confirm-btn');
-          if(btn){ btn.textContent = '确认'; btn.disabled = true; btn.style.opacity = '0.5'; btn.onclick = function(){ Game.confirmEventOption(); }; }
-          return;
+          wishOpts.push({text:' 臣妾别无他求', effect(){
+            c.favor = clamp(c.favor + 20, 0, 2200);
+            logEvent('回光返照','别无他求'); save(); updateUI();
+            showFeedback('答应遗愿：别无他求<br>' + c.name + ' 宠爱 <span class="pos">+20</span>');
+          }});
+          setTimeout(function(){
+            state.pendingEvent = {
+              title: '【回光返照】',
+              desc: `${c.rank}${c.name}含泪道："臣妾有一心愿，求皇上成全……"`,
+              options: wishOpts,
+            };
+            showEventModal();
+          }, 400);
         }},
         {text:' 默默离去（无事发生）', effect(){
           c.health = clamp(c.health - 10, 0, 100);
@@ -7534,30 +7525,6 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     };
   }
 
-  function glowWish(idx){
-    const c = state.concubines.find(x => x.id === state._glowTarget);
-    if(!c){ state.pendingEvent = null; return; }
-    delete state._glowTarget;
-    const aliveKids = state.children.filter(ch => ch.motherId === c.id && ch.health > 0);
-    if(idx === 0 && aliveKids.length > 0){
-      // 请善待我的孩子
-      aliveKids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 15; });
-      state.treasury = Math.max(0, state.treasury - 300);
-      logEvent('回光返照','善待孩子'); save(); updateUI();
-      showFeedback('答应遗愿：善待孩子<br>孩子 prestige <span class="pos">+15</span><br>国库 <span class="neg">-300</span>');
-    } else if(idx === 1 && c.grudge && c.grudge.targetId){
-      // 请不要再怪罪她 - 清除grudge
-      const targetName = c.grudge.targetId;
-      c.grudge = null;
-      logEvent('回光返照','清除grudge'); save(); updateUI();
-      showFeedback('答应遗愿：不再记恨<br>' + c.name + '放下了执念……');
-    } else {
-      // 臣妾别无他求
-      c.favor = clamp(c.favor + 20, 0, 2200);
-      logEvent('回光返照','别无他求'); save(); updateUI();
-      showFeedback('答应遗愿：别无他求<br>' + c.name + ' 宠爱 <span class="pos">+20</span>');
-    }
-  }
 
   // ===== 孤儿抚养事件 =====
   function triggerOrphanAdoption(deceased, kids){
@@ -7904,31 +7871,51 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       titles:['户部尚书','吏部侍郎','兵部尚书','礼部尚书','工部侍郎','都察院御史','顺天府尹'],
       surnames:['张','王','李','赵','陈','杨','黄','吴','周','徐','孙','马','朱','胡','郭','林','何','高'],
       descriptions:['臣有次女，自幼聪慧，愿侍奉陛下左右。','臣女及笄，品性端方，特进献于陛下。','臣小女年方二八，颇有姿色，愿献于陛下。','臣有一女，性情温婉，特来进献。'],
-      ranks:['贵人','常在','答应'],rankWeights:[2,5,10],
-      beautyRange:[60,85],ageRange:[15,25],talentRange:[30,70],wisdomRange:[30,65],
+      rareDescriptions:['臣有女，容色绝世，京中无双，臣不敢私藏，谨献陛下。','臣女天生丽质，琴棋书画皆精，臣敬献御前，以彰陛下圣德。'],
+      ranks:['贵人','嫔','妃'],rankWeights:[48,40,12],
+      beautyRange:[75,92],ageRange:[15,25],talentRange:[55,85],wisdomRange:[50,80],healthRange:[80,100],
+      rareChance:0.12,
       initRank:'官女子',personalityBias:['端庄','温婉','贤淑','娴静恬淡'],
     },
     prince:{
       titles:['诚亲王','裕亲王','庄亲王','端亲王','恭亲王','睿亲王','醇亲王','庆亲王'],
       surnames:['爱新觉罗','觉罗','宗室'],
       descriptions:['臣弟有一庶妹，年方及笄，品性端方，特进献于陛下。','臣妹自幼习礼，颇有贤名，愿献于陛下。','臣有一妹，性情温和，特来进献。'],
-      ranks:['妃','嫔','贵人'],rankWeights:[1,3,6],
-      beautyRange:[65,90],ageRange:[15,20],talentRange:[40,75],wisdomRange:[40,70],
+      rareDescriptions:['臣妹虽为宗室庶出，然天赋殊色，貌若天仙，臣谨献于陛下。','臣有幼妹，养于王府，诗书礼乐无一不精，京中称为第一美人，特献御前。'],
+      ranks:['嫔','妃','贵妃'],rankWeights:[20,50,30],
+      beautyRange:[78,94],ageRange:[15,20],talentRange:[60,88],wisdomRange:[55,85],healthRange:[80,100],
+      rareChance:0.15,
       initRank:'贵人',personalityBias:['端庄','端庄大气','贤淑','温婉'],
     },
     general:{
       titles:['镇北将军','征西大将军','定远将军','平虏将军','骠骑将军','车骑将军','龙骧将军','虎威将军'],
       surnames:['霍','卫','岳','戚','戚继','李','王','杨','韩','高','蓝','沐'],
       descriptions:['臣俘获异域女子一名，姿色殊异，愿献于陛下。','臣于边疆得美人一名，异域风情，愿献于陛下。','臣俘获蛮族公主一名，颇有异族风韵，愿献于陛下。'],
+      rareDescriptions:['臣于西域得一日月之女，容色倾国，诸国闻之咋舌，臣不敢专美，谨献陛下。'],
       ranks:['贵人','常在','答应'],rankWeights:[3,6,10],
-      beautyRange:[70,95],ageRange:[16,24],talentRange:[20,55],wisdomRange:[20,50],
+      beautyRange:[80,96],ageRange:[16,24],talentRange:[30,60],wisdomRange:[30,60],healthRange:[75,95],
+      rareChance:0.10,
       initRank:'官女子',personalityBias:['明艳魅惑','冷艳寡言','冷傲','桀骜不羁','活泼'],
       isExotic:true,
     },
   };
 
+  // 取高式抽样：摇两次取高，向区间高端偏移（进献/宗室之女不该有庸姿）
+  function bestRoll(a,b){return Math.max(rand(a,b),rand(a,b));}
+
+  function pickTributeRank(t,rare){
+    const rw=t.rankWeights,total=rw.reduce((a,b)=>a+b,0);
+    let rr=Math.random()*total,idx=0;
+    for(let i=0;i<rw.length;i++){rr-=rw[i];if(rr<0){idx=i;break;}}
+    let rank=t.ranks[idx];
+    // 旷世尤物超擢一阶，贵妃封顶
+    if(rare){const up=RANKS[Math.max(ri(rank)-1,ri('贵妃'))];if(ri(up)<ri(rank))rank=up;}
+    return rank;
+  }
+
   function genTributeConcubine(type){
     const t=TRIBUTE_TYPES[type];
+    const rare=Math.random()<t.rareChance;
     const famName=pick(t.surnames)+pick(['氏','府','家']);
     const fam={name:famName,desc:'',weight:1,initRank:t.initRank,powerMin:rand(5,20),powerMax:rand(25,45),color:'#a08060'};
     const pn=pick(t.personalityBias);
@@ -7938,18 +7925,18 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     while(state.concubines.some(c=>c.name===s+n))n=makeName(rand(1,2));
     const portraitIdx=t.isExotic?PRINCESS_PORTRAIT_DATA[rand(0,PRINCESS_PORTRAIT_DATA.length-1)]:rand(1,PORTRAIT_DATA.length);
     const nv=type==='minister'?Math.random()<0.03:type==='prince'?Math.random()<0.01:Math.random()<0.10;
+    const st=rare?{beauty:rand(95,99),talent:rand(90,99),wisdom:rand(90,99),health:rand(90,100)}
+      :{beauty:bestRoll(t.beautyRange[0],t.beautyRange[1]),talent:bestRoll(t.talentRange[0],t.talentRange[1]),wisdom:bestRoll(t.wisdomRange[0],t.wisdomRange[1]),health:bestRoll(t.healthRange[0],t.healthRange[1])};
     return{
       id:genId(),name:s+n,age:rand(t.ageRange[0],t.ageRange[1]),
-      beauty:rand(t.beautyRange[0],t.beautyRange[1]),
-      favor:rand(30,60),power:calcInitPower(fam),
-      talent:rand(t.talentRange[0],t.talentRange[1]),
-      wisdom:rand(t.wisdomRange[0],t.wisdomRange[1]),
+      beauty:st.beauty,favor:rand(40,70),power:calcInitPower(fam),
+      talent:st.talent,wisdom:st.wisdom,
       trait:pick(TRAITS),personality:personality,family:fam,
-      rank:'官女子',health:rand(65,90),
+      rank:'官女子',health:st.health,
       pregnant:false,pregMonth:0,portraitIdx:portraitIdx,
       _favored:false,behaviorLog:[],stress:0,stressCap:getStressCap(pn),
       favors:{},grudge:null,_flatterCount:0,bedCount:0,bedHonglou:false,_notVirgin:nv,
-      tributeType:type,
+      tributeType:type,tributeRare:rare,
     };
   }
 
@@ -7963,8 +7950,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     else type='minister';
     const t=TRIBUTE_TYPES[type];
     const officialTitle=pick(t.titles);
-    const desc=pick(t.descriptions);
     const c=genTributeConcubine(type);
+    const desc=c.tributeRare?pick(t.rareDescriptions||t.descriptions):pick(t.descriptions);
     const hpColor=c.health>=70?'#4caf50':c.health>=40?'#ff9800':'#e55555';
     const isExotic=t.isExotic||false;
     let portraitHTML;
@@ -7978,7 +7965,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
     return{
       title:isExotic?'【献 异域美人】':'【朝 臣 献 美】',
-      desc:`<div style="background:rgba(200,160,80,0.08);border-left:3px solid #c49030;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#5a3e28;line-height:1.8;font-style:italic;">${officialTitle}奏曰：「${desc}」</div><div style="text-align:center;margin-bottom:12px;">${portraitHTML}</div><div style="text-align:center;font-size:16px;font-weight:bold;color:#c49030;margin-bottom:6px;">${c.name}</div><div style="text-align:center;font-size:12px;color:#8a7060;margin-bottom:10px;">${c.age}岁 · ${isExotic?'异域':'汉族'} · 性格 <b style="color:#9060c0;">${c.personality.name}</b></div><div style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#5a3e28;justify-content:center;line-height:1.8;"><div>美貌 <b style="color:#e06080;">${c.beauty}</b></div><div>才华 <b style="color:#6080e0;">${c.talent}</b></div><div>智慧 <b style="color:#40a080;">${c.wisdom}</b></div><div>健康 <b style="color:${hpColor};">${c.health}</b></div></div>`,
+      desc:`<div style="background:rgba(200,160,80,0.08);border-left:3px solid #c49030;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#5a3e28;line-height:1.8;font-style:italic;">${officialTitle}奏曰：「${desc}」</div><div style="text-align:center;margin-bottom:12px;">${portraitHTML}</div><div style="text-align:center;font-size:16px;font-weight:bold;color:#c49030;margin-bottom:6px;">${c.name}${c.tributeRare?' <span style="font-size:11px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#d4a017,#f5d76e);border-radius:10px;padding:2px 8px;vertical-align:middle;">旷世尤物</span>':''}</div><div style="text-align:center;font-size:12px;color:#8a7060;margin-bottom:10px;">${c.age}岁 · ${isExotic?'异域':'汉族'} · 性格 <b style="color:#9060c0;">${c.personality.name}</b></div><div style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#5a3e28;justify-content:center;line-height:1.8;"><div>美貌 <b style="color:#e06080;">${c.beauty}</b></div><div>才华 <b style="color:#6080e0;">${c.talent}</b></div><div>智慧 <b style="color:#40a080;">${c.wisdom}</b></div><div>健康 <b style="color:${hpColor};">${c.health}</b></div></div>`,
       tributeConcubine:c,
       tributeOfficial:officialTitle,
       tributeType:type,
@@ -7986,33 +7973,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         {text:'👑 纳入后宫',effect(){
           if(state.concubines.length>=30){showFeedback('后宫已满30人，无法收纳！');state.pendingEvent=null;save();updateUI();return;}
           const cc=c;
-          if(t.isExotic){
-            const rw=[3,6,10];
-            let total=rw.reduce((a,b)=>a+b,0);
-            let rr=Math.random()*total;
-            const rankIdx=rr<rw[0]?0:rr<rw[0]+rw[1]?1:2;
-            cc.rank=['贵人','常在','答应'][rankIdx];
-          } else if(type==='prince'){
-            const rw=[1,3,6];
-            let total=rw.reduce((a,b)=>a+b,0);
-            let rr=Math.random()*total;
-            const rankIdx=rr<rw[0]?0:rr<rw[0]+rw[1]?1:2;
-            cc.rank=['妃','嫔','贵人'][rankIdx];
-          } else {
-            const rw=[2,5,10];
-            let total=rw.reduce((a,b)=>a+b,0);
-            let rr=Math.random()*total;
-            const rankIdx=rr<rw[0]?0:rr<rw[0]+rw[1]?1:2;
-            cc.rank=['贵人','常在','答应'][rankIdx];
-          }
+          cc.rank=pickTributeRank(t,cc.tributeRare);
+          // 血脉/位份对应：权势须匹配位份，宗室女入宫自带王府势族之力
+          cc.power=clampPowerToRank(cc.power+rand(0,15),cc.rank);
           state.concubines.push(cc);
           state._lastTributeMonth=state.year*12+state.month;
-          logEvent('朝臣献美',`${cc.name}入宫（${type==='prince'?'亲王':type==='general'?'边疆将领':'朝臣'}进献）`);
+          logEvent('朝臣献美',`${cc.name}入宫（${type==='prince'?'亲王':type==='general'?'边疆将领':'朝臣'}进献${cc.tributeRare?'·旷世尤物':''}，册${cc.rank}）`);
           state.pendingEvent=null;
           closeModal();
           document.getElementById('modal-event').classList.remove('show');
           save();updateUI();
-          showFeedback(`<span class="pos">${cc.name}</span> 已纳入后宫<br>位份：<b style="color:#c49030;">${cc.rank}</b><br>美貌 ${cc.beauty} · 才华 ${cc.talent}<br><span style="color:#9060c0;font-size:12px;">${isExotic?'异域风韵':'温婉端庄'}，${cc.personality.name}</span>`);
+          showFeedback(`<span class="pos">${cc.name}</span>${cc.tributeRare?' <span style="color:#c49030;font-weight:bold;">（旷世尤物）</span>':''} 已纳入后宫<br>位份：<b style="color:#c49030;">${cc.rank}</b><br>美貌 ${cc.beauty} · 才华 ${cc.talent}<br><span style="color:#9060c0;font-size:12px;">${isExotic?'异域风韵':'温婉端庄'}，${cc.personality.name}</span>`);
         }},
         {text:'🙏 婉言谢绝',effect(){
           state._lastTributeMonth=state.year*12+state.month;
@@ -12171,7 +12142,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,mourningChoice,glowWish,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,openChildTonic,confirmChildTonic,cancelChildTonic,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;},_api:{state:function(){return state;},findC:findC,save:save,updateUI:updateUI,adjustFavor:function(id,d){const c=findC(id);if(!c)return 0;const before=c.favor;c.favor=clamp(c.favor+d,0,2200);checkPromotionEligibility(c);return c.favor-before;},adjustStress:function(id,d){const c=findC(id);if(!c)return;updateStress(c,d);c.stress=clamp(c.stress,0,getStressCap(c.personality?c.personality.name:''));}}};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,openChildTonic,confirmChildTonic,cancelChildTonic,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;},_api:{state:function(){return state;},findC:findC,save:save,updateUI:updateUI,adjustFavor:function(id,d){const c=findC(id);if(!c)return 0;const before=c.favor;c.favor=clamp(c.favor+d,0,2200);checkPromotionEligibility(c);return c.favor-before;},adjustStress:function(id,d){const c=findC(id);if(!c)return;updateStress(c,d);c.stress=clamp(c.stress,0,getStressCap(c.personality?c.personality.name:''));}}};
 })();
 
 // ===== 启动 =====
