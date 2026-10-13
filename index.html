@@ -520,6 +520,31 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 .memorial-tablet .tab-name{font-size:14px;font-weight:bold;color:#e8d8b0;margin-top:2px;}
 .memorial-tablet .tab-year{font-size:10px;color:#8a8078;margin-top:4px;}
 
+/* ===== 尊享版会员页（付费墙） ===== */
+#page-unlock{background:linear-gradient(180deg,#2a241e 0%,#3a3026 40%,#4a3c2c 100%);}
+.unlock-wrap{max-width:440px;margin:0 auto;padding:56px 22px 40px;text-align:center;}
+.unlock-seal{display:inline-block;border:1px solid rgba(200,160,80,0.6);border-radius:6px;color:#c49030;font-size:12px;letter-spacing:4px;padding:4px 12px;margin-bottom:14px;}
+.unlock-title{font-size:24px;font-weight:bold;color:#e8d8b0;letter-spacing:6px;margin-bottom:8px;}
+.unlock-sub{font-size:12px;color:#a89878;line-height:1.9;margin-bottom:20px;}
+.unlock-list{text-align:left;background:rgba(20,16,12,0.45);border:1px solid rgba(200,160,80,0.25);border-radius:12px;padding:14px 18px;margin-bottom:20px;}
+.unlock-list-item{font-size:13px;color:#d8c8a0;line-height:2.2;}
+.unlock-price{font-size:18px;color:#e8b840;font-weight:bold;margin-bottom:4px;}
+.unlock-price-note{font-size:11px;color:#a89878;margin-bottom:18px;}
+.unlock-steps{text-align:left;font-size:12px;color:#c0b090;line-height:2;margin-bottom:16px;background:rgba(200,160,80,0.08);border-radius:10px;padding:12px 14px;}
+.unlock-qr{width:230px;max-width:70%;border-radius:12px;background:#fff;padding:6px;margin:0 auto 10px;}
+.unlock-qr img{width:100%;display:block;border-radius:8px;}
+.unlock-qr-hint{font-size:11px;color:#9a8a6a;margin-bottom:16px;}
+.unlock-wechat{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;}
+.unlock-wechat-id{font-size:14px;color:#e8d8b0;letter-spacing:1px;}
+.unlock-copy-btn{border:1px solid rgba(200,160,80,0.5);background:rgba(200,160,80,0.12);color:#d4a860;border-radius:6px;font-size:12px;padding:4px 12px;cursor:pointer;}
+.unlock-copy-btn:active{transform:scale(0.94);}
+.unlock-redeem{display:flex;gap:10px;align-items:stretch;}
+.unlock-code-input{flex:1;background:rgba(255,248,235,0.95);border:1px solid rgba(200,160,80,0.5);border-radius:10px;padding:12px 14px;font-size:15px;letter-spacing:2px;color:#4a3520;outline:none;text-transform:uppercase;}
+.unlock-go-btn{background:linear-gradient(135deg,#c49030,#a07020);color:#fff;border:none;border-radius:10px;padding:0 20px;font-size:15px;letter-spacing:3px;cursor:pointer;font-weight:bold;}
+.unlock-go-btn:active{transform:scale(0.96);}
+.unlock-error{min-height:18px;font-size:12px;color:#ff9a8a;margin-top:8px;}
+.unlock-foot{font-size:11px;color:#8a7a5e;line-height:1.9;margin-top:18px;}
+
 /* ===== 晋升系统样式 ===== */
 .promo-badge{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f5d76e,#d4a017);color:#4a3000;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(255,215,0,0.4);animation:promoPulse 2s ease-in-out infinite;}
 @keyframes promoPulse{0%,100%{box-shadow:0 0 6px rgba(255,215,0,0.3);}50%{box-shadow:0 0 14px rgba(255,215,0,0.6);}}
@@ -630,6 +655,37 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
   <div class="status-bar"><div class="dynasty-row"><div class="dynasty-name">灵 堂</div></div></div>
   <button class="back-btn" onclick="Game.showPage('main')">&#8592; &#36820;&#22238;</button>
   <div id="memorial-content"></div>
+</div>
+
+<div id="page-unlock" class="page">
+  <div class="unlock-wrap">
+    <div class="unlock-seal">御 赐 续 章</div>
+    <div class="unlock-title">西域异闻 · 卷贰</div>
+    <div class="unlock-sub">史官至此搁笔。<br>自此而后——和亲、夺嫡、藩王、国运，皆入此卷。</div>
+    <div class="unlock-list">
+      <div class="unlock-list-item">◆ 西域公主携重礼入主后宫</div>
+      <div class="unlock-list-item">◆ 公主婚配 · 驸马荐婚 · 西域和亲邦交</div>
+      <div class="unlock-list-item">◆ 皇子封王就藩 · 岁贡入库</div>
+      <div class="unlock-list-item">◆ 六宫晋封 · 朝堂大事 · 全部剧情</div>
+      <div class="unlock-list-item">◆ 王朝结局 · 千秋史笔</div>
+    </div>
+    <div class="unlock-price">¥9.99</div>
+    <div class="unlock-price-note">一次性 · 永久解锁全部后续剧情</div>
+    <div class="unlock-steps">
+      ① 长按二维码保存（或截图），用微信「扫一扫」付款<br>
+      ② 添加下方微信，发送付款截图，备注「后宫解锁」<br>
+      ③ 客服回复兑换码，回到本页输入即可钦此续游
+    </div>
+    <div class="unlock-qr"><img src="Photo/pay_qr.png" alt="微信收款码" onerror="this.parentNode.innerHTML='<div style=&quot;padding:40px 10px;color:#666;font-size:12px&quot;>收款码加载中…</div>';"></div>
+    <div class="unlock-qr-hint">长按二维码识别 · 或截图后打开微信扫码</div>
+    <div class="unlock-wechat"><span class="unlock-wechat-id">微信号：ZN13003273227</span><button class="unlock-copy-btn" onclick="Game.unlockCopyWechat()">复制</button></div>
+    <div class="unlock-redeem">
+      <input class="unlock-code-input" id="unlock-code-input" placeholder="输入兑换码" maxlength="20" autocomplete="off">
+      <button class="unlock-go-btn" onclick="Game.redeemUnlock()">兑 换</button>
+    </div>
+    <div class="unlock-error" id="unlock-error"></div>
+    <div class="unlock-foot">进度仅存于此设备，换机后用同一兑换码重新输入即可。<br>兑换码即买即用，请妥善保管。</div>
+  </div>
 </div>
 
 <div id="page-out">
@@ -775,8 +831,8 @@ body::before { content:''; position:fixed; top:0;left:0;right:0;bottom:0; backgr
 </div>
 
 <audio id="bgm" loop preload="none"><source data-src="media/bgm.mp3" type="audio/mpeg"></audio>
-<script src="app.js" defer></script>
-<script src="chat.js" defer></script>
-<script src="narrate.js" defer></script>
+<script src="app.js?v=20261015" defer></script>
+<script src="chat.js?v=20261015" defer></script>
+<script src="narrate.js?v=20261015" defer></script>
 </body>
 </html>
