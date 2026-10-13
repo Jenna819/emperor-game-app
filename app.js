@@ -1555,7 +1555,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function closePromotionConfirm(){document.getElementById('modal-promotion-confirm').classList.remove('show');}
   function pickFamily(){const pool=[];FAMILY_TIERS.forEach(f=>{for(let i=0;i<f.weight;i++)pool.push(f);});return pick(pool);}
 
-  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,_emperorAge:0,concubines:[],coldPalaceList:[],banned:{},eventLog:[],chronicle:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{},banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,_lastPrincessYear:0,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false,crownPrinceId:null,dowager:null,_dowagerTeachUsed:false,_dowagerEventTriggered:false,_dowagerPregnancyBoost:false,_dowagerTreasuryBonus:0,_dowagerDraftBoost:false,_dowagerBlessingMonth:0,_promotionPending:[],_naturalDeathTriggered:false,_marriageQueue:[],_marriageQueueYear:0,_pendingMarriageEvent:null,_lastHeqinCountry:null,_marriagePeaceUntil:0,_marriagePeaceApplied:false,_heqinTributeAmt:0,_heqinTributeYears:0};
+  let state = {dynasty:'',treasury:0,year:1,month:1,actionsLeft:5,_emperorAge:0,concubines:[],coldPalaceList:[],banned:{},eventLog:[],chronicle:[],pendingEvent:null,eventTriggerRate:60,nextDraftIn:3,children:[],trainingRecords:{},banquetHeld:false,morningTriggered:false,_drafting:false,eventTriggeredThisMonth:false,monthEventAction:-1,princessEventTriggered:false,_lastPrincessYear:0,draftTriggeredThisYear:false,_lastTributeYear:0,_lastTributeMonth:0,_monthlyIncome:0,_monthlyExpense:0,_governanceLastMonth:0,_executeTarget:null,_executeCold:false,_executeAction:false,_executeMethod:null,_executeVictimInfo:null,_executeColdReply:null,_executeEventCtx:null,_executeSceneState:null,_coronationTarget:null,_coronationRival:null,_coronationAct:0,_coronationQueenId:null,_coronationSelectId:null,_jiangnan:null,honglouTotalVisits:0,honglouLastVisitMonth:0,honglouLastVisitYear:0,honglouContestCooldown:0,honglouPregnancies:[],honglouOutsideFamily:[],honglouOldFlames:[],_treasuryWarning:false,_demiseTriggered:false,_investigation:null,_investigationShown:false,_perpAtLarge:null,_perpAtLargeMonth:0,_firstPrinceBorn:false,crownPrinceId:null,dowager:null,_dowagerTeachUsed:false,_dowagerEventTriggered:false,_dowagerPregnancyBoost:false,_dowagerTreasuryBonus:0,_dowagerDraftBoost:false,_dowagerBlessingMonth:0,_promotionPending:[],_naturalDeathTriggered:false,_marriageQueue:[],_marriageQueueYear:0,_pendingMarriageEvent:null,_lastHeqinCountry:null,_marriagePeaceUntil:0,_marriagePeaceApplied:false,_heqinTributeAmt:0,_heqinTributeYears:0,memorialHall:[],deadChildren:[],_memorialSeen:0};
 
   // ===== Modal Queue =====
   let _modalQueue=[];
@@ -1761,7 +1761,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function save(){try{localStorage.setItem('emperor_game',JSON.stringify(state));}catch(e){}}
   function load(){
-    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;if(c.birthCount===undefined)c.birthCount=state.children.filter(ch=>ch.motherId===c.id).length;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.trainYear===undefined)ch.trainYear=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state.crownPrinceId!==null&&!state.children.some(c=>c.id===state.crownPrinceId))state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state.dowager&&state.dowager.mood===undefined)state.dowager.mood=clamp(state.dowager.favor||50,20,80);if(state._dowagerYearTick===undefined)state._dowagerYearTick=0;if(state._dowagerMoodTick===undefined)state._dowagerMoodTick=(state.year||1)*12+(state.month||1);if(state._dowagerPunishPending===undefined)state._dowagerPunishPending=null;if(!state._dowagerPunishCd)state._dowagerPunishCd={};if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;if(!state._marriageQueue)state._marriageQueue=[];if(state._marriageQueueYear===undefined)state._marriageQueueYear=0;if(state._pendingMarriageEvent===undefined)state._pendingMarriageEvent=null;if(state._lastHeqinCountry===undefined)state._lastHeqinCountry=null;if(state._marriagePeaceUntil===undefined)state._marriagePeaceUntil=0;if(state._marriagePeaceApplied===undefined)state._marriagePeaceApplied=false;if(state._heqinTributeAmt===undefined)state._heqinTributeAmt=0;if(state._heqinTributeYears===undefined)state._heqinTributeYears=0;if(state._fiefTaxAccrued===undefined)state._fiefTaxAccrued=0;if(!state.chronicle)state.chronicle=[];state.children.forEach(ch=>{if(ch.fief===undefined)ch.fief=null;});return true;}}catch(e){}return false;
+    try{const d=localStorage.getItem('emperor_game');if(d){state=JSON.parse(d);if(!state.coldPalaceList&&state.coldPalace)state.coldPalaceList=state.coldPalace;if(state.eventTriggerRate===undefined||state.eventTriggerRate<10)state.eventTriggerRate=60;if(state.nextDraftIn===undefined||state.nextDraftIn>10)state.nextDraftIn=1;if(!state.banned)state.banned={};if(!state.eventLog)state.eventLog=[];if(state.pendingEvent)state.pendingEvent=null;if(state.banquetHeld===undefined)state.banquetHeld=false;if(state.morningTriggered===undefined)state.morningTriggered=false;if(state.eventTriggeredThisMonth===undefined)state.eventTriggeredThisMonth=false;if(state.monthEventAction===undefined)state.monthEventAction=Math.floor(Math.random()*3)+1;if(state.draftTriggeredThisYear===undefined)state.draftTriggeredThisYear=false;if(state._lastTributeYear===undefined)state._lastTributeYear=0;if(state._lastTributeMonth===undefined)state._lastTributeMonth=0;if(state._governanceLastMonth===undefined)state._governanceLastMonth=0;if(state._coronationCooldown===undefined)state._coronationCooldown=null;if(state._queenEventCooldown===undefined)state._queenEventCooldown=0;if(!state._usedJnNames)state._usedJnNames=[];if(state._honglou)state._honglou=null;if(state.jiangnanYear===undefined)state.jiangnanYear=undefined;if(state.year===undefined)state.year=1;if(state._treasuryWarning===undefined)state._treasuryWarning=false;if(state._demiseTriggered===undefined)state._demiseTriggered=false;if(state._lastPrincessYear===undefined)state._lastPrincessYear=0;if(state.princessEventTriggered===undefined)state.princessEventTriggered=false;if(!state._emperorAge||state._emperorAge===0){state._emperorAge=rand(14,40)+((state.year||1)-1);}state.concubines.forEach(c=>{if(c.health===undefined)c.health=rand(60,100);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.rank==='答应'&&c.family&&c.family.initRank)c.rank=c.family.initRank;if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=c.portraitSeed?Math.floor(Math.random()*PORTRAIT_DATA.length)+1:1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;if(c.birthCount===undefined)c.birthCount=state.children.filter(ch=>ch.motherId===c.id).length;});state.coldPalaceList.forEach(c=>{if(c.health===undefined)c.health=rand(20,60);if(!c.personality)c.personality=pick(PERSONALITIES);if(!c.family)c.family=pickFamily();if(c.pregnant===undefined){c.pregnant=false;c.pregMonth=0;}if(c.age===undefined)c.age=rand(15,35);if(c.portraitSeed){c.portraitIdx=Math.floor(Math.random()*PORTRAIT_DATA.length)+1;delete c.portraitSeed;}if(c.power===undefined||isNaN(c.power)){c.favor=c.favor||30;c.power=Math.round(c.favor/8);if(isNaN(c.power))c.power=0;const autoRank=getRankByPower(c.power);if(ri(autoRank)<ri(c.rank))c.rank=autoRank;c.power=clampPowerToRank(c.power,c.rank);}if(c.stress===undefined)c.stress=0;if(c.behaviorLog===undefined)c.behaviorLog=[];if(c.favors===undefined)c.favors={};if(c.bedCount===undefined)c.bedCount=0;if(c.bedHonglou===undefined)c.bedHonglou=false;if(c.isExotic===undefined)c.isExotic=false;if(c._notVirgin===undefined)c._notVirgin=false;if(c.baseBeauty===undefined)c.baseBeauty=c.beauty;});if(!state.trainingRecords)state.trainingRecords={};if(!state.children)state.children=[];state.children.forEach(ch=>{if(ch.age===undefined)ch.age=0;if(ch.talent===undefined)ch.talent=rand(30,70);if(ch.martial===undefined)ch.martial=rand(20,60);if(ch.virtue===undefined)ch.virtue=rand(40,80);if(ch.prestige===undefined)ch.prestige=0;if(ch.trainYear===undefined)ch.trainYear=0;if(ch.health===undefined)ch.health=rand(70,100);if(ch.gender==='male')ch.gender='皇子';if(ch.gender==='female')ch.gender='公主';if(!ch.motherRank)ch.motherRank='';if(!ch.motherId)ch.motherId='';if(ch.appearance===undefined)ch.appearance=rand(40,80);if(!ch.personality)ch.personality=pick(PERSONALITIES);if(!ch.talentTier)ch.talentTier=genTalentTier(ch.talent);if(ch.isCrownPrince===undefined)ch.isCrownPrince=false;});if(!state.honglouPregnancies)state.honglouPregnancies=[];if(!state.honglouOutsideFamily)state.honglouOutsideFamily=[];if(!state.honglouOldFlames)state.honglouOldFlames=[];if(state.honglouTotalVisits===undefined)state.honglouTotalVisits=0;if(state.honglouLastVisitMonth===undefined)state.honglouLastVisitMonth=0;if(state.honglouLastVisitYear===undefined)state.honglouLastVisitYear=0;if(state.honglouContestCooldown===undefined)state.honglouContestCooldown=0;if(state._investigation===undefined)state._investigation=null;if(state._perpAtLarge===undefined)state._perpAtLarge=null;if(state._perpAtLargeMonth===undefined)state._perpAtLargeMonth=0;if(state._firstPrinceBorn===undefined)state._firstPrinceBorn=false;if(state.crownPrinceId===undefined)state.crownPrinceId=null;if(state.crownPrinceId!==null&&!state.children.some(c=>c.id===state.crownPrinceId))state.crownPrinceId=null;if(state._investigationShown===undefined)state._investigationShown=false;if(!state.dowager){genDowager();}if(state.dowager&&state.dowager.alive===undefined)state.dowager.alive=true;if(state.dowager&&state.dowager.eventHistory===undefined)state.dowager.eventHistory=[];if(state.dowager&&state.dowager.giftedCount===undefined)state.dowager.giftedCount=0;if(state.dowager&&state.dowager.lastTriggerMonth===undefined)state.dowager.lastTriggerMonth=0;if(state.dowager&&state.dowager.mood===undefined)state.dowager.mood=clamp(state.dowager.favor||50,20,80);if(state._dowagerYearTick===undefined)state._dowagerYearTick=0;if(state._dowagerMoodTick===undefined)state._dowagerMoodTick=(state.year||1)*12+(state.month||1);if(state._dowagerPunishPending===undefined)state._dowagerPunishPending=null;if(!state._dowagerPunishCd)state._dowagerPunishCd={};if(state._dowagerTeachUsed===undefined)state._dowagerTeachUsed=false;if(state._dowagerEventTriggered===undefined)state._dowagerEventTriggered=false;if(state._dowagerPregnancyBoost===undefined)state._dowagerPregnancyBoost=false;if(state._dowagerTreasuryBonus===undefined)state._dowagerTreasuryBonus=0;if(state._dowagerDraftBoost===undefined)state._dowagerDraftBoost=false;if(state._dowagerBlessingMonth===undefined)state._dowagerBlessingMonth=0;if(!state._promotionPending)state._promotionPending=[];if(state._naturalDeathTriggered===undefined)state._naturalDeathTriggered=false;if(!state._marriageQueue)state._marriageQueue=[];if(state._marriageQueueYear===undefined)state._marriageQueueYear=0;if(state._pendingMarriageEvent===undefined)state._pendingMarriageEvent=null;if(state._lastHeqinCountry===undefined)state._lastHeqinCountry=null;if(state._marriagePeaceUntil===undefined)state._marriagePeaceUntil=0;if(state._marriagePeaceApplied===undefined)state._marriagePeaceApplied=false;if(state._heqinTributeAmt===undefined)state._heqinTributeAmt=0;if(state._heqinTributeYears===undefined)state._heqinTributeYears=0;if(state._fiefTaxAccrued===undefined)state._fiefTaxAccrued=0;if(!state.chronicle)state.chronicle=[];if(!state.memorialHall)state.memorialHall=[];if(!state.deadChildren)state.deadChildren=[];if(state._memorialSeen===undefined)state._memorialSeen=0;if(state._memorialConcubines&&state._memorialConcubines.length){state._memorialConcubines.forEach(function(m){if(state.memorialHall.some(function(r){return r.name===m.name&&r.rank===m.rank&&r.year===m.year;}))return;var kids=state.children.filter(function(ch){return ch.motherName===m.name&&ch.motherRank===m.rank;}).map(function(ch){return{id:ch.id,name:ch.name,gender:ch.gender};});state.memorialHall.push({id:'legacy_'+m.name+'_'+m.year+'_'+m.month,name:m.name,rank:m.rank,title:'',age:null,beauty:null,personality:'',familyName:'',cause:'病故',year:m.year,month:m.month,funeral:null,portraitIdx:null,children:kids,legacy:true});});state._memorialConcubines=null;}state.children.forEach(ch=>{if(ch.fief===undefined)ch.fief=null;});return true;}}catch(e){}return false;
   }
 
   const PORTRAIT_DATA = [
@@ -2107,6 +2107,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(state.coldPalaceList.length>0){badge.style.display='flex';badge.textContent=state.coldPalaceList.length;}else{badge.style.display='none';}
     const heirsBadge = document.getElementById('fab-heirs-badge');
     if(state.children.length>0){heirsBadge.style.display='flex';heirsBadge.textContent=state.children.length;}else{heirsBadge.style.display='none';}
+    updateMemorialBadge();
     // 坤宁宫按钮显隐
     document.getElementById('palace-alert').style.display=state.pendingEvent?'block':'none';
     const btn=document.getElementById('next-month-btn'); if(btn)btn.classList.toggle('urgent',state.actionsLeft<=0);
@@ -2354,6 +2355,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     });
     // 处理冷宫病故妃嫔的子嗣过继
     deaths.forEach(c=>{
+      recordMemorial(c,'冷宫病逝');
       const kids=state.children.filter(ch=>ch.motherId===c.id&&ch.age<16&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
       if(kids.length>0){
         triggerOrphanAdoption(c,kids);
@@ -2517,6 +2519,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
   }
 
   function childDeathResolve(ch,mother,extraMsg,logTag){
+    recordDeadChild(ch,logTag||'夭折');
     state.children=state.children.filter(x=>x.id!==ch.id);
     ensureCrownPrinceValid();
     if(mother){
@@ -3026,8 +3029,10 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const empress=state.concubines.find(c=>c.rank==='皇后'&&!state.coldPalaceList.some(x=>x.id===c.id))||null;
     const newEmperorChild=newEmperorId?state.children.find(x=>x.id===newEmperorId):null;
     let bioMother=null,legalMother=null;
+    let bioMi=null;
     if(newEmperorChild){
       bioMother=state.concubines.find(c=>c.id===newEmperorChild.motherId)||state.coldPalaceList.find(c=>c.id===newEmperorChild.motherId)||null;
+      bioMi=getMotherInfo(newEmperorChild);
       const amId=newEmperorChild.adoptiveMotherId;
       if(amId==='empress')legalMother=empress;
       else if(amId&&amId!=='nanny'&&amId!=='temple')legalMother=state.concubines.find(c=>c.id===amId)||null;
@@ -3041,6 +3046,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       allScored.forEach((item,idx)=>{
         const ch=item.child;
         const mother=state.concubines.find(c=>c.id===ch.motherId)||state.coldPalaceList.find(c=>c.id===ch.motherId);
+        const mi=getMotherInfo(ch);
+        const motherLabel=mi?(mi.name+(mi.live?'':'（已故）')):'未知';
         let fateText='',borderColor='#6090d0';
         if(idx===0){
           const motherTag=legalMother&&bioMother&&legalMother.id!==bioMother.id?'养母':'生母';
@@ -3052,9 +3059,9 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           else if(legalMother)
             momText=motherTag+legalMother.name+'无中宫并立，独尊为皇太后。';
           else if(empress)
-            momText='生母已逝，皇后以嫡母之尊奉为皇太后。';
+            momText=(bioMi&&!bioMi.live?'生母'+bioMi.name+'已逝，':'生母已逝，')+'皇后以嫡母之尊奉为皇太后。';
           else
-            momText='生母早逝，无从尊封。';
+            momText=(bioMi&&!bioMi.live?'生母'+bioMi.name+'早逝，':'生母早逝，')+'无从尊封。';
           fateText=(ch.fief?'自'+ch.fief.land+'应召还京，':'')+'继位为帝，改元登基。'+momText;
           borderColor='#d4a040';
         } else if(ch.fief){
@@ -3077,7 +3084,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           borderColor='#80a0c0';
         }
         princesHtml+='<div style="margin:8px 0;padding:12px;background:rgba(255,248,235,0.9);border-radius:10px;border-left:3px solid '+borderColor+';">';
-        princesHtml+='<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:4px;">'+(ch.name||'皇子')+' · 生母：'+(mother?mother.name:'未知')+'</div>';
+        princesHtml+='<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:4px;">'+(ch.name||'皇子')+' · 生母：'+motherLabel+'</div>';
         princesHtml+='<div style="font-size:11px;color:#a08060;margin-bottom:6px;">才能 '+ch.talent+' · 武力 '+ch.martial+' · 德行 '+ch.virtue+' · 威望 '+ch.prestige+'</div>';
         princesHtml+='<div style="font-size:12px;color:#5a3e28;line-height:1.7;">'+fateText+'</div>';
         princesHtml+='</div>';
@@ -3092,6 +3099,8 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(princesses.length>0){
       princesses.forEach(ch=>{
         const mother=state.concubines.find(c=>c.id===ch.motherId)||state.coldPalaceList.find(c=>c.id===ch.motherId);
+        const mi=getMotherInfo(ch);
+        const motherLabel=mi?(mi.name+(mi.live?'':'（已故）')):'未知';
         let fateText='',borderColor='#d090c0';
         const motherFavor=mother?mother.favor:0;
         const isSameMother=newEmperorId&&ch.motherId===newEmperorId?false:(newEmperorId&&state.children.find(x=>x.id===newEmperorId&&x.motherId===ch.motherId));
@@ -3124,7 +3133,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           borderColor='#c090b0';
         }
         princessesHtml+='<div style="margin:8px 0;padding:12px;background:rgba(255,248,235,0.9);border-radius:10px;border-left:3px solid '+borderColor+';">';
-        princessesHtml+='<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:4px;">'+(ch.name||'公主')+' · 生母：'+(mother?mother.name:'未知')+'</div>';
+        princessesHtml+='<div style="font-size:14px;font-weight:bold;color:#5a3e28;margin-bottom:4px;">'+(ch.name||'公主')+' · 生母：'+motherLabel+'</div>';
         princessesHtml+='<div style="font-size:11px;color:#a08060;margin-bottom:6px;">年龄 '+ch.age+'岁 · 容貌 '+ch.appearance+'</div>';
         princessesHtml+='<div style="font-size:12px;color:#5a3e28;line-height:1.7;">'+fateText+'</div>';
         princessesHtml+='</div>';
@@ -5948,6 +5957,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       var coldKids=state.children.filter(ch=>ch.motherId===id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
       if(coldKids.length>0&&coldC){triggerOrphanAdoption(coldC,coldKids);}
       if(coldC)logBehavior(coldC,'execution','heavy',true);
+      if(coldC)recordMemorial(coldC,'冷宫'+method.name);
       state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);
       logEvent('赐死','冷宫中的'+(coldC?coldC.rank+coldC.name:'妃子')+'被'+method.name);
       var fb='<span class="neg">妃子已被赐死</span>';
@@ -5962,6 +5972,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         var kids=state.children.filter(ch=>ch.motherId===c.id&&(ch.adoptiveMotherId===null||ch.adoptiveMotherId===undefined));
         if(kids.length>0){triggerOrphanAdoption(c,kids);}
         logBehavior(c,'execution','heavy',true);
+        recordMemorial(c,method.name);
         state.concubines=state.concubines.filter(x=>x.id!==id);
         logEvent('赐死',c.rank+c.name+'被'+method.name);
         if(consume){consumeAction();}
@@ -6006,7 +6017,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
   function actionColdKill(id){const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;showExecutionSelect(id,true,false);}
 
-  function actionColdTorture(id){const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;const dmg=rand(15,25);c.health=clamp(c.health-dmg,0,100);c.power=clamp(c.power-10,0,500);if(c.health<=0){state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);logEvent('&#25240;&#30952;&#33268;&#27515;',c.rank+c.name+'&#34987;&#25240;&#30952;&#33268;&#27515;');save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65288;&#24402;&#38646;&#65289;<br><span class="neg">'+c.name+' &#25240;&#30952;&#33268;&#27515;</span>');return;}logEvent('&#25240;&#30952;','&#23351;&#23351;&#25240;&#30952;'+c.name+'&#65292;&#20581;&#24247;-'+dmg);save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;');}
+  function actionColdTorture(id){const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;const dmg=rand(15,25);c.health=clamp(c.health-dmg,0,100);c.power=clamp(c.power-10,0,500);if(c.health<=0){recordMemorial(c,'折磨致死');state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);logEvent('&#25240;&#30952;&#33268;&#27515;',c.rank+c.name+'&#34987;&#25240;&#30952;&#33268;&#27515;');save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65288;&#24402;&#38646;&#65289;<br><span class="neg">'+c.name+' &#25240;&#30952;&#33268;&#27515;</span>');return;}logEvent('&#25240;&#30952;','&#23351;&#23351;&#25240;&#30952;'+c.name+'&#65292;&#20581;&#24247;-'+dmg);save();showColdPalace();showFeedback('&#23351;&#23351;&#25240;&#30952; <span class="neg">'+c.name+'</span><br>&#20581;&#24247; <span class="neg">-'+dmg+'</span>&#65292;&#21183;&#21147; <span class="neg">-10</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;');}
 
   function actionColdRelease(id){if(!canAct())return;const c=state.coldPalaceList.find(x=>x.id===id);if(!c)return;state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==id);c.rank='官女子';c.power=clamp(c.power+10,0,10);c.health=clamp(c.health+20,0,100);if(c.stress===undefined)c.stress=0;if(c.stressCap===undefined)c.stressCap=getStressCap(c.personality?c.personality.name:'');if(!c.behaviorLog)c.behaviorLog=[];if(c._favored===undefined)c._favored=false;if(!c.favors)c.favors={};if(c.grudge===undefined)c.grudge=null;if(c._flatterCount===undefined)c._flatterCount=0;if(c.title===undefined)c.title='';state.concubines.push(c);consumeAction();logEvent('&#37322;&#25918;',c.rank+c.name+'&#34987;&#37322;&#25918;&#22238;&#23467;');save();updateUI();showColdPalace();showFeedback('<span class="pos">'+c.name+'</span> &#24050;&#37322;&#25918;&#22238;&#23467;<br>&#20301;&#20221;&#38477;&#20026; <span class="neg">&#23448;&#22899;&#23376;</span><br>&#20581;&#24247; <span class="pos">+20</span>&#65292;&#21183;&#21147; <span class="pos">+10</span>&#65288;&#24403;&#21069;'+c.health+'&#65289;<br>&#34892;&#21160; <span class="neg">-1</span>');}
 
@@ -6925,6 +6936,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
             c.health=clamp(c.health-15,0,100);
             c.power=clamp(c.power-8,0,500);
             if(c.health<=0){
+              recordMemorial(c,'折磨致死');
               state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==c.id);
               logEvent('冷宫求饶',c.name+'折磨致死');
               state.pendingEvent=null;
@@ -7275,9 +7287,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     if(pn === '风情婉约' && kids.length > 0){
       kids.forEach(ch => { ch.prestige = (ch.prestige || 0) + 10; });
     }
-    // 记录 memorial 妃子
-    if(!state._memorialConcubines) state._memorialConcubines = [];
-    state._memorialConcubines.push({name: c.name, rank: c.rank, year: state.year, month: state.month});
+    recordMemorial(c, '病故');
     // 从宫中移除
     state.concubines = state.concubines.filter(x => x.id !== c.id);
     logEvent('病故', c.rank + c.name + '病故');
@@ -7286,7 +7296,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     // 国丧判定（妃位以上，20%概率）
     const highRanks = ['妃', '嫔', '贵人', '贵妃', '皇贵妃', '皇后'];
     if(highRanks.includes(c.rank) && Math.random() < 0.20){
-      state._mourningEvent = {victimName: c.name, victimRank: c.rank};
+      state._mourningEvent = {victimId: c.id, victimName: c.name, victimRank: c.rank};
       setTimeout(function(){ triggerMourningEvent(c); }, 600);
     } else {
       showFeedback(msg);
@@ -7298,6 +7308,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const data = state._mourningEvent;
     if(!data) return;
     const done=function(){state._mourningEvent=null;};
+    const setFuneral=function(spec){const rec=(state.memorialHall||[]).find(r=>r.id===data.victimId);if(rec)rec.funeral=spec;};
     state.pendingEvent = {
       title: '【国丧事宜】',
       desc: data.victimRank + data.victimName + '病故，宫中哀声一片，请皇上定夺丧仪规格。',
@@ -7307,7 +7318,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           effect(){
             spendTreasury(2000);
             state.concubines.forEach(x => { x.favor = clamp(x.favor - 5, 0, 2200); });
-            logEvent('国丧', '辍朝三日'); done(); save(); updateUI();
+            logEvent('国丧', '辍朝三日'); setFuneral('辍朝三日'); done(); save(); updateUI();
             showFeedback('辍朝三日<br>国库 <span class="neg">-2000</span>，全体妃嫔宠爱 <span class="neg">-5</span>');
           }
         },
@@ -7315,7 +7326,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           text: ' 厚葬（国库-3000，家族势力+20）',
           effect(){
             spendTreasury(3000);
-            logEvent('国丧', '厚葬'); done(); save(); updateUI();
+            logEvent('国丧', '厚葬'); setFuneral('厚葬'); done(); save(); updateUI();
             showFeedback('厚葬' + data.victimName + '<br>国库 <span class="neg">-3000</span><br>家族势力 <span class="pos">+20</span>');
           }
         },
@@ -7323,7 +7334,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
           text: ' 从简办理（国库-500）',
           effect(){
             state.treasury -= 500;
-            logEvent('国丧', '从简办理'); done(); save(); updateUI();
+            logEvent('国丧', '从简办理'); setFuneral('从简办理'); done(); save(); updateUI();
             showFeedback('从简办理' + data.victimName + '<br>国库 <span class="neg">-500</span>');
           }
         },
@@ -8066,6 +8077,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     const suspects = state.concubines.filter(c=>c.id!==mother.id);
     if(suspects.length<2) return null;
     // 皇子已中毒身亡：移出子嗣列表，生母哀损耗
+    recordDeadChild(victim,'中毒薨逝');
     state.children=state.children.filter(x=>x.id!==victim.id);
     ensureCrownPrinceValid();
     mother.favor=clamp(mother.favor-50,0,2200);
@@ -8351,6 +8363,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         {text:' 立即赐死，不再姑息',effect(){
           const p=state.coldPalaceList.find(c=>c.id===perp.id);
           if(p){
+            recordMemorial(p,'赐死');
             state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==p.id);
             logEvent('真凶再犯',perp.name+'被赐死');
             state._perpAtLarge=null;
@@ -8363,7 +8376,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
         }},
         {text:' 加重折磨（'+perp.name+'健康-30）',effect(){
           const p=state.coldPalaceList.find(c=>c.id===perp.id);
-          if(p){p.health=clamp(p.health-30,0,100);if(p.health<=0){state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==p.id);logEvent('真凶再犯',perp.name+'折磨致死');}}
+          if(p){p.health=clamp(p.health-30,0,100);if(p.health<=0){recordMemorial(p,'折磨致死');state.coldPalaceList=state.coldPalaceList.filter(x=>x.id!==p.id);logEvent('真凶再犯',perp.name+'折磨致死');}}
           victim.favor=clamp(victim.favor+10,0,2200);
           state.pendingEvent=null;state._perpAtLarge=null;
           save();updateUI();
@@ -8781,6 +8794,113 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       if(state.chronicle.length>300) state.chronicle.shift();
     }
   }
+
+  // ===== 灵堂：逝者记录与生母查找 =====
+  function recordMemorial(c,cause){
+    if(!state.memorialHall)state.memorialHall=[];
+    if(state.memorialHall.some(r=>r.id===c.id))return;
+    let portrait=null;
+    if(typeof c.portraitIdx==='number'&&c.portraitIdx>0)portrait=c.portraitIdx;
+    else if(typeof c.portraitIdx==='string'&&c.portraitIdx)portrait=c.portraitIdx;
+    state.memorialHall.push({
+      id:c.id,name:c.name,rank:c.rank,title:c.title||'',age:c.age||null,beauty:c.beauty||null,
+      personality:c.personality?c.personality.name:'',familyName:c.family?c.family.name:'',
+      cause:cause,year:state.year,month:state.month,funeral:null,portraitIdx:portrait,
+      children:state.children.filter(ch=>ch.motherId===c.id).map(ch=>({id:ch.id,name:ch.name,gender:ch.gender})),
+    });
+  }
+  function recordDeadChild(ch,cause){
+    if(!state.deadChildren)state.deadChildren=[];
+    if(state.deadChildren.some(d=>d.id===ch.id))return;
+    state.deadChildren.push({id:ch.id,name:ch.name,gender:ch.gender,age:ch.age||0,year:state.year,month:state.month,cause:cause||'夭折'});
+  }
+  function getMotherInfo(ch){
+    if(!ch)return null;
+    if(!ch.motherId)return ch.motherName?{name:ch.motherName,rank:ch.motherRank||'',live:false,legacy:true}:null;
+    const live=state.concubines.find(c=>c.id===ch.motherId);
+    if(live)return{name:live.name,rank:live.rank,live:true};
+    const cold=state.coldPalaceList.find(c=>c.id===ch.motherId);
+    if(cold)return{name:cold.name,rank:cold.rank,live:true,inCold:true};
+    const rec=(state.memorialHall||[]).find(r=>r.id===ch.motherId);
+    if(rec)return{name:rec.name,rank:rec.rank,live:false};
+    if(ch.motherName)return{name:ch.motherName,rank:ch.motherRank||'',live:false,legacy:true};
+    return null;
+  }
+  function memorialSeq(r){return (r.year||0)*12+(r.month||0);}
+  function updateMemorialBadge(){
+    const btn=document.getElementById('fab-memorial');if(!btn)return;
+    const hall=state.memorialHall||[];
+    btn.style.display=hall.length>0?'flex':'none';
+    const badge=document.getElementById('fab-memorial-badge');if(!badge)return;
+    const fresh=hall.filter(r=>memorialSeq(r)>(state._memorialSeen||0)).length;
+    if(fresh>0){badge.style.display='flex';badge.textContent=fresh;}else{badge.style.display='none';}
+  }
+  function showMemorial(){
+    const hall=state.memorialHall||[];
+    state._memorialSeen=hall.length?Math.max.apply(null,hall.map(memorialSeq)):0;
+    updateMemorialBadge();save();
+    const el=document.getElementById('memorial-content');
+    if(!el)return;
+    if(hall.length===0){el.innerHTML='<div style="text-align:center;color:#8a7060;font-size:13px;padding:80px 20px;">灵堂空寂，尚无佳人入册。</div>';showPage('memorial');return;}
+    const list=hall.slice().sort((a,b)=>memorialSeq(b)-memorialSeq(a));
+    let html='<div style="padding:64px 14px 6px;text-align:center;color:#9a6a4a;font-size:14px;letter-spacing:3px;">🕯 香魂已归，音容犹在 🕯</div>';
+    html+='<div style="text-align:center;color:#b09a7a;font-size:11px;margin-bottom:14px;">共 '+list.length+' 位佳人</div>';
+    html+='<div class="memorial-grid">';
+    list.forEach(r=>{
+      html+='<div class="memorial-tablet" onclick="Game.openMemorialDetail(\''+r.id+'\')">';
+      html+='<div class="tab-rank">'+(r.rank||'')+'</div>';
+      html+='<div class="tab-name">'+r.name+'</div>';
+      html+='<div class="tab-year">'+r.year+'年'+r.month+'月</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    el.innerHTML=html;
+    showPage('memorial');
+  }
+  function openMemorialDetail(id){
+    const r=(state.memorialHall||[]).find(x=>x.id===id);if(!r)return;
+    let url='';
+    if(typeof r.portraitIdx==='number'&&r.portraitIdx>0)url=PORTRAIT_DATA[r.portraitIdx-1]||'';
+    else if(typeof r.portraitIdx==='string'&&r.portraitIdx)url=r.portraitIdx;
+    let html='<div style="display:flex;gap:14px;align-items:flex-start;">';
+    html+='<div style="flex:0 0 100px;">'+(url?'<img src="'+url+'" style="width:100px;height:125px;object-fit:cover;border-radius:12px;border:1px solid rgba(200,160,80,0.25);" onerror="this.style.display=\'none\';">':'<div style="width:100px;height:125px;border-radius:12px;background:rgba(90,80,70,0.12);display:flex;align-items:center;justify-content:center;color:#8a7a6a;font-size:12px;">牌位</div>')+'</div>';
+    html+='<div style="flex:1;">';
+    html+='<div style="font-size:17px;font-weight:bold;color:#5a3e28;">'+(r.title||'')+(r.rank||'')+' '+r.name+'</div>';
+    html+='<div style="font-size:12px;color:#8a7060;margin-top:6px;line-height:1.9;">';
+    html+='殁因：'+(r.cause||'不详')+'<br>';
+    html+='殁于：'+r.year+'年'+r.month+'月';
+    if(r.age)html+='<br>享年：'+r.age+'岁';
+    if(r.beauty)html+='<br>容貌：'+r.beauty;
+    if(r.personality)html+='<br>性格：'+r.personality;
+    if(r.familyName)html+='<br>家世：'+r.familyName;
+    if(r.funeral)html+='<br>丧仪：'+r.funeral;
+    html+='<br></div></div></div>';
+    html+='<div style="margin-top:14px;">';
+    html+='<div style="font-size:13px;color:#9a6a4a;letter-spacing:2px;margin-bottom:8px;">👶 所出子嗣</div>';
+    const kids=r.children||[];
+    if(kids.length===0){
+      html+='<div style="font-size:12px;color:#a09080;">膝下无出</div>';
+    } else {
+      kids.forEach(k=>{
+        let status;
+        const alive=(state.children||[]).find(ch=>ch.id===k.id);
+        const dead=(state.deadChildren||[]).find(ch=>ch.id===k.id);
+        if(alive){
+          status=(alive.gender||'')+(typeof alive.age==='number'?' · '+alive.age+'岁':'')+(alive.isOrphan&&alive.adoptiveMotherName?' · 寄养于'+alive.adoptiveMotherName:'');
+        } else if(dead){
+          status=(dead.gender||k.gender||'')+' · 早殇（'+dead.year+'年'+dead.month+'月'+(dead.cause?'·'+dead.cause:'')+'，'+(dead.age||0)+'岁）';
+        } else {
+          status=(k.gender||'')+' · 早殇（年份不详）';
+        }
+        html+='<div style="font-size:13px;color:#5a3e28;padding:6px 10px;background:rgba(255,248,235,0.9);border-radius:8px;margin-bottom:6px;">'+k.name+' <span style="color:#a08060;font-size:11px;">'+status+'</span></div>';
+      });
+    }
+    html+='</div>';
+    document.getElementById('memorial-detail-header').innerHTML='🕯 '+r.name+' · 牌位';
+    document.getElementById('memorial-detail-content').innerHTML=html;
+    document.getElementById('modal-memorial').classList.add('show');
+  }
+  function closeMemorialDetail(){document.getElementById('modal-memorial').classList.remove('show');}
 
   // ===== 履历衰减因子 =====
   function historyFactor(concubine, eventType){
@@ -12142,7 +12262,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     }
   }
 
-  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,openChildTonic,confirmChildTonic,cancelChildTonic,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;},_api:{state:function(){return state;},findC:findC,save:save,updateUI:updateUI,adjustFavor:function(id,d){const c=findC(id);if(!c)return 0;const before=c.favor;c.favor=clamp(c.favor+d,0,2200);checkPromotionEligibility(c);return c.favor-before;},adjustStress:function(id,d){const c=findC(id);if(!c)return;updateStress(c,d);c.stress=clamp(c.stress,0,getStressCap(c.personality?c.personality.name:''));}}};
+  return{init,startNewGame,confirmTreasury,nextMonth,showDetail,showPage,showKunning,favorQueen,deposeQueen,showColdPalace,showPregnantList,actionFavor,actionGift,actionCold,actionKill,actionColdKill,actionColdTorture,actionColdRelease,showTitleModal,closeTitleModal,confirmTitle,openRankPicker,closeRankPicker,confirmRankPicker,openBed,flipCard,endBed,rateBed,punishBed,closeAngerEvent,tryTriggerMorning,morningReply,closeBirth,showPregnancyAlert,draftKeep,draftDrop,selectEventOption,confirmEventOption,handleEventOption,openPendingEvent,closeFeedback,showConfirm,closeConfirm,triggerPalaceEvent,openBanquet,selectBanquetProg,submitBanquet,confirmBanquet,closeBanquet,genChildName,showHeirs,closeHeirs,showChildDetail,closeChildDetail,showChildTraining,closeChildTraining,getChildTraining,genTalentTier,genChildPersonality,processChildTraining,showPortraitZoom,showPortraitZoomUrl,closePortraitZoom,openSettings,closeSettings,closeBackground,showBackground,toggleMusic,setMusicVolume,clearCache,showIntro,skipIntro,hideIntro,openBedFromDetail,bedInteract,bedEnd,_finishBedInteract,_punish,_dismissEvent,selectPunishmentOption,confirmPunishment,_showNoEvidence,_dismissNoEvidence,showOut,closeOut,clickLocation,closeUnavailable,acceptPrincess,declinePrincess,closePrincess,playDraftVoice,showExecutionSelect,selectExecution,closeExecutionSelect,showDeathReaction,closeDeathReaction,showDeathScene,closeDeathScene,executeDeath,executeIllnessDeath,confirmEmpress,nextCoronationAct,finishCoronation,closeCoronation,openCoronationSelect,selectCoronationCandidate,confirmCoronationManual,closeCoronationSelect,openGovernance,selectGovAnswer,nextGovQuestion,closeGovernance,showJiangnanStart,startJiangnan,closeJiangnan,exploreLocation,jnTalk,jnGift,giveJnGift,confirmRecruit,doRecruit,closeJnStart,closeJnEvent,closeJnGift,closeJnRecruit,showHonglou,renderHonglouMain,showHonglouListen,showHonglouDance,showHonglouPerformance,flipHonglouPerf,tipHonglouPerf,closeHonglouPerformance,enterHonglouRoom,renderHonglouRoom,closeHonglouRoom,honglouChat,honglouChatReply,closeHonglouDialogue,honglouGift,honglouBed,closeHonglouBed,showHonglouOldFlames,showHonglouAdopt,updateHonglouAdoptTotal,confirmHonglouAdopt,honglouAdoptOne,closeHonglouAdopt,showHonglouContestStart,renderHonglouContestRound,contestNotice,contestInvest,contestNextRound,contestSolo,contestAdopt,contestCongrat,closeHonglouContest,finishHonglou,triggerHonglouRisk,showHonglouEvent,honglouEventChoice,closeHonglouEvent,checkHonglouReunion,triggerReunion,reunionChoice,closeHonglouReunion,bedInterceptChoice,confirmGift,cancelGift,makeEmperorChoice,restartAfterDemise,processInvestigationChoice,resolveInvestigation,deepDiveInvestigation,giveUpInvestigation,triggerPerpAtLargeEvent,showNextNaming,selectGenChar,selectSecondChar,confirmNaming,closeNamingModal,genDowager,showDowager,showMemorial,openMemorialDetail,closeMemorialDetail,greetDowager,offerDowagerGift,listenDowagerTeachings,closeDowagerTeachings,showDowagerEvent,selectDowagerEventOption,closeDowagerEvent,tryTriggerDowagerEvent,processDowagerDecay,showFeedback,showPromotionModal,closePromotion,confirmPromotion,closePromotionConfirm,showAdoptSelect,closeAdoptSelect,renderAdoptList,confirmAdopt,crownPrince,deposeCrownPrince,approveMarry,declineMarry,heqinPick,confirmHeqin,dowagerPunishRespond,openEnfeoffModal,closeEnfeoff,confirmEnfeoff,openChildTonic,confirmChildTonic,cancelChildTonic,acceptCookies,checkNaturalDeath,showNaturalDeath,_debug:function(){return state;},_api:{state:function(){return state;},findC:findC,save:save,updateUI:updateUI,adjustFavor:function(id,d){const c=findC(id);if(!c)return 0;const before=c.favor;c.favor=clamp(c.favor+d,0,2200);checkPromotionEligibility(c);return c.favor-before;},adjustStress:function(id,d){const c=findC(id);if(!c)return;updateStress(c,d);c.stress=clamp(c.stress,0,getStressCap(c.personality?c.personality.name:''));}}};
 })();
 
 // ===== 启动 =====
