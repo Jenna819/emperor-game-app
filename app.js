@@ -2063,7 +2063,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
       : (typeof idx === 'string'
         ? ` onclick="Game.showPortraitZoomUrl('${idx}')"`
         : (typeof idx === 'number' ? ` onclick="Game.showPortraitZoom(${idx})"` : ''));
-    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:none;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
+    return `<img src="${url}"${onclick} style="width:${w}px;height:${h}px;object-fit:cover;border-radius:${r}px;border:1px solid rgba(139,105,20,0.25);flex-shrink:0;cursor:zoom-in;" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';"><div style="width:${w}px;height:${h}px;border-radius:${r}px;background:linear-gradient(135deg,#e8c8a0,#d4b090);display:none;align-items:center;justify-content:center;color:#a08060;font-size:11px;flex-shrink:0;">无图</div>`;
   }
 
   function updateUI() {
