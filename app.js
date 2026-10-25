@@ -4835,6 +4835,7 @@ function pick(a){return a[Math.floor(Math.random()*a.length)];}
     state.draftTriggeredThisYear=false;state.princessEventTriggered=false;state._lastPrincessYear=0;
     state._bedTarget=null;state._bedPool=null;state._bedFlipping=false;state._giftTarget=null;
     state._banquetSelected=null;state._treasuryWarning=false;state._demiseTriggered=false;state._naturalDeathTriggered=false;state._emperorChoice=null;closeModal();
+    state.memorialHall=[];state.deadChildren=[];state._memorialSeen=0;state._memorialConcubines=null;state.chronicle=[];
     showPage('start');
     updateUI();
     save();
